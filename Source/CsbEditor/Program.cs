@@ -124,13 +124,13 @@ namespace CsbEditor
                                 if (audioFile.Name.ToLower(CultureInfo.GetCultureInfo("en-US")) == "intro.adx")
                                 {
                                     ReadAdx(audioFile, out sampleRate, out numberChannels);
-                                    writer.WriteRow(true, audioFile, 0);
+                                    writer.WriteRow(true, audioFile, (byte)0);
                                 }
 
                                 else if (audioFile.Name.ToLower() == "loop.adx")
                                 {
                                     ReadAdx(audioFile, out sampleRate, out numberChannels);
-                                    writer.WriteRow(true, audioFile, 1);
+                                    writer.WriteRow(true, audioFile, (byte)1);
                                 }
                             }
 

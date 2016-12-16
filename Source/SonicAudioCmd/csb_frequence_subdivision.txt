@@ -35,10 +35,10 @@ namespace SonicAudioCmd
                 criRow["sfreq"] = (uint)criRow["sfreq"] / 2;
             }
 
-            MemoryStream str = new MemoryStream();
-            sdlTable.Save(str);
+            sdlTable.WriterSettings = CriTableWriterSettings.AdxSettings;
+            soundElementTableRow["utf"] = sdlTable.Save();
 
-            soundElementTableRow["utf"] = str.ToArray();
+            table.WriterSettings = CriTableWriterSettings.AdxSettings;
             table.Save(args[0]);
         }
     }

@@ -21,30 +21,23 @@ namespace SonicAudioCmd
     {
         static void Main(string[] args)
         {
-            using (CriTableReader reader = CriTableReader.Create(args[0]))
+            CriCpkArchive archive = new CriCpkArchive();
+            archive.Load(args[0]);
+
+            foreach (CriCpkEntry entry in archive)
             {
-                reader.Read();
-
-                Stream archiveStream = reader.GetSubstream("AwbFile");
-
-                CriAfs2Archive archive = new CriAfs2Archive();
-                archive.Read(archiveStream);
-
-                foreach (CriAfs2Entry entry in archive)
+                using (Stream source = File.OpenRead(args[0]), substream = entry.Open(source))
                 {
-                    FileInfo fileInfo = new FileInfo(
-                        Path.Combine(
-                            Path.GetDirectoryName(args[0]), Path.GetFileNameWithoutExtension(args[0]),
-                            entry.CueIndex.ToString() + ".hca"));
-
+                    FileInfo fileInfo = new FileInfo(Path.Combine(Path.GetFileNameWithoutExtension(args[0]), entry.DirectoryName, entry.Name));
                     fileInfo.Directory.Create();
-
-                    using (Stream destination = fileInfo.Create(), entryStream = entry.Open(archiveStream))
+                    using (Stream destination = fileInfo.Create())
                     {
-                        entryStream.CopyTo(destination);
+                        substream.CopyTo(destination);
                     }
                 }
             }
+
+            Console.ReadLine();
         }
     }
 }
