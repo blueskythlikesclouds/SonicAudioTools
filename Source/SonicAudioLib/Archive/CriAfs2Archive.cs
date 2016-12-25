@@ -113,7 +113,7 @@ namespace SonicAudioLib.Archive
             EndianStream.WriteUInt32(destination, 1 | (CueIndexFieldLength << 16) | (PositionFieldLength << 8));
             EndianStream.WriteUInt32(destination, (ushort)entries.Count);
             EndianStream.WriteUInt32(destination, 1);
-
+            
             // FIXME: Alignment support
             VldPool vldPool = new VldPool(1);
 

@@ -28,7 +28,6 @@ namespace SonicAudioLib.CriMw
         private VldPool vldPool;
         private StringPool stringPool;
         private uint headerPosition;
-        private uint endPosition;
 
         private Status status = Status.Begin;
 
@@ -115,6 +114,8 @@ namespace SonicAudioLib.CriMw
                 destination.WriteByte(0);
             }
 
+            long previousPosition = destination.Position;
+
             header.Length = (uint)destination.Position - headerPosition;
 
             header.FirstBoolean = false;
@@ -131,7 +132,7 @@ namespace SonicAudioLib.CriMw
             WriteUInt16(header.NumberOfFields);
             WriteUInt16(header.RowLength);
             WriteUInt32(header.NumberOfRows);
-            destination.Seek(0, SeekOrigin.End);
+            destination.Seek(previousPosition, SeekOrigin.Begin);
         }
 
         public void WriteStartFieldCollection()
@@ -269,7 +270,7 @@ namespace SonicAudioLib.CriMw
 
         public void WriteValue(string fieldName, object rowValue)
         {
-            WriteValue(fields.IndexOf(fieldName));
+            WriteValue(fields.IndexOf(fieldName), rowValue);
         }
 
         private void GoToValue(int fieldIndex)
@@ -654,7 +655,7 @@ namespace SonicAudioLib.CriMw
 
             set
             {
-                leaveOpen = true;
+                leaveOpen = value;
             }
         }
 
@@ -690,7 +691,7 @@ namespace SonicAudioLib.CriMw
             {
                 return new CriTableWriterSettings()
                 {
-                    Align = 4,
+                    Align = 8,
                     PutBlankString = true,
                     RemoveDuplicateStrings = true,
                 };

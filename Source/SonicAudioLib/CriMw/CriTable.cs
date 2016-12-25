@@ -101,9 +101,23 @@ namespace SonicAudioLib.CriMw
                 writer.WriteStartFieldCollection();
                 foreach (CriField criField in fields)
                 {
-                    if (!rows.Any(row => row[criField] != criField.DefaultValue))
+                    bool useDefaultValue = false;
+                    object defaultValue = null;
+
+                    if (rows.Count > 1)
                     {
-                        writer.WriteField(criField.FieldName, criField.FieldType, criField.DefaultValue);
+                        useDefaultValue = true;
+                        defaultValue = rows[0][criField];
+
+                        if (rows.Any(row => !row[criField].Equals(defaultValue)))
+                        {
+                            useDefaultValue = false;
+                        }
+                    }
+
+                    if (useDefaultValue)
+                    {
+                        writer.WriteField(criField.FieldName, criField.FieldType, defaultValue);
                     }
 
                     else
