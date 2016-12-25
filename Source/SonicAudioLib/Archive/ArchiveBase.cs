@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Reflection;
 
 using SonicAudioLib.IO;
 using SonicAudioLib.Module;
@@ -106,5 +107,29 @@ namespace SonicAudioLib.Archive
         {
             return entries.GetEnumerator();
         }
+
+#if DEBUG
+        public void Print()
+        {
+            Type archiveType = GetType();
+            Console.WriteLine("{0}:", archiveType.Name);
+
+            foreach (PropertyInfo property in archiveType.GetProperties().Where(p => p.GetIndexParameters().Length == 0))
+            {
+                Console.WriteLine(" {0}: {1}", property.Name, property.GetValue(this));
+            }
+
+            foreach (T entry in entries)
+            {
+                Type entryType = entry.GetType();
+
+                Console.WriteLine("{0}:", entryType.Name);
+                foreach (PropertyInfo property in entryType.GetProperties().Where(p => p.GetIndexParameters().Length == 0))
+                {
+                    Console.WriteLine(" {0}: {1}", property.Name, property.GetValue(entry));
+                }
+            }
+        }
+#endif
     }
 }

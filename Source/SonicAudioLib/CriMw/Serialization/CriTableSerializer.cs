@@ -14,6 +14,28 @@ namespace SonicAudioLib.CriMw.Serialization
 {
     public static class CriTableSerializer
     {
+        public static byte[] Serialize<T>(List<T> objects, CriTableWriterSettings settings)
+        {
+            using (MemoryStream destination = new MemoryStream())
+            {
+                Serialize(destination, objects, settings);
+                return destination.ToArray();
+            }
+        }
+
+        public static void Serialize<T>(string destinationFileName, List<T> objects, CriTableWriterSettings settings)
+        {
+            using (Stream destination = File.Create(destinationFileName))
+            {
+                Serialize(destination, objects, settings);
+            }
+        }
+
+        public static void Serialize<T>(Stream destination, List<T> objects, CriTableWriterSettings settings)
+        {
+            Serialize(destination, typeof(T), objects, settings);
+        }
+
         public static void Serialize(Stream destination, Type type, ICollection objects, CriTableWriterSettings settings)
         {
             ArrayList arrayList = null;
@@ -45,11 +67,11 @@ namespace SonicAudioLib.CriMw.Serialization
                     continue;
                 }
 
-                // Also ignore the properties that are not supportable (except FileInfo, Stream and ICollection<>)
-                if (propertyInfo.PropertyType != typeof(FileInfo) && 
+                // Also ignore the properties that are not supportable (except FileInfo and Stream)
+                if (propertyInfo.PropertyType != typeof(FileInfo) &&
                     propertyInfo.PropertyType != typeof(Stream) &&
                     !CriField.FieldTypes.Contains(propertyInfo.PropertyType))
-                { 
+                {
                     continue;
                 }
 
@@ -94,25 +116,32 @@ namespace SonicAudioLib.CriMw.Serialization
                     }
                 }
 
-                // Checks if all the rows have the same value for this field
-                bool useDefaultValue = true;
+                bool useDefaultValue = false;
 
-                if (arrayList != null && arrayList.Count > 0)
+                if (arrayList != null && arrayList.Count > 1)
                 {
                     useDefaultValue = true;
 
-                    foreach (object obj in arrayList)
+                    defaultValue = propertyInfo.GetValue(arrayList[0]);
+
+                    for (int i = 1; i < arrayList.Count; i++)
                     {
-                        if (propertyInfo.GetValue(obj) != propertyInfo.GetValue(arrayList[0]))
+                        object objectValue = propertyInfo.GetValue(arrayList[i]);
+                        if (defaultValue != null)
+                        {
+                            if (!defaultValue.Equals(objectValue))
+                            {
+                                useDefaultValue = false;
+                                defaultValue = null;
+                                break;
+                            }
+                        }
+                        else if (objectValue != null)
                         {
                             useDefaultValue = false;
+                            defaultValue = null;
                             break;
                         }
-                    }
-
-                    if (useDefaultValue)
-                    {
-                        defaultValue = propertyInfo.GetValue(arrayList[0]);
                     }
                 }
 
@@ -155,6 +184,37 @@ namespace SonicAudioLib.CriMw.Serialization
             tableWriter.Dispose();
         }
 
+        public static List<T> Deserialize<T>(byte[] sourceByteArray)
+        {
+            return Deserialize(sourceByteArray, typeof(T)).OfType<T>().ToList();
+        }
+
+        public static List<T> Deserialize<T>(string sourceFileName)
+        {
+            return Deserialize(sourceFileName, typeof(T)).OfType<T>().ToList();
+        }
+
+        public static List<T> Deserialize<T>(Stream source)
+        {
+            return Deserialize(source, typeof(T)).OfType<T>().ToList();
+        }
+
+        public static ArrayList Deserialize(byte[] sourceByteArray, Type type)
+        {
+            using (MemoryStream source = new MemoryStream(sourceByteArray))
+            {
+                return Deserialize(source, type);
+            }
+        }
+
+        public static ArrayList Deserialize(string sourceFileName, Type type)
+        {
+            using (Stream source = File.OpenRead(sourceFileName))
+            {
+                return Deserialize(source, type);
+            }
+        }
+
         public static ArrayList Deserialize(Stream source, Type type)
         {
             ArrayList arrayList = new ArrayList();
@@ -185,6 +245,11 @@ namespace SonicAudioLib.CriMw.Serialization
                             if (fieldName == fieldNameMatch)
                             {
                                 object value = tableReader.GetValue(i);
+                                if (propertyInfo.PropertyType == typeof(byte[]) && value is Substream)
+                                {
+                                    value = ((Substream)value).ToArray();
+                                }
+
                                 propertyInfo.SetValue(obj, value);
                                 break;
                             }

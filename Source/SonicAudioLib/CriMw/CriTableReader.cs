@@ -166,14 +166,14 @@ namespace SonicAudioLib.CriMw
             return fields[fieldIndex].Value;
         }
 
-        public byte GetFieldFlag(string fieldName)
+        internal CriFieldFlag GetFieldFlag(string fieldName)
         {
-            return (byte)fields[fieldName].Flag;
+            return fields[fieldName].Flag;
         }
 
-        public byte GetFieldFlag(int fieldIndex)
+        internal CriFieldFlag GetFieldFlag(int fieldIndex)
         {
-            return (byte)fields[fieldIndex].Flag;
+            return fields[fieldIndex].Flag;
         }
 
         public object GetFieldValue(string fieldName)
@@ -438,6 +438,16 @@ namespace SonicAudioLib.CriMw
             return GetData(fields.IndexOf(fieldName));
         }
 
+        public CriTableReader GetCriTableReader(string fieldName)
+        {
+            return new CriTableReader(GetSubstream(fieldName), false);
+        }
+
+        public CriTableReader GetCriTableReader(int fieldIndex)
+        {
+            return new CriTableReader(GetSubstream(fieldIndex), false);
+        }
+
         public uint GetLength(int fieldIndex)
         {
             if (fieldIndex < 0 || fieldIndex >= fields.Count)
@@ -583,7 +593,7 @@ namespace SonicAudioLib.CriMw
             if (strResult == "<NULL>" ||
                 (strResult == header.TableName && stringPosition == 0))
             {
-                return null;
+                return string.Empty;
             }
 
             return strResult;
