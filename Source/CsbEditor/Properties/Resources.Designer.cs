@@ -69,13 +69,14 @@ namespace CsbEditor.Properties {
         ///The directory will have the same name as the .CSB file, but without
         ///its extension.
         ///
+        ///Also the .CPK file will be extracted too, if it exists.
+        ///
         ///In the deepest directories, you will see .ADX files, named &quot;Intro.adx&quot;
         ///or &quot;Loop.adx&quot;. The ADX files are literally what the names say. You can
         ///add/delete/modify them freely.
         ///
         ///The sample rate and channel count information will be automatically
-        ///updated in the CSB file if you use an ADX file with different sample
-        ///rate or  [rest of string was truncated]&quot;;.
+        ///updated in the CSB  [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Description {
             get {

@@ -582,12 +582,12 @@ namespace SonicAudioLib.CriMw
 
         private string ReadString()
         {
-            int stringPosition = ReadInt32();
+            uint stringPosition = ReadUInt32();
 
             long previousPosition = source.Position;
 
             source.Position = headerPosition + header.StringPoolPosition + stringPosition;
-            string strResult = EndianStream.ReadCString(source, Encoding.Default);
+            string strResult = EndianStream.ReadCString(source, Encoding.GetEncoding("shift-jis"));
             source.Position = previousPosition;
 
             if (strResult == "<NULL>" ||

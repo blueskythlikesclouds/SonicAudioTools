@@ -145,6 +145,12 @@ namespace SonicAudioLib.CriMw.Serialization
                     }
                 }
 
+                else if (arrayList == null || (arrayList != null && arrayList.Count == 0))
+                {
+                    useDefaultValue = true;
+                    defaultValue = null;
+                }
+
                 if (useDefaultValue)
                 {
                     tableWriter.WriteField(fieldName, fieldType, defaultValue);

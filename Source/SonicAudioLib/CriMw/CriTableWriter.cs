@@ -101,18 +101,12 @@ namespace SonicAudioLib.CriMw
             stringPool.Write(destination);
             header.StringPoolPosition = (uint)stringPool.Position - headerPosition;
 
-            while ((destination.Position % vldPool.Align) != 0)
-            {
-                destination.WriteByte(0);
-            }
+            EndianStream.Pad(destination, vldPool.Align);
 
             vldPool.Write(destination);
             header.DataPoolPosition = (uint)vldPool.Position - headerPosition;
 
-            while ((destination.Position % vldPool.Align) != 0)
-            {
-                destination.WriteByte(0);
-            }
+            EndianStream.Pad(destination, vldPool.Align);
 
             long previousPosition = destination.Position;
 

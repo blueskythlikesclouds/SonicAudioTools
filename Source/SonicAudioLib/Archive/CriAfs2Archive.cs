@@ -11,13 +11,13 @@ namespace SonicAudioLib.Archive
 {
     public class CriAfs2Entry : EntryBase
     {
-        public ushort CueIndex { get; set; }
+        public ushort Id { get; set; }
     }
 
     public class CriAfs2Archive : ArchiveBase<CriAfs2Entry>
     {
         public uint Align { get; set; }
-        public uint CueIndexFieldLength { get; set; }
+        public uint IdFieldLength { get; set; }
         public uint PositionFieldLength { get; set; }
 
         public override void Read(Stream source)
@@ -35,7 +35,7 @@ namespace SonicAudioLib.Archive
                 throw new Exception($"Invalid AFS2 type ({type}). Please report the error with the AWB file.");
             }
 
-            CueIndexFieldLength = (information & 0x00FF0000) >> 16;
+            IdFieldLength = (information & 0x00FF0000) >> 16;
             PositionFieldLength = (information & 0x0000FF00) >> 8;
 
             ushort entryCount = (ushort)EndianStream.ReadUInt32(source);
@@ -46,20 +46,20 @@ namespace SonicAudioLib.Archive
             {
                 CriAfs2Entry afs2Entry = new CriAfs2Entry();
 
-                long cueIndexPosition = 16 + (i * CueIndexFieldLength);
-                source.Seek(cueIndexPosition, SeekOrigin.Begin);
+                long idPosition = 16 + (i * IdFieldLength);
+                source.Seek(idPosition, SeekOrigin.Begin);
 
-                switch (CueIndexFieldLength)
+                switch (IdFieldLength)
                 {
                     case 2:
-                        afs2Entry.CueIndex = EndianStream.ReadUInt16(source);
+                        afs2Entry.Id = EndianStream.ReadUInt16(source);
                         break;
 
                     default:
-                        throw new Exception($"Unknown CueIndexFieldLength ({CueIndexFieldLength}). Please report the error with the AWB file.");
+                        throw new Exception($"Unknown CueIndexFieldLength ({IdFieldLength}). Please report the error with the AWB file.");
                 }
 
-                long positionPosition = 16 + (entryCount * CueIndexFieldLength) + (i * PositionFieldLength);
+                long positionPosition = 16 + (entryCount * IdFieldLength) + (i * PositionFieldLength);
                 source.Seek(positionPosition, SeekOrigin.Begin);
 
                 switch (PositionFieldLength)
@@ -81,10 +81,7 @@ namespace SonicAudioLib.Archive
                     previousEntry.Length = afs2Entry.Position - previousEntry.Position;
                 }
 
-                while ((afs2Entry.Position % Align) != 0)
-                {
-                    afs2Entry.Position++;
-                }
+                afs2Entry.Position = Methods.Align(afs2Entry.Position, Align);
 
                 if (i == entryCount - 1)
                 {
@@ -107,32 +104,33 @@ namespace SonicAudioLib.Archive
 
         public override void Write(Stream destination)
         {
-            uint headerLength = (uint)(16 + (entries.Count * CueIndexFieldLength) + (entries.Count * PositionFieldLength) + PositionFieldLength);
+            uint headerLength = (uint)(16 + (entries.Count * IdFieldLength) + (entries.Count * PositionFieldLength) + PositionFieldLength);
 
             EndianStream.WriteCString(destination, "AFS2", 4);
-            EndianStream.WriteUInt32(destination, 1 | (CueIndexFieldLength << 16) | (PositionFieldLength << 8));
+            EndianStream.WriteUInt32(destination, 1 | (IdFieldLength << 16) | (PositionFieldLength << 8));
             EndianStream.WriteUInt32(destination, (ushort)entries.Count);
-            EndianStream.WriteUInt32(destination, 1);
+            EndianStream.WriteUInt32(destination, Align);
             
-            // FIXME: Alignment support
-            VldPool vldPool = new VldPool(1);
+            VldPool vldPool = new VldPool(Align, headerLength);
 
-            foreach (CriAfs2Entry afs2Entry in entries)
+            var orderedEntries = entries.OrderBy(entry => entry.Id);
+            foreach (CriAfs2Entry afs2Entry in orderedEntries)
             {
-                switch (CueIndexFieldLength)
+                switch (IdFieldLength)
                 {
                     case 2:
-                        EndianStream.WriteUInt16(destination, (ushort)afs2Entry.CueIndex);
+                        EndianStream.WriteUInt16(destination, (ushort)afs2Entry.Id);
                         break;
 
                     default:
-                        throw new Exception($"Unknown CueIndexFieldLength ({CueIndexFieldLength}). Please set a valid length.");
+                        throw new Exception($"Unknown CueIndexFieldLength ({IdFieldLength}). Please set a valid length.");
                 }
             }
 
-            foreach (CriAfs2Entry afs2Entry in entries)
+            foreach (CriAfs2Entry afs2Entry in orderedEntries)
             {
-                uint entryPosition = (uint)(headerLength + vldPool.Put(afs2Entry.FilePath));
+                uint entryPosition = (uint)vldPool.Length;
+                vldPool.Put(afs2Entry.FilePath);
 
                 switch (PositionFieldLength)
                 {
@@ -151,43 +149,21 @@ namespace SonicAudioLib.Archive
                 afs2Entry.Position = entryPosition;
             }
 
-            EndianStream.WriteUInt32(destination, (uint)(headerLength + vldPool.Length));
+            EndianStream.WriteUInt32(destination, (uint)vldPool.Length);
 
             vldPool.Write(destination);
             vldPool.Clear();
         }
 
-        public CriAfs2Entry GetByCueIndex(uint cueIndex)
+        public CriAfs2Entry GetById(uint cueIndex)
         {
-            return entries.Single(e => e.CueIndex == cueIndex);
+            return entries.Single(e => (e.Id == cueIndex));
         }
-
-        public override long CalculateLength()
-        {
-            long length = 16 + (entries.Count * CueIndexFieldLength) + (entries.Count * PositionFieldLength) + PositionFieldLength;
-
-            foreach (CriAfs2Entry afs2Entry in entries)
-            {
-                while ((length % Align) != 0)
-                {
-                    length++;
-                }
-
-                length += afs2Entry.Length;
-            }
-
-            return length;
-        }
-
-        public void Order()
-        {
-            entries = entries.OrderBy(entry => entry.CueIndex).ToList();
-        }
-
+        
         public CriAfs2Archive()
         {
             Align = 32;
-            CueIndexFieldLength = 2;
+            IdFieldLength = 2;
             PositionFieldLength = 4;
         }
     }

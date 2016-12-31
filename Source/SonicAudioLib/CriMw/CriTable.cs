@@ -115,6 +115,11 @@ namespace SonicAudioLib.CriMw
                         }
                     }
 
+                    else if (rows.Count == 0)
+                    {
+                        useDefaultValue = true;
+                    }
+
                     if (useDefaultValue)
                     {
                         writer.WriteField(criField.FieldName, criField.FieldType, defaultValue);
@@ -134,12 +139,6 @@ namespace SonicAudioLib.CriMw
 
                 writer.WriteEndTable();
             }
-        }
-
-        public override long CalculateLength()
-        {
-            // TODO
-            return base.CalculateLength();
         }
 
         public CriTable()

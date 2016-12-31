@@ -40,6 +40,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Archive\CriAaxArchive.cs" />
     <Compile Include="Archive\CriAfs2Archive.cs" />
     <Compile Include="Archive\ArchiveBase.cs" />
     <Compile Include="Archive\CriCpkArchive.cs" />
@@ -60,6 +61,7 @@
     <Compile Include="IO\EndianStream.cs" />
     <Compile Include="IO\StringPool.cs" />
     <Compile Include="IO\Substream.cs" />
+    <Compile Include="IO\Methods.cs" />
     <Compile Include="IO\VldPool.cs" />
     <Compile Include="Module\ModuleBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

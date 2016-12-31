@@ -25,7 +25,7 @@ namespace SonicAudioCmd
             {
                 CriCpkArchive archive = new CriCpkArchive();
                 archive.Load(args[0]);
-                archive.Print();
+                //archive.Print();
 
                 foreach (CriCpkEntry entry in archive)
                 {
@@ -46,7 +46,7 @@ namespace SonicAudioCmd
             {
                 CriCpkArchive archive = new CriCpkArchive();
                 archive.Align = 16;
-                archive.Mode = CriCpkMode.FileName;
+                archive.Mode = CriCpkMode.Id;
 
                 uint id = 0;
                 foreach (string file in Directory.GetFiles(args[0], "*", SearchOption.AllDirectories))
