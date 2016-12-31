@@ -1,24 +1,31 @@
-﻿using SonicAudioLib.Collections;
+﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SonicAudioLib.CriMw
 {
+    internal class CriRowRecord
+    {
+        public CriField Field { get; set; }
+        public object Value { get; set; }
+    }
+
     public class CriRow : IEnumerable
     {
-        private OrderedDictionary<CriField, object> records = new OrderedDictionary<CriField, object>();
+        private List<CriRowRecord> records = new List<CriRowRecord>();
         private CriTable parent;
 
         public object this[CriField criField]
         {
             get
             {
-                return records[criField];
+                return this[records.FindIndex(record => record.Field == criField)];
             }
 
             set
             {
-                records[criField] = value;
+                this[records.FindIndex(record => record.Field == criField)] = value;
             }
         }
 
@@ -26,12 +33,22 @@ namespace SonicAudioLib.CriMw
         {
             get
             {
-                return records[index];
+                if (index < 0 || index >= records.Count)
+                {
+                    return null;
+                }
+
+                return records[index].Value;
             }
 
             set
             {
-                records[index] = value;
+                if (index < 0 || index >= records.Count)
+                {
+                    return;
+                }
+
+                records[index].Value = value;
             }
         }
 
@@ -39,12 +56,12 @@ namespace SonicAudioLib.CriMw
         {
             get
             {
-                return this[records.Single(k => (k.Key).FieldName == name).Key];
+                return this[records.FindIndex(record => record.Field.FieldName == name)];
             }
 
             set
             {
-                this[records.Single(k => (k.Key).FieldName == name).Key] = value;
+                this[records.FindIndex(record => record.Field.FieldName == name)] = value;
             }
         }
 
@@ -61,7 +78,7 @@ namespace SonicAudioLib.CriMw
             }
         }
 
-        internal OrderedDictionary<CriField, object> Records
+        internal List<CriRowRecord> Records
         {
             get
             {
@@ -83,7 +100,7 @@ namespace SonicAudioLib.CriMw
             
             for (int i = 0; i < records.Count; i++)
             {
-                values[i] = records[i];
+                values[i] = records[i].Value;
             }
 
             return values;
@@ -91,9 +108,9 @@ namespace SonicAudioLib.CriMw
 
         public IEnumerator GetEnumerator()
         {
-            foreach (var keyValPair in records)
+            foreach (var record in records)
             {
-                yield return keyValPair.Value;
+                yield return record.Value;
             }
 
             yield break;

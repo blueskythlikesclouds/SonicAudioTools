@@ -14,7 +14,7 @@ namespace CsbBuilder
     [CriSerializable("TBLCSB")]
     public class CriTableCueSheet
     {
-        public enum EnumTableType
+        public enum EnumTableType : byte
         {
             None = 0,
             Cue = 1,
@@ -42,15 +42,15 @@ namespace CsbBuilder
         }
 
         [CriField("ttype", 1)]
-        public byte TableType
+        public EnumTableType TableType
         {
             get
             {
-                return (byte)_ttype;
+                return _ttype;
             }
             set
             {
-                _ttype = (EnumTableType)value;
+                _ttype = value;
             }
         }
 

@@ -63,7 +63,7 @@ namespace SonicAudioLib.Archive
 
         public override void Add(CriAaxEntry item)
         {
-            if (entries.Count == 2 || entries.Any(entry => (entry.Flag == item.Flag)))
+            if (entries.Count == 2 || entries.Exists(entry => (entry.Flag == item.Flag)))
             {
                 return;
             }

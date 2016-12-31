@@ -9,7 +9,6 @@ using System.Collections;
 
 using SonicAudioLib;
 using SonicAudioLib.Archive;
-using SonicAudioLib.Collections;
 using SonicAudioLib.IO;
 using SonicAudioLib.CriMw;
 

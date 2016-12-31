@@ -45,7 +45,6 @@
     <Compile Include="Archive\ArchiveBase.cs" />
     <Compile Include="Archive\CriCpkArchive.cs" />
     <Compile Include="Archive\HeroesPacArchive.cs" />
-    <Compile Include="Collections\OrderedDictionary.cs" />
     <Compile Include="CriMw\CriTable.cs" />
     <Compile Include="CriMw\CriField.cs" />
     <Compile Include="CriMw\CriFieldCollection.cs" />

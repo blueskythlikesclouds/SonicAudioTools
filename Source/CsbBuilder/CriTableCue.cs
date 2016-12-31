@@ -30,7 +30,7 @@ namespace CsbBuilder
         }
 
         [CriField("id", 1)]
-        public uint Index
+        public uint Id
         {
             get
             {

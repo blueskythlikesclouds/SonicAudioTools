@@ -70,6 +70,8 @@ namespace SonicAudioLib.CriMw.Serialization
                 // Also ignore the properties that are not supportable (except FileInfo and Stream)
                 if (propertyInfo.PropertyType != typeof(FileInfo) &&
                     propertyInfo.PropertyType != typeof(Stream) &&
+                    propertyInfo.PropertyType != typeof(bool) &&    
+                    !propertyInfo.PropertyType.IsEnum &&
                     !CriField.FieldTypes.Contains(propertyInfo.PropertyType))
                 {
                     continue;
@@ -100,19 +102,27 @@ namespace SonicAudioLib.CriMw.Serialization
                 string fieldName = propertyInfo.Name;
                 Type fieldType = propertyInfo.PropertyType;
                 object defaultValue = null;
-
-                // Since the invalid types were cleaned, we can assume that those can be FileInfo or Stream
-                // so directly change the type to byte[]
-                if (!CriField.FieldTypes.Contains(fieldType))
+    
+                if (fieldType == typeof(FileInfo) || fieldType == typeof(Stream))
                 {
                     fieldType = typeof(byte[]);
+                }
+
+                else if (fieldType == typeof(bool))
+                {
+                    fieldType = typeof(byte);
+                }
+
+                else if (fieldType.IsEnum)
+                {
+                    fieldType = Enum.GetUnderlyingType(propertyInfo.PropertyType);
                 }
 
                 if (fieldAttribute != null)
                 {
                     if (!string.IsNullOrEmpty(fieldAttribute.FieldName))
                     {
-                        fieldName = fieldAttribute.FieldName;
+                        fieldName = fieldAttribute.FieldName;   
                     }
                 }
 
@@ -151,6 +161,16 @@ namespace SonicAudioLib.CriMw.Serialization
                     defaultValue = null;
                 }
 
+                if (defaultValue is bool)
+                {
+                    defaultValue = (bool)defaultValue == true ? 1 : 0;
+                }
+
+                else if (defaultValue is Enum)
+                {
+                    defaultValue = Convert.ChangeType(defaultValue, fieldType);
+                }
+
                 if (useDefaultValue)
                 {
                     tableWriter.WriteField(fieldName, fieldType, defaultValue);
@@ -175,8 +195,17 @@ namespace SonicAudioLib.CriMw.Serialization
                     foreach (PropertyInfo propertyInfo in sortedProperties.Values)
                     {
                         object value = propertyInfo.GetValue(obj);
-
                         Type propertyType = propertyInfo.PropertyType;
+
+                        if (value is bool)
+                        {
+                            value = (bool)value == true ? 1 : 0;
+                        }
+
+                        else if (value is Enum)
+                        {
+                            value = Convert.ChangeType(value, Enum.GetUnderlyingType(propertyType));
+                        }
 
                         tableWriter.WriteValue(index, value);
                         index++;
@@ -254,6 +283,16 @@ namespace SonicAudioLib.CriMw.Serialization
                                 if (propertyInfo.PropertyType == typeof(byte[]) && value is Substream)
                                 {
                                     value = ((Substream)value).ToArray();
+                                }
+
+                                if (propertyInfo.PropertyType == typeof(bool))
+                                {
+                                    value = (byte)value != 0;
+                                }
+
+                                else if (propertyInfo.PropertyType.IsEnum)
+                                {
+                                    value = Enum.ToObject(propertyInfo.PropertyType, value);
                                 }
 
                                 propertyInfo.SetValue(obj, value);

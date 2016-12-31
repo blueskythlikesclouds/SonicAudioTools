@@ -157,7 +157,7 @@ namespace SonicAudioLib.Archive
 
         public CriAfs2Entry GetById(uint cueIndex)
         {
-            return entries.Single(e => (e.Id == cueIndex));
+            return entries.FirstOrDefault(e => (e.Id == cueIndex));
         }
         
         public CriAfs2Archive()

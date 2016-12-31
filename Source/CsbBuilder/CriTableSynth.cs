@@ -12,7 +12,7 @@ namespace CsbBuilder
     [CriSerializable("TBLSYN")]
     public class CriTableSynth
     {
-        public enum EnumSynthType
+        public enum EnumSynthType : byte
         {
             Waveform = 0,
             Polyphonic = 1,
@@ -123,28 +123,28 @@ namespace CsbBuilder
         }
 
         [CriField("syntype", 1)]
-        public byte SynthType
+        public EnumSynthType SynthType
         {
             get
             {
-                return (byte)_syntype;
+                return _syntype;
             }
             set
             {
-                _syntype = (EnumSynthType)value;
+                _syntype = value;
             }
         }
 
         [CriField("cmplxtype", 2)]
-        public byte ComplexType
+        public EnumSynthType ComplexType
         {
             get
             {
-                return (byte)_cmplxtype;
+                return _cmplxtype;
             }
             set
             {
-                _cmplxtype = (EnumSynthType)value;
+                _cmplxtype = value;
             }
         }
 

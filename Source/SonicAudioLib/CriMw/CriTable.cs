@@ -68,7 +68,7 @@ namespace SonicAudioLib.CriMw
 
             foreach (CriField criField in fields)
             {
-                criRow.Records.Add(criField, criField.DefaultValue);
+                criRow.Records.Add(new CriRowRecord { Field = criField, Value = criField.DefaultValue });
             }
 
             return criRow;

@@ -12,22 +12,16 @@ namespace CsbBuilder
     [CriSerializable("TBLSDL")]
     public class CriTableSoundElement
     {
-        public enum EnumFormat
+        public enum EnumFormat : byte
         {
             Adx = 0,
             Dsp = 4,
         };
 
-        public enum EnumStreamFlag
-        {
-            Internal = 0,
-            External = 1,
-        };
-
         private string _name = string.Empty;
         private EnumFormat _fmt = EnumFormat.Adx;
         private byte _nch = 0;
-        private EnumStreamFlag _stmflg = EnumStreamFlag.Internal;
+        private bool _stmflg = false;
         private uint _sfreq = 0;
         private uint _nsmpl = 0;
 
@@ -58,20 +52,23 @@ namespace CsbBuilder
 
             set
             {
-                DataList = CriTableSerializer.Deserialize<CriTableAax>(value);
+                if (value.Length > 0)
+                {
+                    DataList = CriTableSerializer.Deserialize<CriTableAax>(value);
+                }
             }
         }
 
         [CriField("fmt", 2)]
-        public byte Format
+        public EnumFormat Format
         {
             get
             {
-                return (byte)_fmt;
+                return _fmt;
             }
             set
             {
-                _fmt = (EnumFormat)value;
+                _fmt = value;
             }
         }
 
@@ -89,15 +86,15 @@ namespace CsbBuilder
         }
 
         [CriField("stmflg", 4)]
-        public byte StreamFlag
+        public bool Streaming
         {
             get
             {
-                return (byte)_stmflg;
+                return _stmflg;
             }
             set
             {
-                _stmflg = (EnumStreamFlag)value;
+                _stmflg = value;
             }
         }
 

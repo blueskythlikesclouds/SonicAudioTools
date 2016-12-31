@@ -22,7 +22,7 @@ namespace SonicAudioLib.CriMw
         {
             get
             {
-                return fields.Single(f => f.FieldName == name);
+                return fields.FirstOrDefault(field => field.FieldName == name);
             }
         }
 
@@ -86,10 +86,10 @@ namespace SonicAudioLib.CriMw
         {
             fields.Remove(criField);
 
-            // Update the objects
+            // Update the rows
             foreach (CriRow criRow in parent.Rows)
             {
-                criRow.Records.Remove(criField);
+                criRow.Records.RemoveAll(record => record.Field == criField);
             }
         }
 

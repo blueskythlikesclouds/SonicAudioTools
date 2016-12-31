@@ -33,8 +33,8 @@ namespace CsbEditor
                     string outputDirectoryName = Path.Combine(baseDirectory, Path.GetFileNameWithoutExtension(args[0]));
 
                     CriCpkArchive cpkArchive = null;
-                    string externalCpkName = outputDirectoryName + ".cpk";
-                    bool found = File.Exists(externalCpkName);
+                    string cpkPath = outputDirectoryName + ".cpk";
+                    bool found = File.Exists(cpkPath);
 
                     using (CriTableReader reader = CriTableReader.Create(args[0]))
                     {
@@ -60,7 +60,7 @@ namespace CsbEditor
                                         else if (streaming && found && cpkArchive == null)
                                         {
                                             cpkArchive = new CriCpkArchive();
-                                            cpkArchive.Load(externalCpkName);
+                                            cpkArchive.Load(cpkPath);
                                         }
 
                                         string sdlName = sdlReader.GetString("name");
@@ -75,18 +75,18 @@ namespace CsbEditor
                                         {
                                             CriCpkEntry cpkEntry = cpkArchive.GetByPath(sdlName);
 
-                                            using (Stream source = File.OpenRead(externalCpkName))
-                                            using (Stream entrySource = cpkEntry.Open(source))
+                                            using (Stream cpkSource = File.OpenRead(cpkPath))
+                                            using (Stream aaxSource = cpkEntry.Open(cpkSource))
                                             {
-                                                aaxArchive.Read(entrySource);
+                                                aaxArchive.Read(aaxSource);
 
                                                 foreach (CriAaxEntry entry in aaxArchive)
                                                 {
                                                     using (Stream destination = File.Create(Path.Combine(destinationPath.FullName,
                                                         entry.Flag == CriAaxEntryFlag.Intro ? "Intro.adx" : "Loop.adx")))
-                                                    using (Stream sourceEntry = entry.Open(entrySource))
+                                                    using (Stream entrySource = entry.Open(aaxSource))
                                                     {
-                                                        sourceEntry.CopyTo(destination);
+                                                        entrySource.CopyTo(destination);
                                                     }
                                                 }
                                             }
@@ -102,9 +102,9 @@ namespace CsbEditor
                                                 {
                                                     using (Stream destination = File.Create(Path.Combine(destinationPath.FullName,
                                                         entry.Flag == CriAaxEntryFlag.Intro ? "Intro.adx" : "Loop.adx")))
-                                                    using (Stream sourceEntry = entry.Open(aaxSource))
+                                                    using (Stream entrySource = entry.Open(aaxSource))
                                                     {
-                                                        sourceEntry.CopyTo(destination);
+                                                        entrySource.CopyTo(destination);
                                                     }
                                                 }
                                             }
@@ -133,7 +133,7 @@ namespace CsbEditor
                     CriTable csbFile = new CriTable();
                     csbFile.Load(csbPath);
 
-                    CriRow soundElementRow = csbFile.Rows.Single(row => (string)row["name"] == "SOUND_ELEMENT");
+                    CriRow soundElementRow = csbFile.Rows.First(row => (string)row["name"] == "SOUND_ELEMENT");
 
                     CriTable soundElementTable = new CriTable();
                     soundElementTable.Load((byte[])soundElementRow["utf"]);

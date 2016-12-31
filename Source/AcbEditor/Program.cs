@@ -19,9 +19,10 @@ namespace AcbEditor
                 Console.ReadLine();
                 return;
             }
-
+#if !DEBUG
             try
             {
+#endif
                 if (args[0].EndsWith(".acb"))
                 {
                     string baseDirectory = Path.GetDirectoryName(args[0]);
@@ -108,7 +109,7 @@ namespace AcbEditor
                                 outputName += GetExtension(encodeType);
                                 outputName = Path.Combine(outputDirectoryPath, outputName);
 
-                                Console.WriteLine("Extracting {0} file with index {1}...", GetExtension(encodeType).ToUpper(), id);
+                                Console.WriteLine("Extracting {0} file with id {1}...", GetExtension(encodeType).ToUpper(), id);
 
                                 if (streaming)
                                 {
@@ -129,7 +130,7 @@ namespace AcbEditor
                                     {
                                         afs2Entry = extCpkArchive.GetById(id);
                                     }
-                                        
+
                                     else
                                     {
                                         afs2Entry = extAfs2Archive.GetById(id);
@@ -208,7 +209,7 @@ namespace AcbEditor
                     byte[] awbFile = (byte[])acbFile.Rows[0]["AwbFile"];
                     byte[] streamAwbAfs2Header = (byte[])acbFile.Rows[0]["StreamAwbAfs2Header"];
 
-                    cpkMode = !(awbFile.Length >= 4 && Encoding.ASCII.GetString(awbFile, 0, 4) == "AFS2") && streamAwbAfs2Header.Length == 0;
+                    cpkMode = !(awbFile != null && awbFile.Length >= 4 && Encoding.ASCII.GetString(awbFile, 0, 4) == "AFS2") && (streamAwbAfs2Header == null || streamAwbAfs2Header.Length == 0);
 
                     using (CriTableReader reader = CriTableReader.Create((byte[])acbFile.Rows[0]["WaveformTable"]))
                     {
@@ -229,7 +230,7 @@ namespace AcbEditor
 
                             if (!File.Exists(inputName))
                             {
-                                throw new Exception($"Cannot find audio file with index {id} for replacement.\nPath attempt: {inputName}");
+                                throw new Exception($"Cannot find audio file with id {id} for replacement.\nPath attempt: {inputName}");
                             }
 
                             Console.WriteLine("Adding {0}...", Path.GetFileName(inputName));
@@ -308,12 +309,14 @@ namespace AcbEditor
                     acbFile.WriterSettings = CriTableWriterSettings.Adx2Settings;
                     acbFile.Save(acbPath);
                 }
+#if !DEBUG
             }
 
             catch (Exception exception)
             {
                 MessageBox.Show($"{exception.Message}", "ACB Editor", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+#endif
         }
 
         static string GetExtension(byte encodeType)

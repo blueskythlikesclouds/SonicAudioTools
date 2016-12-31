@@ -525,17 +525,17 @@ namespace SonicAudioLib.Archive
 
         public CriCpkEntry GetById(uint id)
         {
-            return entries.First(entry => (entry.Id == id));
+            return entries.FirstOrDefault(entry => (entry.Id == id));
         }
 
         public CriCpkEntry GetByName(string name)
         {
-            return entries.First(entry => (entry.Name == name));
+            return entries.FirstOrDefault(entry => (entry.Name == name));
         }
 
         public CriCpkEntry GetByPath(string path)
         {
-            return entries.First(entry => ((entry.DirectoryName + "/" + entry.Name) == path));
+            return entries.FirstOrDefault(entry => ((entry.DirectoryName + "/" + entry.Name) == path));
         }
 
         private DateTime DateTimeFromCpkDateTime(ulong dateTime)

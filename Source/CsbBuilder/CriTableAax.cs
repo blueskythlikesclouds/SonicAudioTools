@@ -10,7 +10,7 @@ namespace CsbBuilder
     [Serializable]
     public class CriTableAax
     {
-        public enum EnumLoopFlag
+        public enum EnumLoopFlag : byte
         {
             Intro = 0,
             Loop = 1,
@@ -33,15 +33,15 @@ namespace CsbBuilder
         }
 
         [CriField("lpflg", 1)]
-        public byte LoopFlag
+        public EnumLoopFlag LoopFlag
         {
             get
             {
-                return (byte)_lpflg;
+                return _lpflg;
             }
             set
             {
-                _lpflg = (EnumLoopFlag)value;
+                _lpflg = value;
             }
         }
     }
