@@ -44,10 +44,7 @@ namespace SonicAudioLib.IO
                 return 0;
             }
 
-            while ((length % align) != 0)
-            {
-                length++;
-            }
+            length = Methods.Align(length, align);
 
             long position = length;
             length += data.Length;
@@ -63,10 +60,7 @@ namespace SonicAudioLib.IO
                 return 0;
             }
 
-            while ((length % align) != 0)
-            {
-                length++;
-            }
+            length = Methods.Align(length, align);
 
             long position = length;
             length += stream.Length;
@@ -82,10 +76,7 @@ namespace SonicAudioLib.IO
                 return 0;
             }
 
-            while ((length % align) != 0)
-            {
-                length++;
-            }
+            length = Methods.Align(length, align);
 
             long position = length;
             length += fileInfo.Length;
@@ -101,10 +92,7 @@ namespace SonicAudioLib.IO
                 return 0;
             }
 
-            while ((length % align) != 0)
-            {
-                length++;
-            }
+            length = Methods.Align(length, align);
 
             long position = length;
             length += module.CalculateLength();
@@ -119,10 +107,7 @@ namespace SonicAudioLib.IO
 
             foreach (object item in items)
             {
-                while ((destination.Position % align) != 0)
-                {
-                    destination.WriteByte(0);
-                }
+                EndianStream.Pad(destination, align);
 
                 if (item is byte[])
                 {
@@ -158,6 +143,12 @@ namespace SonicAudioLib.IO
         public void Clear()
         {
             items.Clear();
+        }
+
+        public VldPool(uint align, long baseLength)
+        {
+            this.align = align;
+            length = baseLength;
         }
         
         public VldPool(uint align)

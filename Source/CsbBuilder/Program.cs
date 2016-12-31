@@ -11,6 +11,8 @@ using SonicAudioLib.Archive;
 
 using System.Globalization;
 using System.Xml.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Runtime.Serialization;
 
 namespace CsbBuilder
 {
@@ -25,48 +27,50 @@ namespace CsbBuilder
                 return;
             }
 
-            try
+            if (args[0].EndsWith(".csb"))
             {
-                if (args[0].EndsWith(".csb"))
-                {
-                    List<CriTableCueSheet> cueSheets = CriTableSerializer.Deserialize<CriTableCueSheet>(args[0]);
-                    //CriTableSerializer.Serialize(args[0] + ".new", cueSheets, CriTableWriterSettings.AdxSettings);
+                List<CriTableCueSheet> tables = CriTableSerializer.Deserialize<CriTableCueSheet>(args[0]);
+                Serialize(args[0] + ".xml", tables);
 
-                    XmlSerializer serializer = new XmlSerializer(typeof(List<CriTableCueSheet>));
-                    using (Stream dest = File.Create(Path.GetFileNameWithoutExtension(args[0]) + ".xml"))
+                foreach (CriTableCueSheet table in tables)
+                {
+                    DirectoryInfo baseDirectory = new DirectoryInfo(
+                        Path.Combine(
+                            Path.GetDirectoryName(args[0]), 
+                            Path.GetFileNameWithoutExtension(args[0]), 
+                            Enum.GetName(typeof(CriTableCueSheet.EnumTableType), table.TableType)));
+
+                    baseDirectory.Create();
+
+                    foreach (CriTableCue cue in table.DataList.OfType<CriTableCue>())
                     {
-                        serializer.Serialize(dest, cueSheets);
+                        Serialize(Path.Combine(baseDirectory.FullName, cue.Name + ".xml"), cue);
                     }
-                }
 
-                else if (File.GetAttributes(args[0]).HasFlag(FileAttributes.Directory))
-                {
-                }
-
-                else if (args[0].EndsWith(".xml"))
-                {
-                    XmlSerializer serializer = new XmlSerializer(typeof(List<CriTableCueSheet>));
-                    using (Stream dest = File.OpenRead(args[0]))
+                    foreach (CriTableSynth synth in table.DataList.OfType<CriTableSynth>())
                     {
-                        CriTableSerializer.Serialize(Path.GetFileNameWithoutExtension(args[0]) + ".csb", (List<CriTableCueSheet>)serializer.Deserialize(dest), CriTableWriterSettings.AdxSettings);
+                        Directory.CreateDirectory(Path.Combine(baseDirectory.FullName, Path.GetDirectoryName(synth.SynthName)));
+                        Serialize(Path.Combine(baseDirectory.FullName, synth.SynthName + ".xml"), synth);
+                    }
+
+                    foreach (CriTableSoundElement soundElement in table.DataList.OfType<CriTableSoundElement>())
+                    {
+                        Directory.CreateDirectory(Path.Combine(baseDirectory.FullName, Path.GetDirectoryName(soundElement.Name)));
                     }
                 }
             }
 
-            catch (Exception exception)
+            else if (File.GetAttributes(args[0]).HasFlag(FileAttributes.Directory))
             {
-                //MessageBox.Show($"{exception.Message}", "CSB Builder", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                throw exception;
             }
         }
 
-        static void ReadAdx(FileInfo fileInfo, out uint sampleRate, out byte numberChannels)
+        static void Serialize(string path, object obj)
         {
-            using (Stream source = fileInfo.OpenRead())
+            XmlSerializer serializer = new XmlSerializer(obj.GetType());
+            using (Stream destination = File.Create(path))
             {
-                source.Seek(7, SeekOrigin.Begin);
-                numberChannels = EndianStream.ReadByte(source);
-                sampleRate = EndianStream.ReadUInt32BE(source);
+                serializer.Serialize(destination, obj);
             }
         }
     }

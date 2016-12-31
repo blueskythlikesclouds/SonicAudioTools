@@ -126,6 +126,8 @@ Drag and drop a .CSB file to unpack its contents to a directory.
 The directory will have the same name as the .CSB file, but without
 its extension.
 
+Also the .CPK file will be extracted too, if it exists.
+
 In the deepest directories, you will see .ADX files, named "Intro.adx"
 or "Loop.adx". The ADX files are literally what the names say. You can
 add/delete/modify them freely.

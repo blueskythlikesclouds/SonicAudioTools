@@ -378,6 +378,14 @@ namespace SonicAudioLib.IO
             byte[] buffer = new byte[length];
             source.Read(buffer, 0, length);
 
+            for (int i = 0; i < buffer.Length; i++)
+            {
+                if (buffer[i] == 0)
+                {
+                    return encoding.GetString(buffer, 0, i);
+                }
+            }
+
             return encoding.GetString(buffer);
         }
 
@@ -390,6 +398,14 @@ namespace SonicAudioLib.IO
         {
             byte[] buffer = encoding.GetBytes(value.ToCharArray(), 0, length);
             destination.Write(buffer, 0, length);
+        }
+
+        public static void Pad(Stream destination, long alignment)
+        {
+            while ((destination.Position % alignment) != 0)
+            {
+                destination.WriteByte(0);
+            }
         }
     }
 }

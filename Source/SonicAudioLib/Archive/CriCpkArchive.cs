@@ -145,10 +145,7 @@ namespace SonicAudioLib.Archive
                                 entry.Position += tocPosition;
                             }
 
-                            while ((entry.Position % align) != 0)
-                            {
-                                entry.Position++;
-                            }
+                            entry.Position = Methods.Align(entry.Position, align);
 
                             etocReader.MoveToRow(tocReader.CurrentRow);
                             entry.UpdateDateTime = DateTimeFromCpkDateTime(etocReader.GetUInt64("UpdateDateTime"));
@@ -171,8 +168,6 @@ namespace SonicAudioLib.Archive
 
                 else if (mode == CriCpkMode.Id)
                 {
-                    long currentPosition = contentPosition;
-
                     using (CriTableReader itocReader = CriCpkSection.Open(source, itocPosition))
                     {
                         while (itocReader.Read())
@@ -192,15 +187,7 @@ namespace SonicAudioLib.Archive
                                             entry.IsCompressed = true;
                                         }
 
-                                        while ((currentPosition % align) != 0)
-                                        {
-                                            currentPosition++;
-                                        }
-
-                                        entry.Position = currentPosition;
                                         entries.Add(entry);
-
-                                        currentPosition += entry.Length;
                                     }
                                 }
                             }
@@ -220,19 +207,20 @@ namespace SonicAudioLib.Archive
                                             entry.IsCompressed = true;
                                         }
 
-                                        while ((currentPosition % align) != 0)
-                                        {
-                                            currentPosition++;
-                                        }
-
-                                        entry.Position = currentPosition;
                                         entries.Add(entry);
-
-                                        currentPosition += entry.Length;
                                     }
                                 }
                             }
                         }
+                    }
+
+                    long entryPosition = contentPosition;
+                    foreach (CriCpkEntry entry in entries.OrderBy(entry => entry.Id))
+                    {
+                        entryPosition = Methods.Align(entryPosition, align);
+
+                        entry.Position = entryPosition;
+                        entryPosition += entry.Length;
                     }
                 }
 
@@ -247,8 +235,7 @@ namespace SonicAudioLib.Archive
 
         public override void Write(Stream destination)
         {
-            // FIXME: Alignment support (ugh same thing for AFS2 archives)
-            VldPool vldPool = new VldPool();
+            VldPool vldPool = new VldPool(Align, 2048);
 
             using (CriCpkSection cpkSection = new CriCpkSection(destination, "CPK "))
             {
@@ -358,8 +345,20 @@ namespace SonicAudioLib.Archive
 
                         foreach (CriCpkEntry entry in entries)
                         {
-                            tocSection.Writer.WriteRow(true, entry.DirectoryName, entry.Name, Convert.ToUInt32(entry.Length), Convert.ToUInt32(entry.Length), Convert.ToUInt64(vldPool.Put(entry.FilePath)), entry.Id, entry.Comment);
-                            etocSection.Writer.WriteRow(true, CpkDateTimeFromDateTime(entry.UpdateDateTime), entry.DirectoryName);
+                            tocSection.Writer.WriteRow(true, 
+                                (entry.DirectoryName).Replace('\\', '/'), 
+                                entry.Name, 
+                                (uint)entry.Length, 
+                                (uint)entry.Length, 
+                                (ulong)(vldPool.Length - 2048), 
+                                entry.Id, 
+                                entry.Comment);
+
+                            etocSection.Writer.WriteRow(true, 
+                                CpkDateTimeFromDateTime(entry.UpdateDateTime), 
+                                entry.DirectoryName);
+
+                            vldPool.Put(entry.FilePath);
                         }
 
                         tocSection.Writer.WriteEndTable();
@@ -379,7 +378,9 @@ namespace SonicAudioLib.Archive
 
                             foreach (CriCpkEntry entry in entries)
                             {
-                                itocSection.Writer.WriteRow(true, Convert.ToInt32(entry.Id), entries.IndexOf(entry));
+                                itocSection.Writer.WriteRow(true, 
+                                    (int)entry.Id, 
+                                    entries.IndexOf(entry));
                             }
 
                             itocSection.Writer.WriteEndTable();
@@ -403,8 +404,6 @@ namespace SonicAudioLib.Archive
                         List<CriCpkEntry> filesL = entries.Where(entry => entry.Length < ushort.MaxValue).ToList();
                         List<CriCpkEntry> filesH = entries.Where(entry => entry.Length > ushort.MaxValue).ToList();
 
-                        ushort id = 0;
-
                         itocSection.Writer.WriteStartRow();
 
                         using (MemoryStream dataMemoryStream = new MemoryStream())
@@ -418,9 +417,10 @@ namespace SonicAudioLib.Archive
 
                             foreach (CriCpkEntry entry in filesL)
                             {
-                                dataWriter.WriteRow(true, id, Convert.ToUInt16(entry.Length), Convert.ToUInt16(entry.Length));
-                                vldPool.Put(entry.FilePath);
-                                id++;
+                                dataWriter.WriteRow(true, 
+                                    (ushort)entry.Id, 
+                                    (ushort)entry.Length, 
+                                    (ushort)entry.Length);
                             }
 
                             dataWriter.WriteEndTable();
@@ -439,9 +439,10 @@ namespace SonicAudioLib.Archive
 
                             foreach (CriCpkEntry entry in filesH)
                             {
-                                dataWriter.WriteRow(true, id, Convert.ToUInt32(entry.Length), Convert.ToUInt32(entry.Length));
-                                vldPool.Put(entry.FilePath);
-                                id++;
+                                dataWriter.WriteRow(true, 
+                                    (ushort)entry.Id, 
+                                    (uint)entry.Length, 
+                                    (uint)entry.Length);
                             }
 
                             dataWriter.WriteEndTable();
@@ -454,6 +455,11 @@ namespace SonicAudioLib.Archive
                         itocSection.Writer.WriteEndRow();
                         itocSection.Writer.WriteEndTable();
                     }
+
+                    foreach (CriCpkEntry entry in entries.OrderBy(entry => entry.Id))
+                    {
+                        vldPool.Put(entry.FilePath);
+                    }
                 }
 
                 else
@@ -464,61 +470,72 @@ namespace SonicAudioLib.Archive
                 cpkSection.Writer.WriteStartRow();
                 cpkSection.Writer.WriteValue("UpdateDateTime", CpkDateTimeFromDateTime(DateTime.Now));
 
-                cpkSection.Writer.WriteValue("ContentOffset", Convert.ToUInt64(2048));
-                cpkSection.Writer.WriteValue("ContentSize", Convert.ToUInt64(vldPool.Length));
+                cpkSection.Writer.WriteValue("ContentOffset", (ulong)2048);
+                cpkSection.Writer.WriteValue("ContentSize", (ulong)(vldPool.Length - 2048));
 
                 if (tocMemoryStream != null)
                 {
-                    cpkSection.Writer.WriteValue("TocOffset", Convert.ToUInt64(2048 + vldPool.Put(tocMemoryStream)));
-                    cpkSection.Writer.WriteValue("TocSize", Convert.ToUInt64(tocMemoryStream.Length));
+                    cpkSection.Writer.WriteValue("TocOffset", (ulong)vldPool.Put(tocMemoryStream));
+                    cpkSection.Writer.WriteValue("TocSize", (ulong)tocMemoryStream.Length);
                 }
 
                 if (itocMemoryStream != null)
                 {
-                    cpkSection.Writer.WriteValue("ItocOffset", Convert.ToUInt64(2048 + vldPool.Put(itocMemoryStream)));
-                    cpkSection.Writer.WriteValue("ItocSize", Convert.ToUInt64(itocMemoryStream.Length));
+                    cpkSection.Writer.WriteValue("ItocOffset", (ulong)vldPool.Put(itocMemoryStream));
+                    cpkSection.Writer.WriteValue("ItocSize", (ulong)itocMemoryStream.Length);
                 }
 
                 if (etocMemoryStream != null)
                 {
-                    cpkSection.Writer.WriteValue("EtocOffset", Convert.ToUInt64(2048 + vldPool.Put(etocMemoryStream)));
-                    cpkSection.Writer.WriteValue("EtocSize", Convert.ToUInt64(etocMemoryStream.Length));
+                    cpkSection.Writer.WriteValue("EtocOffset", (ulong)vldPool.Put(etocMemoryStream));
+                    cpkSection.Writer.WriteValue("EtocSize", (ulong)etocMemoryStream.Length);
                 }
 
-                uint totalDataSize = 0;
+                long totalDataSize = 0;
                 foreach (CriCpkEntry entry in entries)
                 {
-                    totalDataSize += (uint)entry.Length;
+                    totalDataSize += entry.Length;
                 }
 
                 cpkSection.Writer.WriteValue("EnabledPackedSize", totalDataSize);
                 cpkSection.Writer.WriteValue("EnabledDataSize", totalDataSize);
 
-                cpkSection.Writer.WriteValue("Files", Convert.ToUInt32(entries.Count));
+                cpkSection.Writer.WriteValue("Files", (uint)entries.Count);
 
                 cpkSection.Writer.WriteValue("Version", (ushort)7);
                 cpkSection.Writer.WriteValue("Revision", (ushort)2);
-                cpkSection.Writer.WriteValue("Align", (ushort)1);
+                cpkSection.Writer.WriteValue("Align", Align);
                 cpkSection.Writer.WriteValue("Sorted", (ushort)1);
 
                 cpkSection.Writer.WriteValue("CpkMode", (uint)mode);
-                cpkSection.Writer.WriteValue("Tvers", "SonicAudioLib");
+                cpkSection.Writer.WriteValue("Tvers", "SONICAUDIOLIB, DLL1.0.0.0");
                 cpkSection.Writer.WriteValue("Comment", Comment);
 
-                cpkSection.Writer.WriteValue("FileSize", Convert.ToUInt64(2048 + (ulong)vldPool.Length));
+                cpkSection.Writer.WriteValue("FileSize", (ulong)vldPool.Length);
 
                 cpkSection.Writer.WriteEndRow();
                 cpkSection.Writer.WriteEndTable();
             }
 
-            while ((destination.Position % 2042) != 0)
-            {
-                destination.WriteByte(0);
-            }
-
+            EndianStream.Pad(destination, 2042);
             EndianStream.WriteCString(destination, "(c)CRI", 6);
 
             vldPool.Write(destination);
+        }
+
+        public CriCpkEntry GetById(uint id)
+        {
+            return entries.FirstOrDefault(entry => (entry.Id == id));
+        }
+
+        public CriCpkEntry GetByName(string name)
+        {
+            return entries.FirstOrDefault(entry => (entry.Name == name));
+        }
+
+        public CriCpkEntry GetByPath(string path)
+        {
+            return entries.FirstOrDefault(entry => ((entry.DirectoryName + "/" + entry.Name) == path));
         }
 
         private DateTime DateTimeFromCpkDateTime(ulong dateTime)

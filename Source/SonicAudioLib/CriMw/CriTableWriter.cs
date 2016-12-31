@@ -2,8 +2,8 @@
 using System.IO;
 using System.Text;
 using System.ComponentModel;
+using System.Collections.Generic;
 
-using SonicAudioLib.Collections;
 using SonicAudioLib.IO;
 using SonicAudioLib.Module;
 
@@ -22,7 +22,7 @@ namespace SonicAudioLib.CriMw
         }
 
         private CriTableWriterSettings settings;
-        private OrderedDictionary<string, CriTableField> fields;
+        private List<CriTableField> fields;
         private Stream destination;
         private CriTableHeader header;
         private VldPool vldPool;
@@ -101,18 +101,12 @@ namespace SonicAudioLib.CriMw
             stringPool.Write(destination);
             header.StringPoolPosition = (uint)stringPool.Position - headerPosition;
 
-            while ((destination.Position % vldPool.Align) != 0)
-            {
-                destination.WriteByte(0);
-            }
+            EndianStream.Pad(destination, vldPool.Align);
 
             vldPool.Write(destination);
             header.DataPoolPosition = (uint)vldPool.Position - headerPosition;
 
-            while ((destination.Position % vldPool.Align) != 0)
-            {
-                destination.WriteByte(0);
-            }
+            EndianStream.Pad(destination, vldPool.Align);
 
             long previousPosition = destination.Position;
 
@@ -183,7 +177,7 @@ namespace SonicAudioLib.CriMw
                 WriteValue(defaultValue);
             }
 
-            fields.Add(fieldName, field);
+            fields.Add(field);
             header.NumberOfFields++;
         }
 
@@ -214,7 +208,7 @@ namespace SonicAudioLib.CriMw
                 WriteString(field.Name);
             }
 
-            fields.Add(fieldName, field);
+            fields.Add(field);
             header.NumberOfFields++;
         }
 
@@ -270,7 +264,7 @@ namespace SonicAudioLib.CriMw
 
         public void WriteValue(string fieldName, object rowValue)
         {
-            WriteValue(fields.IndexOf(fieldName), rowValue);
+            WriteValue(fields.FindIndex(field => field.Name == fieldName), rowValue);
         }
 
         private void GoToValue(int fieldIndex)
@@ -601,7 +595,7 @@ namespace SonicAudioLib.CriMw
             this.settings = settings;
 
             header = new CriTableHeader();
-            fields = new OrderedDictionary<string, CriTableField>();
+            fields = new List<CriTableField>();
             stringPool = new StringPool(settings.EncodingType);
             vldPool = new VldPool(settings.Align);
         }

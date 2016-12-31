@@ -68,7 +68,7 @@ namespace SonicAudioLib.CriMw
 
             foreach (CriField criField in fields)
             {
-                criRow.Records.Add(criField, criField.DefaultValue);
+                criRow.Records.Add(new CriRowRecord { Field = criField, Value = criField.DefaultValue });
             }
 
             return criRow;
@@ -115,6 +115,11 @@ namespace SonicAudioLib.CriMw
                         }
                     }
 
+                    else if (rows.Count == 0)
+                    {
+                        useDefaultValue = true;
+                    }
+
                     if (useDefaultValue)
                     {
                         writer.WriteField(criField.FieldName, criField.FieldType, defaultValue);
@@ -134,12 +139,6 @@ namespace SonicAudioLib.CriMw
 
                 writer.WriteEndTable();
             }
-        }
-
-        public override long CalculateLength()
-        {
-            // TODO
-            return base.CalculateLength();
         }
 
         public CriTable()

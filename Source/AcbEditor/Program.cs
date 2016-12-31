@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Windows.Forms;
+using System.Text;
 
 using SonicAudioLib.CriMw;
 using SonicAudioLib.IO;
@@ -18,9 +19,10 @@ namespace AcbEditor
                 Console.ReadLine();
                 return;
             }
-
+#if !DEBUG
             try
             {
+#endif
                 if (args[0].EndsWith(".acb"))
                 {
                     string baseDirectory = Path.GetDirectoryName(args[0]);
@@ -36,35 +38,51 @@ namespace AcbEditor
                         CriAfs2Archive afs2Archive = new CriAfs2Archive();
                         CriAfs2Archive extAfs2Archive = new CriAfs2Archive();
 
+                        CriCpkArchive cpkArchive = new CriCpkArchive();
+                        CriCpkArchive extCpkArchive = null;
+
+                        extAfs2ArchivePath = outputDirectoryPath + ".awb";
+                        bool found = File.Exists(extAfs2ArchivePath);
+
+                        if (!found)
+                        {
+                            extAfs2ArchivePath = outputDirectoryPath + "_streamfiles.awb";
+                            found = File.Exists(extAfs2ArchivePath);
+                        }
+
+                        if (!found)
+                        {
+                            extAfs2ArchivePath = outputDirectoryPath + "_STR.awb";
+                            found = File.Exists(extAfs2ArchivePath);
+                        }
+
+                        bool cpkMode = true;
+
                         if (acbReader.GetLength("AwbFile") > 0)
                         {
                             using (Substream afs2Stream = acbReader.GetSubstream("AwbFile"))
                             {
-                                afs2Archive.Read(afs2Stream);
+                                cpkMode = !CheckIfAfs2(afs2Stream);
+
+                                if (cpkMode)
+                                {
+                                    cpkArchive.Read(afs2Stream);
+                                }
+
+                                else
+                                {
+                                    afs2Archive.Read(afs2Stream);
+                                }
                             }
                         }
 
                         if (acbReader.GetLength("StreamAwbAfs2Header") > 0)
                         {
+                            cpkMode = false;
+
                             using (Substream extAfs2Stream = acbReader.GetSubstream("StreamAwbAfs2Header"))
                             {
                                 extAfs2Archive.Read(extAfs2Stream);
-                            }
-
-                            // cheatingggggg
-                            extAfs2ArchivePath = outputDirectoryPath + ".awb";
-                            bool found = File.Exists(extAfs2ArchivePath);
-
-                            if (!found)
-                            {
-                                extAfs2ArchivePath = outputDirectoryPath + "_streamfiles.awb";
-                                found = File.Exists(extAfs2ArchivePath);
-                            }
-
-                            if (!found)
-                            {
-                                extAfs2ArchivePath = outputDirectoryPath + "_STR.awb";
-                                found = File.Exists(extAfs2ArchivePath);
                             }
 
                             if (!found)
@@ -78,11 +96,11 @@ namespace AcbEditor
                         {
                             while (waveformReader.Read())
                             {
-                                ushort index = waveformReader.GetUInt16("Id");
+                                ushort id = waveformReader.GetUInt16("Id");
                                 byte encodeType = waveformReader.GetByte("EncodeType");
                                 bool streaming = waveformReader.GetBoolean("Streaming");
 
-                                string outputName = index.ToString("D5");
+                                string outputName = id.ToString("D5");
                                 if (streaming)
                                 {
                                     outputName += "_streaming";
@@ -91,11 +109,32 @@ namespace AcbEditor
                                 outputName += GetExtension(encodeType);
                                 outputName = Path.Combine(outputDirectoryPath, outputName);
 
-                                Console.WriteLine("Extracting {0} file with index {1}...", GetExtension(encodeType).ToUpper(), index);
+                                Console.WriteLine("Extracting {0} file with id {1}...", GetExtension(encodeType).ToUpper(), id);
 
                                 if (streaming)
                                 {
-                                    CriAfs2Entry afs2Entry = extAfs2Archive.GetByCueIndex(index);
+                                    if (!found)
+                                    {
+                                        throw new Exception("Cannot find the external .AWB file for this .ACB file. Please ensure that the external .AWB file is stored in the directory where the .ACB file is.");
+                                    }
+
+                                    else if (extCpkArchive == null && cpkMode)
+                                    {
+                                        extCpkArchive = new CriCpkArchive();
+                                        extCpkArchive.Load(extAfs2ArchivePath);
+                                    }
+
+                                    EntryBase afs2Entry = null;
+
+                                    if (cpkMode)
+                                    {
+                                        afs2Entry = extCpkArchive.GetById(id);
+                                    }
+
+                                    else
+                                    {
+                                        afs2Entry = extAfs2Archive.GetById(id);
+                                    }
 
                                     using (Stream extAfs2Stream = File.OpenRead(extAfs2ArchivePath))
                                     using (Stream afs2EntryStream = afs2Entry.Open(extAfs2Stream))
@@ -107,10 +146,20 @@ namespace AcbEditor
 
                                 else
                                 {
-                                    CriAfs2Entry entry = afs2Archive.GetByCueIndex(index);
+                                    EntryBase afs2Entry = null;
+
+                                    if (cpkMode)
+                                    {
+                                        afs2Entry = cpkArchive.GetById(id);
+                                    }
+
+                                    else
+                                    {
+                                        afs2Entry = afs2Archive.GetById(id);
+                                    }
 
                                     using (Substream afs2Stream = acbReader.GetSubstream("AwbFile"))
-                                    using (Stream afs2EntryStream = entry.Open(afs2Stream))
+                                    using (Stream afs2EntryStream = afs2Entry.Open(afs2Stream))
                                     using (Stream afs2EntryDestination = File.Create(outputName))
                                     {
                                         afs2EntryStream.CopyTo(afs2EntryDestination);
@@ -151,15 +200,26 @@ namespace AcbEditor
                     CriAfs2Archive afs2Archive = new CriAfs2Archive();
                     CriAfs2Archive extAfs2Archive = new CriAfs2Archive();
 
+                    CriCpkArchive cpkArchive = new CriCpkArchive();
+                    CriCpkArchive extCpkArchive = new CriCpkArchive();
+                    cpkArchive.Mode = extCpkArchive.Mode = CriCpkMode.Id;
+
+                    bool cpkMode = true;
+
+                    byte[] awbFile = (byte[])acbFile.Rows[0]["AwbFile"];
+                    byte[] streamAwbAfs2Header = (byte[])acbFile.Rows[0]["StreamAwbAfs2Header"];
+
+                    cpkMode = !(awbFile != null && awbFile.Length >= 4 && Encoding.ASCII.GetString(awbFile, 0, 4) == "AFS2") && (streamAwbAfs2Header == null || streamAwbAfs2Header.Length == 0);
+
                     using (CriTableReader reader = CriTableReader.Create((byte[])acbFile.Rows[0]["WaveformTable"]))
                     {
                         while (reader.Read())
                         {
-                            ushort index = reader.GetUInt16("Id");
+                            ushort id = reader.GetUInt16("Id");
                             byte encodeType = reader.GetByte("EncodeType");
                             bool streaming = reader.GetBoolean("Streaming");
 
-                            string inputName = index.ToString("D5");
+                            string inputName = id.ToString("D5");
                             if (streaming)
                             {
                                 inputName += "_streaming";
@@ -170,23 +230,43 @@ namespace AcbEditor
 
                             if (!File.Exists(inputName))
                             {
-                                throw new Exception($"Cannot find audio file with index {index} for replacement.\nPath attempt: {inputName}");
+                                throw new Exception($"Cannot find audio file with id {id} for replacement.\nPath attempt: {inputName}");
                             }
-
-                            CriAfs2Entry entry = new CriAfs2Entry();
-                            entry.CueIndex = index;
-                            entry.FilePath = new FileInfo(inputName);
 
                             Console.WriteLine("Adding {0}...", Path.GetFileName(inputName));
 
-                            if (streaming)
+                            if (cpkMode)
                             {
-                                extAfs2Archive.Add(entry);
+                                CriCpkEntry entry = new CriCpkEntry();
+                                entry.FilePath = new FileInfo(inputName);
+                                entry.Id = id;
+
+                                if (streaming)
+                                {
+                                    extCpkArchive.Add(entry);
+                                }
+
+                                else
+                                {
+                                    cpkArchive.Add(entry);
+                                }
                             }
 
                             else
                             {
-                                afs2Archive.Add(entry);
+                                CriAfs2Entry entry = new CriAfs2Entry();
+                                entry.FilePath = new FileInfo(inputName);
+                                entry.Id = id;
+
+                                if (streaming)
+                                {
+                                    extAfs2Archive.Add(entry);
+                                }
+
+                                else
+                                {
+                                    afs2Archive.Add(entry);
+                                }
                             }
                         }
                     }
@@ -194,43 +274,49 @@ namespace AcbEditor
                     acbFile.Rows[0]["AwbFile"] = null;
                     acbFile.Rows[0]["StreamAwbAfs2Header"] = null;
 
-                    if (afs2Archive.Count > 0)
+                    if (afs2Archive.Count > 0 || cpkArchive.Count > 0)
                     {
-                        afs2Archive.Order();
-
                         Console.WriteLine("Saving internal AWB...");
-                        acbFile.Rows[0]["AwbFile"] = afs2Archive.Save();
+                        acbFile.Rows[0]["AwbFile"] = cpkMode ? cpkArchive.Save() : afs2Archive.Save();
                     }
 
-                    if (extAfs2Archive.Count > 0)
+                    if (extAfs2Archive.Count > 0 || extCpkArchive.Count > 0)
                     {
-                        extAfs2Archive.Order();
-
                         Console.WriteLine("Saving external AWB...");
-                        extAfs2Archive.Save(awbPath);
-
-                        byte[] afs2Header = new byte[16 +
-                            (extAfs2Archive.Count * extAfs2Archive.CueIndexFieldLength) +
-                            (extAfs2Archive.Count * extAfs2Archive.PositionFieldLength) +
-                            extAfs2Archive.PositionFieldLength];
-
-                        using (FileStream fileStream = File.OpenRead(awbPath))
+                        if (cpkMode)
                         {
-                            fileStream.Read(afs2Header, 0, afs2Header.Length);
+                            extCpkArchive.Save(awbPath);
                         }
 
-                        acbFile.Rows[0]["StreamAwbAfs2Header"] = afs2Header;
+                        else
+                        {
+                            extAfs2Archive.Save(awbPath);
+
+                            byte[] afs2Header = new byte[16 +
+                                (extAfs2Archive.Count * extAfs2Archive.IdFieldLength) +
+                                (extAfs2Archive.Count * extAfs2Archive.PositionFieldLength) +
+                                extAfs2Archive.PositionFieldLength];
+
+                            using (FileStream fileStream = File.OpenRead(awbPath))
+                            {
+                                fileStream.Read(afs2Header, 0, afs2Header.Length);
+                            }
+
+                            acbFile.Rows[0]["StreamAwbAfs2Header"] = afs2Header;
+                        }
                     }
 
                     acbFile.WriterSettings = CriTableWriterSettings.Adx2Settings;
                     acbFile.Save(acbPath);
                 }
+#if !DEBUG
             }
 
             catch (Exception exception)
             {
                 MessageBox.Show($"{exception.Message}", "ACB Editor", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+#endif
         }
 
         static string GetExtension(byte encodeType)
@@ -256,17 +342,28 @@ namespace AcbEditor
                 case 8:
                     return ".at3";
                 case 9:
-                    return ".3dsadpcm";
+                    return ".bcwav";
                 case 18:
                 case 11:
                     return ".at9";
                 case 12:
                     return ".xma";
                 case 13:
-                    return ".wiiuadpcm";
+                    return ".dsp";
                 default:
                     return ".bin";
             }
+        }
+
+        static bool CheckIfAfs2(Stream source)
+        {
+            long oldPosition = source.Position;
+            bool result = false;
+
+            result = EndianStream.ReadCString(source, 4) == "AFS2";
+            source.Seek(oldPosition, SeekOrigin.Begin);
+
+            return result;
         }
     }
 }

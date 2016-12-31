@@ -11,7 +11,7 @@ namespace SonicAudioLib.Archive
 {
     public class HeroesPacEntry : EntryBase
     {
-        public uint GlobalIndex { get; set; }
+        public uint Id { get; set; }
     }
 
     public class HeroesPacArchive : ArchiveBase<HeroesPacEntry>
@@ -30,7 +30,7 @@ namespace SonicAudioLib.Archive
             {
                 HeroesPacEntry pacEntry = new HeroesPacEntry();
 
-                pacEntry.GlobalIndex = EndianStream.ReadUInt32(source);
+                pacEntry.Id = EndianStream.ReadUInt32(source);
                 pacEntry.Position = vldPoolPosition + EndianStream.ReadUInt32(source);
 
                 if (previousEntry != null)
@@ -74,7 +74,7 @@ namespace SonicAudioLib.Archive
             {
                 uint entryPosition = (uint)vldPool.Put(pacEntry.FilePath);
 
-                EndianStream.WriteUInt32(destination, pacEntry.GlobalIndex);
+                EndianStream.WriteUInt32(destination, pacEntry.Id);
                 EndianStream.WriteUInt32(destination, entryPosition);
 
                 while ((destination.Position % 16) != 0)

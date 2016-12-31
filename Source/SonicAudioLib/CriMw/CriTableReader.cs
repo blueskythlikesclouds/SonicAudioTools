@@ -1,7 +1,7 @@
-﻿using SonicAudioLib.Collections;
-using SonicAudioLib.IO;
+﻿using SonicAudioLib.IO;
 using System;
 using System.IO;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -9,7 +9,7 @@ namespace SonicAudioLib.CriMw
 {
     public class CriTableReader : IDisposable
     {
-        private OrderedDictionary<string, CriTableField> fields;
+        private List<CriTableField> fields;
         private Stream source;
         private CriTableHeader header;
         private int rowIndex = -1;
@@ -142,7 +142,7 @@ namespace SonicAudioLib.CriMw
                     }
                 }
 
-                fields.Add(field.Name, field);
+                fields.Add(field);
             }
         }
 
@@ -158,7 +158,7 @@ namespace SonicAudioLib.CriMw
 
         public Type GetFieldType(string fieldName)
         {
-            return CriField.FieldTypes[(byte)fields[fieldName].Flag & 0x0F];
+            return CriField.FieldTypes[(byte)fields[GetFieldIndex(fieldName)].Flag & 0x0F];
         }
 
         public object GetFieldValue(int fieldIndex)
@@ -168,7 +168,7 @@ namespace SonicAudioLib.CriMw
 
         internal CriFieldFlag GetFieldFlag(string fieldName)
         {
-            return fields[fieldName].Flag;
+            return fields[GetFieldIndex(fieldName)].Flag;
         }
 
         internal CriFieldFlag GetFieldFlag(int fieldIndex)
@@ -178,7 +178,7 @@ namespace SonicAudioLib.CriMw
 
         public object GetFieldValue(string fieldName)
         {
-            return fields[fieldName].Value;
+            return fields[GetFieldIndex(fieldName)].Value;
         }
 
         public CriField GetField(int fieldIndex)
@@ -189,6 +189,11 @@ namespace SonicAudioLib.CriMw
         public CriField GetField(string fieldName)
         {
             return new CriField(fieldName, GetFieldType(fieldName), GetFieldValue(fieldName));
+        }
+
+        public int GetFieldIndex(string fieldName)
+        {
+            return fields.FindIndex(field => field.Name == fieldName);
         }
         
         private void GoToValue(int fieldIndex)
@@ -295,7 +300,7 @@ namespace SonicAudioLib.CriMw
 
         public object GetValue(string fieldName)
         {
-            return GetValue(fields.IndexOf(fieldName));
+            return GetValue(GetFieldIndex(fieldName));
         }
 
         public T GetValue<T>(int fieldIndex)
@@ -435,7 +440,7 @@ namespace SonicAudioLib.CriMw
 
         public byte[] GetData(string fieldName)
         {
-            return GetData(fields.IndexOf(fieldName));
+            return GetData(GetFieldIndex(fieldName));
         }
 
         public CriTableReader GetCriTableReader(string fieldName)
@@ -470,7 +475,7 @@ namespace SonicAudioLib.CriMw
 
         public uint GetLength(string fieldName)
         {
-            return GetLength(fields.IndexOf(fieldName));
+            return GetLength(GetFieldIndex(fieldName));
         }
 
         public uint GetPosition(int fieldIndex)
@@ -495,7 +500,7 @@ namespace SonicAudioLib.CriMw
 
         public uint GetPosition(string fieldName)
         {
-            return GetPosition(fields.IndexOf(fieldName));
+            return GetPosition(GetFieldIndex(fieldName));
         }
         
         public bool GetBoolean(int fieldIndex)
@@ -582,12 +587,12 @@ namespace SonicAudioLib.CriMw
 
         private string ReadString()
         {
-            int stringPosition = ReadInt32();
+            uint stringPosition = ReadUInt32();
 
             long previousPosition = source.Position;
 
             source.Position = headerPosition + header.StringPoolPosition + stringPosition;
-            string strResult = EndianStream.ReadCString(source, Encoding.Default);
+            string strResult = EndianStream.ReadCString(source, Encoding.GetEncoding("shift-jis"));
             source.Position = previousPosition;
 
             if (strResult == "<NULL>" ||
@@ -703,7 +708,7 @@ namespace SonicAudioLib.CriMw
         {
             this.source = source;
             header = new CriTableHeader();
-            fields = new OrderedDictionary<string, CriTableField>();
+            fields = new List<CriTableField>();
             this.leaveOpen = leaveOpen;
 
             ReadTable();
