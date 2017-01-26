@@ -195,6 +195,11 @@ namespace SonicAudioLib.CriMw
         {
             return fields.FindIndex(field => field.Name == fieldName);
         }
+
+        public bool ContainsField(string fieldName)
+        {
+            return fields.Exists(field => field.Name == fieldName);
+        }
         
         private void GoToValue(int fieldIndex)
         {

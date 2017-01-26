@@ -1,32 +1,27 @@
-using System.Collections.Generic;
 using System.IO;
-using SonicAudioLib.CriMw;
 using SonicAudioLib.CriMw.Serialization;
 
-using System;
-using System.Xml.Serialization;
-
-namespace CsbBuilder
+namespace CsbBuilder.Serialization
 {
-    [Serializable]
     [CriSerializable("TBLISC")]
-    public class CriTableAisac
+    public class SerializationAisacTable
     {
-        private string _name = string.Empty;
-        private string _ptname = string.Empty;
-        private byte _type = 0;
-        private byte _rndrng = 0;
+        private string nameField = string.Empty;
+        private string ptnameField = string.Empty;
+        private byte typeField = 0;
+        private byte[] grphField = null;
+        private byte rndrngField = 0;
 
         [CriField("name", 0)]
         public string Name
         {
             get
             {
-                return _name;
+                return nameField;
             }
             set
             {
-                _name = value;
+                nameField = value;
             }
         }
 
@@ -35,11 +30,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _ptname;
+                return ptnameField;
             }
             set
             {
-                _ptname = value;
+                ptnameField = value;
             }
         }
 
@@ -48,29 +43,24 @@ namespace CsbBuilder
         {
             get
             {
-                return _type;
+                return typeField;
             }
             set
             {
-                _type = value;
+                typeField = value;
             }
         }
 
-        [CriIgnore]
-        public List<CriTableAisacGraph> GraphList { get; set; }
-        
-        [XmlIgnore]
         [CriField("grph", 3)]
         public byte[] Graph
         {
             get
             {
-                return CriTableSerializer.Serialize(GraphList, CriTableWriterSettings.AdxSettings);
+                return grphField;
             }
-
             set
             {
-                GraphList = CriTableSerializer.Deserialize<CriTableAisacGraph>(value);
+                grphField = value;
             }
         }
 
@@ -79,11 +69,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _rndrng;
+                return rndrngField;
             }
             set
             {
-                _rndrng = value;
+                rndrngField = value;
             }
         }
     }

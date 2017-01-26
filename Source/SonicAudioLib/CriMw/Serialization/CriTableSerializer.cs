@@ -163,7 +163,7 @@ namespace SonicAudioLib.CriMw.Serialization
 
                 if (defaultValue is bool)
                 {
-                    defaultValue = (bool)defaultValue == true ? 1 : 0;
+                    defaultValue = ((bool)defaultValue == true) ? (byte)1 : (byte)0;
                 }
 
                 else if (defaultValue is Enum)
@@ -199,7 +199,7 @@ namespace SonicAudioLib.CriMw.Serialization
 
                         if (value is bool)
                         {
-                            value = (bool)value == true ? 1 : 0;
+                            value = ((bool)value == true) ? (byte)1 : (byte)0;
                         }
 
                         else if (value is Enum)
@@ -236,6 +236,11 @@ namespace SonicAudioLib.CriMw.Serialization
 
         public static ArrayList Deserialize(byte[] sourceByteArray, Type type)
         {
+            if (sourceByteArray == null || sourceByteArray.Length == 0)
+            {
+                return new ArrayList();
+            }
+
             using (MemoryStream source = new MemoryStream(sourceByteArray))
             {
                 return Deserialize(source, type);
@@ -244,6 +249,11 @@ namespace SonicAudioLib.CriMw.Serialization
 
         public static ArrayList Deserialize(string sourceFileName, Type type)
         {
+            if (!File.Exists(sourceFileName))
+            {
+                return new ArrayList();
+            }
+
             using (Stream source = File.OpenRead(sourceFileName))
             {
                 return Deserialize(source, type);
@@ -256,49 +266,55 @@ namespace SonicAudioLib.CriMw.Serialization
 
             using (CriTableReader tableReader = CriTableReader.Create(source, true))
             {
-                PropertyInfo[] propertyInfos = type.GetProperties();
+                IEnumerable<PropertyInfo> propertyInfos = type.GetProperties().Where(property =>
+                {
+                    if (property.GetCustomAttribute<CriIgnoreAttribute>() == null)
+                    {
+                        string fieldName = property.Name;
+
+                        if (property.GetCustomAttribute<CriFieldAttribute>() != null)
+                        {
+                            fieldName = property.GetCustomAttribute<CriFieldAttribute>().FieldName;
+                        }
+
+                        return tableReader.ContainsField(fieldName);
+                    }
+
+                    return false;
+                });
 
                 while (tableReader.Read())
                 {
                     object obj = Activator.CreateInstance(type);
 
-                    for (int i = 0; i < tableReader.NumberOfFields; i++)
+                    // I hope this is faster than the old method lol
+                    foreach (PropertyInfo propertyInfo in propertyInfos)
                     {
-                        string fieldName = tableReader.GetFieldName(i);
+                        string fieldName = propertyInfo.Name;
 
-                        foreach (PropertyInfo propertyInfo in propertyInfos)
+                        if (propertyInfo.GetCustomAttribute<CriFieldAttribute>() != null)
                         {
-                            string fieldNameMatch = propertyInfo.Name;
-
-                            CriFieldAttribute fieldAttribute = propertyInfo.GetCustomAttribute<CriFieldAttribute>();
-                            
-                            if (fieldAttribute != null && !string.IsNullOrEmpty(fieldAttribute.FieldName))
-                            {
-                                fieldNameMatch = fieldAttribute.FieldName;
-                            }
-
-                            if (fieldName == fieldNameMatch)
-                            {
-                                object value = tableReader.GetValue(i);
-                                if (propertyInfo.PropertyType == typeof(byte[]) && value is Substream)
-                                {
-                                    value = ((Substream)value).ToArray();
-                                }
-
-                                if (propertyInfo.PropertyType == typeof(bool))
-                                {
-                                    value = (byte)value != 0;
-                                }
-
-                                else if (propertyInfo.PropertyType.IsEnum)
-                                {
-                                    value = Enum.ToObject(propertyInfo.PropertyType, value);
-                                }
-
-                                propertyInfo.SetValue(obj, value);
-                                break;
-                            }
+                            fieldName = propertyInfo.GetCustomAttribute<CriFieldAttribute>().FieldName;
                         }
+
+                        object value = tableReader.GetValue(fieldName);
+
+                        if (value is Substream)
+                        {
+                            value = ((Substream)value).ToArray();
+                        }
+
+                        else if (value is byte && propertyInfo.PropertyType == typeof(bool))
+                        {
+                            value = (byte)value == 1;
+                        }
+
+                        else if (propertyInfo.PropertyType.IsEnum)
+                        {
+                            value = Convert.ChangeType(value, Enum.GetUnderlyingType(propertyInfo.PropertyType));
+                        }
+
+                        propertyInfo.SetValue(obj, value);
                     }
 
                     arrayList.Add(obj);

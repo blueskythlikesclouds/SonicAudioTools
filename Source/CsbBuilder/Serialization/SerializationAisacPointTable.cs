@@ -1,28 +1,24 @@
 using System.IO;
 using SonicAudioLib.CriMw.Serialization;
 
-using System;
-using System.Xml.Serialization;
-
-namespace CsbBuilder
+namespace CsbBuilder.Serialization
 {
-    [Serializable]
     [CriSerializable("TBLIPT")]
-    public class CriTableAisacPoint
+    public class SerializationAisacPointTable
     {
-        private ushort _in = 0;
-        private ushort _out = 0;
+        private ushort inField = 0;
+        private ushort outField = 0;
 
         [CriField("in", 0)]
         public ushort In
         {
             get
             {
-                return _in;
+                return inField;
             }
             set
             {
-                _in = value;
+                inField = value;
             }
         }
 
@@ -31,11 +27,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _out;
+                return outField;
             }
             set
             {
-                _out = value;
+                outField = value;
             }
         }
     }

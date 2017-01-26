@@ -1,222 +1,150 @@
-using System.Collections.Generic;
 using System.IO;
 using SonicAudioLib.CriMw.Serialization;
 
-using System;
-using System.Linq;
-using System.Xml.Serialization;
-
-namespace CsbBuilder
+namespace CsbBuilder.Serialization
 {
-    [Serializable]
     [CriSerializable("TBLSYN")]
-    public class CriTableSynth
+    public class SerializationSynthTable
     {
-        public enum EnumSynthType : byte
-        {
-            Waveform = 0,
-            Polyphonic = 1,
-            Random = 3,
-        };
-
-        private string _synname = string.Empty;
-        private EnumSynthType _syntype = EnumSynthType.Waveform;
-        private EnumSynthType _cmplxtype = EnumSynthType.Waveform;
-        private string _lnkname = string.Empty;
-        private string _issetname = string.Empty;
-        private short _volume = 1000;
-        private short _pitch = 0;
-        private uint _dlytim = 0;
-        private byte _s_cntrl = 0;
-        private ushort _eg_dly = 0;
-        private ushort _eg_atk = 0;
-        private ushort _eg_hld = 0;
-        private ushort _eg_dcy = 0;
-        private ushort _eg_rel = 0;
-        private ushort _eg_sus = 1000;
-        private byte _f_type = 0;
-        private ushort _f_cof1 = 0;
-        private ushort _f_cof2 = 0;
-        private ushort _f_reso = 0;
-        private byte _f_roff = 0;
-        private string _dryoname = string.Empty;
-        private string _mtxrtr = string.Empty;
-        private ushort _dry0 = 0;
-        private ushort _dry1 = 0;
-        private ushort _dry2 = 0;
-        private ushort _dry3 = 0;
-        private ushort _dry4 = 0;
-        private ushort _dry5 = 0;
-        private ushort _dry6 = 0;
-        private ushort _dry7 = 0;
-        private string _wetoname = string.Empty;
-        private ushort _wet0 = 0;
-        private ushort _wet1 = 0;
-        private ushort _wet2 = 0;
-        private ushort _wet3 = 0;
-        private ushort _wet4 = 0;
-        private ushort _wet5 = 0;
-        private ushort _wet6 = 0;
-        private ushort _wet7 = 0;
-        private string _wcnct0 = string.Empty;
-        private string _wcnct1 = string.Empty;
-        private string _wcnct2 = string.Empty;
-        private string _wcnct3 = string.Empty;
-        private string _wcnct4 = string.Empty;
-        private string _wcnct5 = string.Empty;
-        private string _wcnct6 = string.Empty;
-        private string _wcnct7 = string.Empty;
-        private string _vl_gname = string.Empty;
-        private byte _vl_type = 0;
-        private byte _vl_prio = 0;
-        private ushort _vl_phtime = 0;
-        private sbyte _vl_pcdlt = 0;
-        private short _p3d_vo = 0;
-        private short _p3d_vg = 1000;
-        private short _p3d_ao = 0;
-        private short _p3d_ag = 1000;
-        private short _p3d_ido = 0;
-        private short _p3d_idg = 1000;
-        private byte _dry0g = 255;
-        private byte _dry1g = 255;
-        private byte _dry2g = 255;
-        private byte _dry3g = 255;
-        private byte _dry4g = 255;
-        private byte _dry5g = 255;
-        private byte _dry6g = 255;
-        private byte _dry7g = 255;
-        private byte _wet0g = 255;
-        private byte _wet1g = 255;
-        private byte _wet2g = 255;
-        private byte _wet3g = 255;
-        private byte _wet4g = 255;
-        private byte _wet5g = 255;
-        private byte _wet6g = 255;
-        private byte _wet7g = 255;
-        private byte _f1_type = 0;
-        private ushort _f1_cofo = 0;
-        private ushort _f1_cofg = 0;
-        private ushort _f1_resoo = 0;
-        private ushort _f1_resog = 0;
-        private byte _f2_type = 0;
-        private ushort _f2_coflo = 0;
-        private ushort _f2_coflg = 1000;
-        private ushort _f2_cofho = 0;
-        private ushort _f2_cofhg = 1000;
-        private byte _probability = 100;
-        private byte _n_lmt_children = 0;
-        private byte _repeat = 0;
-        private uint _combo_time = 0;
-        private byte _combo_loop_back = 0;
+        private string synnameField = string.Empty;
+        private byte syntypeField = 0;
+        private byte cmplxtypeField = 0;
+        private string lnknameField = string.Empty;
+        private string issetnameField = string.Empty;
+        private short volumeField = 1000;
+        private short pitchField = 0;
+        private uint dlytimField = 0;
+        private byte s_cntrlField = 0;
+        private ushort eg_dlyField = 0;
+        private ushort eg_atkField = 0;
+        private ushort eg_hldField = 0;
+        private ushort eg_dcyField = 0;
+        private ushort eg_relField = 0;
+        private ushort eg_susField = 1000;
+        private byte f_typeField = 0;
+        private ushort f_cof1Field = 0;
+        private ushort f_cof2Field = 0;
+        private ushort f_resoField = 0;
+        private byte f_roffField = 0;
+        private string dryonameField = string.Empty;
+        private string mtxrtrField = string.Empty;
+        private ushort dry0Field = 0;
+        private ushort dry1Field = 0;
+        private ushort dry2Field = 0;
+        private ushort dry3Field = 0;
+        private ushort dry4Field = 0;
+        private ushort dry5Field = 0;
+        private ushort dry6Field = 0;
+        private ushort dry7Field = 0;
+        private string wetonameField = string.Empty;
+        private ushort wet0Field = 0;
+        private ushort wet1Field = 0;
+        private ushort wet2Field = 0;
+        private ushort wet3Field = 0;
+        private ushort wet4Field = 0;
+        private ushort wet5Field = 0;
+        private ushort wet6Field = 0;
+        private ushort wet7Field = 0;
+        private string wcnct0Field = string.Empty;
+        private string wcnct1Field = string.Empty;
+        private string wcnct2Field = string.Empty;
+        private string wcnct3Field = string.Empty;
+        private string wcnct4Field = string.Empty;
+        private string wcnct5Field = string.Empty;
+        private string wcnct6Field = string.Empty;
+        private string wcnct7Field = string.Empty;
+        private string vl_gnameField = string.Empty;
+        private byte vl_typeField = 0;
+        private byte vl_prioField = 0;
+        private ushort vl_phtimeField = 0;
+        private sbyte vl_pcdltField = 0;
+        private short p3d_voField = 0;
+        private short p3d_vgField = 1000;
+        private short p3d_aoField = 0;
+        private short p3d_agField = 1000;
+        private short p3d_idoField = 0;
+        private short p3d_idgField = 1000;
+        private byte dry0gField = 255;
+        private byte dry1gField = 255;
+        private byte dry2gField = 255;
+        private byte dry3gField = 255;
+        private byte dry4gField = 255;
+        private byte dry5gField = 255;
+        private byte dry6gField = 255;
+        private byte dry7gField = 255;
+        private byte wet0gField = 255;
+        private byte wet1gField = 255;
+        private byte wet2gField = 255;
+        private byte wet3gField = 255;
+        private byte wet4gField = 255;
+        private byte wet5gField = 255;
+        private byte wet6gField = 255;
+        private byte wet7gField = 255;
+        private byte f1_typeField = 0;
+        private ushort f1_cofoField = 0;
+        private ushort f1_cofgField = 0;
+        private ushort f1_resooField = 0;
+        private ushort f1_resogField = 0;
+        private byte f2_typeField = 0;
+        private ushort f2_cofloField = 0;
+        private ushort f2_coflgField = 1000;
+        private ushort f2_cofhoField = 0;
+        private ushort f2_cofhgField = 1000;
+        private byte probabilityField = 100;
+        private byte n_lmt_childrenField = 0;
+        private byte repeatField = 0;
+        private uint combo_timeField = 0;
+        private byte combo_loop_backField = 0;
 
         [CriField("synname", 0)]
         public string SynthName
         {
             get
             {
-                return _synname;
+                return synnameField;
             }
             set
             {
-                _synname = value;
+                synnameField = value;
             }
         }
 
         [CriField("syntype", 1)]
-        public EnumSynthType SynthType
+        public byte SynthType
         {
             get
             {
-                return _syntype;
+                return syntypeField;
             }
             set
             {
-                _syntype = value;
+                syntypeField = value;
             }
         }
 
         [CriField("cmplxtype", 2)]
-        public EnumSynthType ComplexType
+        public byte ComplexType
         {
             get
             {
-                return _cmplxtype;
+                return cmplxtypeField;
             }
             set
             {
-                _cmplxtype = value;
+                cmplxtypeField = value;
             }
         }
 
-        [CriIgnore]
-        public List<string> LinkNameList { get; set; }
-
-        [CriIgnore]
-        public List<string> AisacSetNameList { get; set; }
-
-        [XmlIgnore]
         [CriField("lnkname", 3)]
         public string LinkName
         {
             get
             {
-                if (_syntype == EnumSynthType.Waveform && LinkNameList.Count > 0)
-                {
-                    return LinkNameList[0];
-                }
-
-                string result = string.Empty;
-                foreach (string linkName in LinkNameList)
-                {
-                    result += linkName + (char)0x0A;
-                }
-
-                return result;
-            }
-
-            set
-            {
-                if (!string.IsNullOrEmpty(value))
-                {
-                    LinkNameList = value.Split(new char[] { (char)0x0A }, StringSplitOptions.RemoveEmptyEntries).ToList();
-                }
-            }
-        }
-
-        [XmlIgnore]
-        [CriField("issetname", 4)]
-        public string AisacSetName
-        {
-            get
-            {
-                string result = string.Empty;
-                foreach (string aisacSetName in AisacSetNameList)
-                {
-                    result += aisacSetName + (char)0x0A;
-                }
-
-                return result;
-            }
-
-            set
-            {
-                if (!string.IsNullOrEmpty(value))
-                {
-                    AisacSetNameList = value.Split(new char[] { (char)0x0A }, StringSplitOptions.RemoveEmptyEntries).ToList();
-                }
-            }
-        }
-
-        /*[CriField("lnkname", 3)]
-        public string LinkName
-        {
-            get
-            {
-                return _lnkname;
+                return lnknameField;
             }
             set
             {
-                _lnkname = value;
+                lnknameField = value;
             }
         }
 
@@ -225,24 +153,24 @@ namespace CsbBuilder
         {
             get
             {
-                return _issetname;
+                return issetnameField;
             }
             set
             {
-                _issetname = value;
+                issetnameField = value;
             }
-        }*/
+        }
 
         [CriField("volume", 5)]
         public short Volume
         {
             get
             {
-                return _volume;
+                return volumeField;
             }
             set
             {
-                _volume = value;
+                volumeField = value;
             }
         }
 
@@ -251,11 +179,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _pitch;
+                return pitchField;
             }
             set
             {
-                _pitch = value;
+                pitchField = value;
             }
         }
 
@@ -264,24 +192,24 @@ namespace CsbBuilder
         {
             get
             {
-                return _dlytim;
+                return dlytimField;
             }
             set
             {
-                _dlytim = value;
+                dlytimField = value;
             }
         }
 
         [CriField("s_cntrl", 8)]
-        public byte SoundControl
+        public byte SControl
         {
             get
             {
-                return _s_cntrl;
+                return s_cntrlField;
             }
             set
             {
-                _s_cntrl = value;
+                s_cntrlField = value;
             }
         }
 
@@ -290,11 +218,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _eg_dly;
+                return eg_dlyField;
             }
             set
             {
-                _eg_dly = value;
+                eg_dlyField = value;
             }
         }
 
@@ -303,11 +231,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _eg_atk;
+                return eg_atkField;
             }
             set
             {
-                _eg_atk = value;
+                eg_atkField = value;
             }
         }
 
@@ -316,11 +244,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _eg_hld;
+                return eg_hldField;
             }
             set
             {
-                _eg_hld = value;
+                eg_hldField = value;
             }
         }
 
@@ -329,11 +257,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _eg_dcy;
+                return eg_dcyField;
             }
             set
             {
-                _eg_dcy = value;
+                eg_dcyField = value;
             }
         }
 
@@ -342,11 +270,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _eg_rel;
+                return eg_relField;
             }
             set
             {
-                _eg_rel = value;
+                eg_relField = value;
             }
         }
 
@@ -355,11 +283,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _eg_sus;
+                return eg_susField;
             }
             set
             {
-                _eg_sus = value;
+                eg_susField = value;
             }
         }
 
@@ -368,11 +296,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _f_type;
+                return f_typeField;
             }
             set
             {
-                _f_type = value;
+                f_typeField = value;
             }
         }
 
@@ -381,11 +309,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _f_cof1;
+                return f_cof1Field;
             }
             set
             {
-                _f_cof1 = value;
+                f_cof1Field = value;
             }
         }
 
@@ -394,11 +322,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _f_cof2;
+                return f_cof2Field;
             }
             set
             {
-                _f_cof2 = value;
+                f_cof2Field = value;
             }
         }
 
@@ -407,11 +335,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _f_reso;
+                return f_resoField;
             }
             set
             {
-                _f_reso = value;
+                f_resoField = value;
             }
         }
 
@@ -420,11 +348,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _f_roff;
+                return f_roffField;
             }
             set
             {
-                _f_roff = value;
+                f_roffField = value;
             }
         }
 
@@ -433,11 +361,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _dryoname;
+                return dryonameField;
             }
             set
             {
-                _dryoname = value;
+                dryonameField = value;
             }
         }
 
@@ -446,11 +374,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _mtxrtr;
+                return mtxrtrField;
             }
             set
             {
-                _mtxrtr = value;
+                mtxrtrField = value;
             }
         }
 
@@ -459,11 +387,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _dry0;
+                return dry0Field;
             }
             set
             {
-                _dry0 = value;
+                dry0Field = value;
             }
         }
 
@@ -472,11 +400,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _dry1;
+                return dry1Field;
             }
             set
             {
-                _dry1 = value;
+                dry1Field = value;
             }
         }
 
@@ -485,11 +413,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _dry2;
+                return dry2Field;
             }
             set
             {
-                _dry2 = value;
+                dry2Field = value;
             }
         }
 
@@ -498,11 +426,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _dry3;
+                return dry3Field;
             }
             set
             {
-                _dry3 = value;
+                dry3Field = value;
             }
         }
 
@@ -511,11 +439,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _dry4;
+                return dry4Field;
             }
             set
             {
-                _dry4 = value;
+                dry4Field = value;
             }
         }
 
@@ -524,11 +452,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _dry5;
+                return dry5Field;
             }
             set
             {
-                _dry5 = value;
+                dry5Field = value;
             }
         }
 
@@ -537,11 +465,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _dry6;
+                return dry6Field;
             }
             set
             {
-                _dry6 = value;
+                dry6Field = value;
             }
         }
 
@@ -550,11 +478,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _dry7;
+                return dry7Field;
             }
             set
             {
-                _dry7 = value;
+                dry7Field = value;
             }
         }
 
@@ -563,11 +491,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _wetoname;
+                return wetonameField;
             }
             set
             {
-                _wetoname = value;
+                wetonameField = value;
             }
         }
 
@@ -576,11 +504,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _wet0;
+                return wet0Field;
             }
             set
             {
-                _wet0 = value;
+                wet0Field = value;
             }
         }
 
@@ -589,11 +517,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _wet1;
+                return wet1Field;
             }
             set
             {
-                _wet1 = value;
+                wet1Field = value;
             }
         }
 
@@ -602,11 +530,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _wet2;
+                return wet2Field;
             }
             set
             {
-                _wet2 = value;
+                wet2Field = value;
             }
         }
 
@@ -615,11 +543,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _wet3;
+                return wet3Field;
             }
             set
             {
-                _wet3 = value;
+                wet3Field = value;
             }
         }
 
@@ -628,11 +556,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _wet4;
+                return wet4Field;
             }
             set
             {
-                _wet4 = value;
+                wet4Field = value;
             }
         }
 
@@ -641,11 +569,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _wet5;
+                return wet5Field;
             }
             set
             {
-                _wet5 = value;
+                wet5Field = value;
             }
         }
 
@@ -654,11 +582,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _wet6;
+                return wet6Field;
             }
             set
             {
-                _wet6 = value;
+                wet6Field = value;
             }
         }
 
@@ -667,11 +595,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _wet7;
+                return wet7Field;
             }
             set
             {
-                _wet7 = value;
+                wet7Field = value;
             }
         }
 
@@ -680,11 +608,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _wcnct0;
+                return wcnct0Field;
             }
             set
             {
-                _wcnct0 = value;
+                wcnct0Field = value;
             }
         }
 
@@ -693,11 +621,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _wcnct1;
+                return wcnct1Field;
             }
             set
             {
-                _wcnct1 = value;
+                wcnct1Field = value;
             }
         }
 
@@ -706,11 +634,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _wcnct2;
+                return wcnct2Field;
             }
             set
             {
-                _wcnct2 = value;
+                wcnct2Field = value;
             }
         }
 
@@ -719,11 +647,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _wcnct3;
+                return wcnct3Field;
             }
             set
             {
-                _wcnct3 = value;
+                wcnct3Field = value;
             }
         }
 
@@ -732,11 +660,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _wcnct4;
+                return wcnct4Field;
             }
             set
             {
-                _wcnct4 = value;
+                wcnct4Field = value;
             }
         }
 
@@ -745,11 +673,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _wcnct5;
+                return wcnct5Field;
             }
             set
             {
-                _wcnct5 = value;
+                wcnct5Field = value;
             }
         }
 
@@ -758,11 +686,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _wcnct6;
+                return wcnct6Field;
             }
             set
             {
-                _wcnct6 = value;
+                wcnct6Field = value;
             }
         }
 
@@ -771,11 +699,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _wcnct7;
+                return wcnct7Field;
             }
             set
             {
-                _wcnct7 = value;
+                wcnct7Field = value;
             }
         }
 
@@ -784,11 +712,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _vl_gname;
+                return vl_gnameField;
             }
             set
             {
-                _vl_gname = value;
+                vl_gnameField = value;
             }
         }
 
@@ -797,11 +725,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _vl_type;
+                return vl_typeField;
             }
             set
             {
-                _vl_type = value;
+                vl_typeField = value;
             }
         }
 
@@ -810,11 +738,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _vl_prio;
+                return vl_prioField;
             }
             set
             {
-                _vl_prio = value;
+                vl_prioField = value;
             }
         }
 
@@ -823,11 +751,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _vl_phtime;
+                return vl_phtimeField;
             }
             set
             {
-                _vl_phtime = value;
+                vl_phtimeField = value;
             }
         }
 
@@ -836,11 +764,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _vl_pcdlt;
+                return vl_pcdltField;
             }
             set
             {
-                _vl_pcdlt = value;
+                vl_pcdltField = value;
             }
         }
 
@@ -849,11 +777,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _p3d_vo;
+                return p3d_voField;
             }
             set
             {
-                _p3d_vo = value;
+                p3d_voField = value;
             }
         }
 
@@ -862,11 +790,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _p3d_vg;
+                return p3d_vgField;
             }
             set
             {
-                _p3d_vg = value;
+                p3d_vgField = value;
             }
         }
 
@@ -875,11 +803,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _p3d_ao;
+                return p3d_aoField;
             }
             set
             {
-                _p3d_ao = value;
+                p3d_aoField = value;
             }
         }
 
@@ -888,11 +816,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _p3d_ag;
+                return p3d_agField;
             }
             set
             {
-                _p3d_ag = value;
+                p3d_agField = value;
             }
         }
 
@@ -901,11 +829,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _p3d_ido;
+                return p3d_idoField;
             }
             set
             {
-                _p3d_ido = value;
+                p3d_idoField = value;
             }
         }
 
@@ -914,219 +842,219 @@ namespace CsbBuilder
         {
             get
             {
-                return _p3d_idg;
+                return p3d_idgField;
             }
             set
             {
-                _p3d_idg = value;
+                p3d_idgField = value;
             }
         }
 
         [CriField("dry0g", 58)]
-        public byte Dry0Gain
+        public byte Dry0g
         {
             get
             {
-                return _dry0g;
+                return dry0gField;
             }
             set
             {
-                _dry0g = value;
+                dry0gField = value;
             }
         }
 
         [CriField("dry1g", 59)]
-        public byte Dry1Gain
+        public byte Dry1g
         {
             get
             {
-                return _dry1g;
+                return dry1gField;
             }
             set
             {
-                _dry1g = value;
+                dry1gField = value;
             }
         }
 
         [CriField("dry2g", 60)]
-        public byte Dry2Gain
+        public byte Dry2g
         {
             get
             {
-                return _dry2g;
+                return dry2gField;
             }
             set
             {
-                _dry2g = value;
+                dry2gField = value;
             }
         }
 
         [CriField("dry3g", 61)]
-        public byte Dry3Gain
+        public byte Dry3g
         {
             get
             {
-                return _dry3g;
+                return dry3gField;
             }
             set
             {
-                _dry3g = value;
+                dry3gField = value;
             }
         }
 
         [CriField("dry4g", 62)]
-        public byte Dry4Gain
+        public byte Dry4g
         {
             get
             {
-                return _dry4g;
+                return dry4gField;
             }
             set
             {
-                _dry4g = value;
+                dry4gField = value;
             }
         }
 
         [CriField("dry5g", 63)]
-        public byte Dry5Gain
+        public byte Dry5g
         {
             get
             {
-                return _dry5g;
+                return dry5gField;
             }
             set
             {
-                _dry5g = value;
+                dry5gField = value;
             }
         }
 
         [CriField("dry6g", 64)]
-        public byte Dry6Gain
+        public byte Dry6g
         {
             get
             {
-                return _dry6g;
+                return dry6gField;
             }
             set
             {
-                _dry6g = value;
+                dry6gField = value;
             }
         }
 
         [CriField("dry7g", 65)]
-        public byte Dry7Gain
+        public byte Dry7g
         {
             get
             {
-                return _dry7g;
+                return dry7gField;
             }
             set
             {
-                _dry7g = value;
+                dry7gField = value;
             }
         }
 
         [CriField("wet0g", 66)]
-        public byte Wet0Gain
+        public byte Wet0g
         {
             get
             {
-                return _wet0g;
+                return wet0gField;
             }
             set
             {
-                _wet0g = value;
+                wet0gField = value;
             }
         }
 
         [CriField("wet1g", 67)]
-        public byte Wet1Gain
+        public byte Wet1g
         {
             get
             {
-                return _wet1g;
+                return wet1gField;
             }
             set
             {
-                _wet1g = value;
+                wet1gField = value;
             }
         }
 
         [CriField("wet2g", 68)]
-        public byte Wet2Gain
+        public byte Wet2g
         {
             get
             {
-                return _wet2g;
+                return wet2gField;
             }
             set
             {
-                _wet2g = value;
+                wet2gField = value;
             }
         }
 
         [CriField("wet3g", 69)]
-        public byte Wet3Gain
+        public byte Wet3g
         {
             get
             {
-                return _wet3g;
+                return wet3gField;
             }
             set
             {
-                _wet3g = value;
+                wet3gField = value;
             }
         }
 
         [CriField("wet4g", 70)]
-        public byte Wet4Gain
+        public byte Wet4g
         {
             get
             {
-                return _wet4g;
+                return wet4gField;
             }
             set
             {
-                _wet4g = value;
+                wet4gField = value;
             }
         }
 
         [CriField("wet5g", 71)]
-        public byte Wet5Gain
+        public byte Wet5g
         {
             get
             {
-                return _wet5g;
+                return wet5gField;
             }
             set
             {
-                _wet5g = value;
+                wet5gField = value;
             }
         }
 
         [CriField("wet6g", 72)]
-        public byte Wet6Gain
+        public byte Wet6g
         {
             get
             {
-                return _wet6g;
+                return wet6gField;
             }
             set
             {
-                _wet6g = value;
+                wet6gField = value;
             }
         }
 
         [CriField("wet7g", 73)]
-        public byte Wet7Gain
+        public byte Wet7g
         {
             get
             {
-                return _wet7g;
+                return wet7gField;
             }
             set
             {
-                _wet7g = value;
+                wet7gField = value;
             }
         }
 
@@ -1135,11 +1063,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _f1_type;
+                return f1_typeField;
             }
             set
             {
-                _f1_type = value;
+                f1_typeField = value;
             }
         }
 
@@ -1148,11 +1076,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _f1_cofo;
+                return f1_cofoField;
             }
             set
             {
-                _f1_cofo = value;
+                f1_cofoField = value;
             }
         }
 
@@ -1161,11 +1089,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _f1_cofg;
+                return f1_cofgField;
             }
             set
             {
-                _f1_cofg = value;
+                f1_cofgField = value;
             }
         }
 
@@ -1174,11 +1102,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _f1_resoo;
+                return f1_resooField;
             }
             set
             {
-                _f1_resoo = value;
+                f1_resooField = value;
             }
         }
 
@@ -1187,11 +1115,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _f1_resog;
+                return f1_resogField;
             }
             set
             {
-                _f1_resog = value;
+                f1_resogField = value;
             }
         }
 
@@ -1200,11 +1128,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _f2_type;
+                return f2_typeField;
             }
             set
             {
-                _f2_type = value;
+                f2_typeField = value;
             }
         }
 
@@ -1213,11 +1141,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _f2_coflo;
+                return f2_cofloField;
             }
             set
             {
-                _f2_coflo = value;
+                f2_cofloField = value;
             }
         }
 
@@ -1226,11 +1154,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _f2_coflg;
+                return f2_coflgField;
             }
             set
             {
-                _f2_coflg = value;
+                f2_coflgField = value;
             }
         }
 
@@ -1239,11 +1167,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _f2_cofho;
+                return f2_cofhoField;
             }
             set
             {
-                _f2_cofho = value;
+                f2_cofhoField = value;
             }
         }
 
@@ -1252,11 +1180,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _f2_cofhg;
+                return f2_cofhgField;
             }
             set
             {
-                _f2_cofhg = value;
+                f2_cofhgField = value;
             }
         }
 
@@ -1265,11 +1193,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _probability;
+                return probabilityField;
             }
             set
             {
-                _probability = value;
+                probabilityField = value;
             }
         }
 
@@ -1278,11 +1206,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _n_lmt_children;
+                return n_lmt_childrenField;
             }
             set
             {
-                _n_lmt_children = value;
+                n_lmt_childrenField = value;
             }
         }
 
@@ -1291,11 +1219,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _repeat;
+                return repeatField;
             }
             set
             {
-                _repeat = value;
+                repeatField = value;
             }
         }
 
@@ -1304,11 +1232,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _combo_time;
+                return combo_timeField;
             }
             set
             {
-                _combo_time = value;
+                combo_timeField = value;
             }
         }
 
@@ -1317,11 +1245,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _combo_loop_back;
+                return combo_loop_backField;
             }
             set
             {
-                _combo_loop_back = value;
+                combo_loop_backField = value;
             }
         }
     }

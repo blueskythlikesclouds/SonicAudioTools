@@ -20,47 +20,7 @@ namespace SonicAudioCmd
     {
         static void Main(string[] args)
         {
-            if (args[0].EndsWith(".cpk"))
-            {
-                CriCpkArchive archive = new CriCpkArchive();
-                archive.Load(args[0]);
-                //archive.Print();
-
-                foreach (CriCpkEntry entry in archive)
-                {
-                    using (Stream source = File.OpenRead(args[0]), substream = entry.Open(source))
-                    {
-                        FileInfo fileInfo = new FileInfo(Path.Combine(Path.GetFileNameWithoutExtension(args[0]), entry.DirectoryName != null ? entry.DirectoryName : "", entry.Name != null ? entry.Name : entry.Id.ToString() + ".bin"));
-                        fileInfo.Directory.Create();
-                        using (Stream destination = fileInfo.Create())
-                        {
-                            substream.CopyTo(destination);
-                        }
-                        fileInfo.LastWriteTime = entry.UpdateDateTime;
-                    }
-                }
-            }
-
-            else
-            {
-                CriCpkArchive archive = new CriCpkArchive();
-                archive.Align = 16;
-                archive.Mode = CriCpkMode.Id;
-
-                uint id = 0;
-                foreach (string file in Directory.GetFiles(args[0], "*", SearchOption.AllDirectories))
-                {
-                    CriCpkEntry entry = new CriCpkEntry();
-                    entry.Id = id;
-                    entry.Name = Path.GetFileName(file);
-                    entry.DirectoryName = Path.GetDirectoryName(file.Replace(args[0] + "\\", ""));
-                    entry.FilePath = new FileInfo(file);
-                    archive.Add(entry);
-                    id++;
-                }
-
-                archive.Save(args[0] + ".cpk");
-            }
+            // What are you looking at? There's nothing here. Go away.
         }
     }
 }

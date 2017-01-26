@@ -1,28 +1,24 @@
 using System.IO;
 using SonicAudioLib.CriMw.Serialization;
 
-using System;
-using System.Xml.Serialization;
-
-namespace CsbBuilder
+namespace CsbBuilder.Serialization
 {
-    [Serializable]
     [CriSerializable("TBLVLG")]
-    public class CriTableVoiceLimitGroup
+    public class SerializationVoiceLimitGroupTable
     {
-        private string _vlgname = string.Empty;
-        private uint _vlgnvoice = 0;
+        private string vlgnameField = string.Empty;
+        private uint vlgnvoiceField = 0;
 
         [CriField("vlgname", 0)]
         public string VoiceLimitGroupName
         {
             get
             {
-                return _vlgname;
+                return vlgnameField;
             }
             set
             {
-                _vlgname = value;
+                vlgnameField = value;
             }
         }
 
@@ -31,11 +27,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _vlgnvoice;
+                return vlgnvoiceField;
             }
             set
             {
-                _vlgnvoice = value;
+                vlgnvoiceField = value;
             }
         }
     }

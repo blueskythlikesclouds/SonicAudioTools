@@ -1,28 +1,24 @@
 using System.IO;
 using SonicAudioLib.CriMw.Serialization;
 
-using System;
-using System.Xml.Serialization;
-
-namespace CsbBuilder
+namespace CsbBuilder.Serialization
 {
-    [Serializable]
     [CriSerializable("TBL_INFO")]
-    public class CriTableVersionInfo
+    public class SerializationVersionInfoTable
     {
-        private uint _DataFmtVer = 0x940000;
-        private uint _ExtSize = 0;
+        private uint DataFmtVerField = 0x940000;
+        private uint ExtSizeField = 0;
 
         [CriField("DataFmtVer", 0)]
         public uint DataFormatVersion
         {
             get
             {
-                return _DataFmtVer;
+                return DataFmtVerField;
             }
             set
             {
-                _DataFmtVer = value;
+                DataFmtVerField = value;
             }
         }
 
@@ -31,11 +27,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _ExtSize;
+                return ExtSizeField;
             }
             set
             {
-                _ExtSize = value;
+                ExtSizeField = value;
             }
         }
     }

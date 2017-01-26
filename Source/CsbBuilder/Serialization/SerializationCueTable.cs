@@ -1,31 +1,27 @@
 using System.IO;
 using SonicAudioLib.CriMw.Serialization;
 
-using System;
-using System.Xml.Serialization;
-
-namespace CsbBuilder
+namespace CsbBuilder.Serialization
 {
-    [Serializable]
     [CriSerializable("TBLCUE")]
-    public class CriTableCue
+    public class SerializationCueTable
     {
-        private string _name = string.Empty;
-        private uint _id = 0;
-        private string _synth = string.Empty;
-        private string _udata = string.Empty;
-        private byte _flags = 0;
+        private string nameField = string.Empty;
+        private uint idField = 0;
+        private string synthField = string.Empty;
+        private string udataField = string.Empty;
+        private byte flagsField = 0;
 
         [CriField("name", 0)]
         public string Name
         {
             get
             {
-                return _name;
+                return nameField;
             }
             set
             {
-                _name = value;
+                nameField = value;
             }
         }
 
@@ -34,24 +30,24 @@ namespace CsbBuilder
         {
             get
             {
-                return _id;
+                return idField;
             }
             set
             {
-                _id = value;
+                idField = value;
             }
         }
 
         [CriField("synth", 2)]
-        public string Synth
+        public string SynthPath
         {
             get
             {
-                return _synth;
+                return synthField;
             }
             set
             {
-                _synth = value;
+                synthField = value;
             }
         }
 
@@ -60,11 +56,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _udata;
+                return udataField;
             }
             set
             {
-                _udata = value;
+                udataField = value;
             }
         }
 
@@ -73,11 +69,11 @@ namespace CsbBuilder
         {
             get
             {
-                return _flags;
+                return flagsField;
             }
             set
             {
-                _flags = value;
+                flagsField = value;
             }
         }
     }
