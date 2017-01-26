@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AcbEditor", "Source\AcbEdit
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CsbEditor", "Source\CsbEditor\CsbEditor.csproj", "{91F6B6A6-5D95-4C7A-B22E-A35BD32DB67A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CsbBuilder", "Source\CsbBuilder\CsbBuilder.csproj", "{4CF49665-3DFD-4A5C-B231-B97842F091B9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CsbBuilder", "Source\CsbBuilder\CsbBuilder.csproj", "{70A6A571-23EC-4B2C-A579-1E6812DDC34E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -34,9 +34,10 @@ Global
 		{91F6B6A6-5D95-4C7A-B22E-A35BD32DB67A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{91F6B6A6-5D95-4C7A-B22E-A35BD32DB67A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{91F6B6A6-5D95-4C7A-B22E-A35BD32DB67A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4CF49665-3DFD-4A5C-B231-B97842F091B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4CF49665-3DFD-4A5C-B231-B97842F091B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4CF49665-3DFD-4A5C-B231-B97842F091B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{70A6A571-23EC-4B2C-A579-1E6812DDC34E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{70A6A571-23EC-4B2C-A579-1E6812DDC34E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{70A6A571-23EC-4B2C-A579-1E6812DDC34E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{70A6A571-23EC-4B2C-A579-1E6812DDC34E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

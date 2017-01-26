@@ -4,8 +4,8 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{4CF49665-3DFD-4A5C-B231-B97842F091B9}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{70A6A571-23EC-4B2C-A579-1E6812DDC34E}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CsbBuilder</RootNamespace>
     <AssemblyName>CsbBuilder</AssemblyName>
@@ -32,38 +32,122 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
   <ItemGroup>
+    <Reference Include="NAudio, Version=1.8.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\NAudio.1.8.0\lib\net35\NAudio.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Net.Http" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CriTableAax.cs" />
-    <Compile Include="CriTableAisac.cs" />
-    <Compile Include="CriTableAisacGraph.cs" />
-    <Compile Include="CriTableAisacPoint.cs" />
-    <Compile Include="CriTableCue.cs" />
-    <Compile Include="CriTableCueSheet.cs" />
-    <Compile Include="CriTableSoundElement.cs" />
-    <Compile Include="CriTableSynth.cs" />
-    <Compile Include="CriTableVersionInfo.cs" />
-    <Compile Include="CriTableVoiceLimitGroup.cs" />
+    <Compile Include="BuilderNode\BuilderAisacGraphNode.cs" />
+    <Compile Include="BuilderNode\BuilderAisacNode.cs" />
+    <Compile Include="BuilderNode\BuilderAisacPointNode.cs" />
+    <Compile Include="BuilderNode\BuilderCueNode.cs" />
+    <Compile Include="BuilderNode\BuilderBaseNode.cs" />
+    <Compile Include="BuilderNode\BuilderSoundElementNode.cs" />
+    <Compile Include="BuilderNode\BuilderSynthNode.cs" />
+    <Compile Include="BuilderNode\BuilderVoiceLimitGroupNode.cs" />
+    <Compile Include="Builder\CsbBuilder.cs" />
+    <Compile Include="ExceptionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ExceptionForm.Designer.cs">
+      <DependentUpon>ExceptionForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CreateNewProjectForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CreateNewProjectForm.Designer.cs">
+      <DependentUpon>CreateNewProjectForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Audio\AdxConverter.cs" />
+    <Compile Include="Extensions.cs" />
+    <Compile Include="Importer\CsbImporter.cs" />
+    <Compile Include="SetAudioForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SetAudioForm.Designer.cs">
+      <DependentUpon>SetAudioForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MainForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MainForm.Designer.cs">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
+    <Compile Include="Project\CsbProject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Serialization\SerializationCueSheetTable.cs" />
+    <Compile Include="Serialization\SerializationCueTable.cs" />
+    <Compile Include="Serialization\SerializationAisacGraphTable.cs" />
+    <Compile Include="Serialization\SerializationAisacPointTable.cs" />
+    <Compile Include="Serialization\SerializationAisacTable.cs" />
+    <Compile Include="Serialization\SerializationSoundElementTable.cs" />
+    <Compile Include="Serialization\SerializationSynthTable.cs" />
+    <Compile Include="Serialization\SerializationVoiceLimitGroupTable.cs" />
+    <Compile Include="Serialization\SerializationVersionInfoTable.cs" />
+    <Compile Include="SetReferenceForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SetReferenceForm.Designer.cs">
+      <DependentUpon>SetReferenceForm.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="ExceptionForm.resx">
+      <DependentUpon>ExceptionForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CreateNewProjectForm.resx">
+      <DependentUpon>CreateNewProjectForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SetAudioForm.resx">
+      <DependentUpon>SetAudioForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MainForm.resx">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <EmbeddedResource Include="SetReferenceForm.resx">
+      <DependentUpon>SetReferenceForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\FolderBrowserDialogControl_grey_16x.png" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SonicAudioLib\SonicAudioLib.csproj">
@@ -72,10 +156,70 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
+    <None Include="Resources\ProjectFolderOpen_exp_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Save_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Import_grey_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\SaveAs_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Exit_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\BuildDefinition_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CreateListItem_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Remove_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Remove_thin_10x_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\MergeModule_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Merge_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Reference_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Select_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\SoundFile_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\AudioPlayback_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Stop_grey_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Paste_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Copy_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Folder_grey_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\FolderOpen_exp_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\None_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Template_16x.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

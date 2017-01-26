@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Reflection;
 
 using SonicAudioLib.IO;
 using SonicAudioLib.CriMw;
@@ -63,9 +64,9 @@ namespace SonicAudioLib.Archive
 
             set
             {
-                if (value <= 0)
+                if (align != 1)
                 {
-                    value = 1;
+                    new NotImplementedException("Currently, alignment handling in .CPK files is broken. Always use 1.");
                 }
 
                 align = value;
@@ -93,12 +94,15 @@ namespace SonicAudioLib.Archive
             {
                 reader.Read();
 
-#if DEBUG
-                for (int i = 0; i < reader.NumberOfFields; i++)
+                // The older CPK versions don't have the CpkMode field, and the other stuff. I will add
+                // support for the older versions when someone reports it. I need file examples.
+                ushort version = reader.GetUInt16("Version");
+                ushort revision = reader.GetUInt16("Revision");
+
+                if (version != 7 && revision != 2)
                 {
-                    Console.WriteLine("{0} ({1}): {2}", reader.GetFieldName(i), reader.GetFieldFlag(i), reader.GetValue(i));
+                    throw new Exception($"This CPK file version ({version}.{revision}) isn't supported yet! Please report the error with the file if you want support for this CPK version.");
                 }
-#endif
 
                 mode = (CriCpkMode)reader.GetUInt32("CpkMode");
 
@@ -129,11 +133,7 @@ namespace SonicAudioLib.Archive
                             entry.Position = (long)tocReader.GetUInt64("FileOffset");
                             entry.Id = tocReader.GetUInt32("ID");
                             entry.Comment = tocReader.GetString("UserString");
-
-                            if (entry.Length != tocReader.GetUInt32("ExtractSize"))
-                            {
-                                entry.IsCompressed = true;
-                            }
+                            entry.IsCompressed = entry.Length != tocReader.GetUInt32("ExtractSize");
 
                             if (contentPosition < tocPosition)
                             {
@@ -181,11 +181,7 @@ namespace SonicAudioLib.Archive
                                         CriCpkEntry entry = new CriCpkEntry();
                                         entry.Id = dataReader.GetUInt16("ID");
                                         entry.Length = dataReader.GetUInt16("FileSize");
-
-                                        if (entry.Length != dataReader.GetUInt16("ExtractSize"))
-                                        {
-                                            entry.IsCompressed = true;
-                                        }
+                                        entry.IsCompressed = entry.Length != dataReader.GetUInt16("ExtractSize");
 
                                         entries.Add(entry);
                                     }
@@ -201,11 +197,7 @@ namespace SonicAudioLib.Archive
                                         CriCpkEntry entry = new CriCpkEntry();
                                         entry.Id = dataReader.GetUInt16("ID");
                                         entry.Length = dataReader.GetUInt32("FileSize");
-
-                                        if (entry.Length != dataReader.GetUInt32("ExtractSize"))
-                                        {
-                                            entry.IsCompressed = true;
-                                        }
+                                        entry.IsCompressed = entry.Length != dataReader.GetUInt32("ExtractSize");
 
                                         entries.Add(entry);
                                     }
@@ -325,6 +317,8 @@ namespace SonicAudioLib.Archive
                     tocMemoryStream = new MemoryStream();
                     etocMemoryStream = new MemoryStream();
 
+                    var orderedEntries = entries.OrderBy(entry => entry.Name).ToList();
+
                     using (CriCpkSection tocSection = new CriCpkSection(tocMemoryStream, "TOC "))
                     using (CriCpkSection etocSection = new CriCpkSection(etocMemoryStream, "ETOC"))
                     {
@@ -343,20 +337,20 @@ namespace SonicAudioLib.Archive
                         etocSection.Writer.WriteField("UpdateDateTime", typeof(ulong));
                         etocSection.Writer.WriteField("LocalDir", typeof(string));
 
-                        foreach (CriCpkEntry entry in entries)
+                        foreach (CriCpkEntry entry in orderedEntries)
                         {
-                            tocSection.Writer.WriteRow(true, 
-                                (entry.DirectoryName).Replace('\\', '/'), 
-                                entry.Name, 
-                                (uint)entry.Length, 
-                                (uint)entry.Length, 
-                                (ulong)(vldPool.Length - 2048), 
-                                entry.Id, 
+                            tocSection.Writer.WriteRow(true,
+                                (entry.DirectoryName).Replace('\\', '/'),
+                                entry.Name,
+                                (uint)entry.Length,
+                                (uint)entry.Length,
+                                (ulong)(vldPool.Length - 2048),
+                                entry.Id,
                                 entry.Comment);
 
-                            etocSection.Writer.WriteRow(true, 
-                                CpkDateTimeFromDateTime(entry.UpdateDateTime), 
-                                entry.DirectoryName);
+                            etocSection.Writer.WriteRow(true,
+                                CpkDateTimeFromDateTime(entry.UpdateDateTime),
+                                entry.FilePath.DirectoryName.Replace('\\', '/'));
 
                             vldPool.Put(entry.FilePath);
                         }
@@ -376,11 +370,11 @@ namespace SonicAudioLib.Archive
                             itocSection.Writer.WriteField("ID", typeof(int));
                             itocSection.Writer.WriteField("TocIndex", typeof(int));
 
-                            foreach (CriCpkEntry entry in entries)
+                            foreach (CriCpkEntry entry in orderedEntries)
                             {
-                                itocSection.Writer.WriteRow(true, 
-                                    (int)entry.Id, 
-                                    entries.IndexOf(entry));
+                                itocSection.Writer.WriteRow(true,
+                                    (int)entry.Id,
+                                    orderedEntries.IndexOf(entry));
                             }
 
                             itocSection.Writer.WriteEndTable();
@@ -417,9 +411,9 @@ namespace SonicAudioLib.Archive
 
                             foreach (CriCpkEntry entry in filesL)
                             {
-                                dataWriter.WriteRow(true, 
-                                    (ushort)entry.Id, 
-                                    (ushort)entry.Length, 
+                                dataWriter.WriteRow(true,
+                                    (ushort)entry.Id,
+                                    (ushort)entry.Length,
                                     (ushort)entry.Length);
                             }
 
@@ -439,9 +433,9 @@ namespace SonicAudioLib.Archive
 
                             foreach (CriCpkEntry entry in filesH)
                             {
-                                dataWriter.WriteRow(true, 
-                                    (ushort)entry.Id, 
-                                    (uint)entry.Length, 
+                                dataWriter.WriteRow(true,
+                                    (ushort)entry.Id,
+                                    (uint)entry.Length,
                                     (uint)entry.Length);
                             }
 
@@ -508,7 +502,7 @@ namespace SonicAudioLib.Archive
                 cpkSection.Writer.WriteValue("Sorted", (ushort)1);
 
                 cpkSection.Writer.WriteValue("CpkMode", (uint)mode);
-                cpkSection.Writer.WriteValue("Tvers", "SONICAUDIOLIB, DLL1.0.0.0");
+                cpkSection.Writer.WriteValue("Tvers", GetToolVersion());
                 cpkSection.Writer.WriteValue("Comment", Comment);
 
                 cpkSection.Writer.WriteValue("FileSize", (ulong)vldPool.Length);
@@ -557,8 +551,14 @@ namespace SonicAudioLib.Archive
 
         private ulong CpkDateTimeFromDateTime(DateTime dateTime)
         {
-            return ((((ulong)dateTime.Year * 0x100 + (uint)dateTime.Month) * 0x100 + (uint)dateTime.Day) * 0x100000000) + 
+            return ((((ulong)dateTime.Year * 0x100 + (uint)dateTime.Month) * 0x100 + (uint)dateTime.Day) * 0x100000000) +
                 ((((ulong)dateTime.Hour * 0x100 + (uint)dateTime.Minute) * 0x100 + (uint)dateTime.Second) * 0x100);
+        }
+
+        private string GetToolVersion()
+        {
+            AssemblyName assemblyName = Assembly.GetEntryAssembly().GetName();
+            return $"{assemblyName.Name}, {assemblyName.Version.ToString()}";
         }
 
         private class CriCpkSection : IDisposable
