@@ -126,6 +126,13 @@ namespace SonicAudioLib.CriMw
             WriteUInt16(header.NumberOfFields);
             WriteUInt16(header.RowLength);
             WriteUInt32(header.NumberOfRows);
+
+            if (settings.EnableMask)
+            {
+                destination.Position = headerPosition;
+                Methods.MaskCriTable(destination, header.Length);
+            }
+
             destination.Seek(previousPosition, SeekOrigin.Begin);
         }
 
@@ -608,6 +615,7 @@ namespace SonicAudioLib.CriMw
         private bool leaveOpen = false;
         private Encoding encodingType = Encoding.GetEncoding("shift-jis");
         private bool removeDuplicateStrings = true;
+        private bool enableMask = false;
 
         public uint Align
         {
@@ -676,6 +684,19 @@ namespace SonicAudioLib.CriMw
             set
             {
                 removeDuplicateStrings = value;
+            }
+        }
+
+        public bool EnableMask
+        {
+            get
+            {
+                return enableMask;
+            }
+
+            set
+            {
+                enableMask = value;
             }
         }
 

@@ -78,7 +78,27 @@ namespace SonicAudioLib.CriMw
 
             if (EndianStream.ReadCString(source, 4) != CriTableHeader.Signature)
             {
-                throw new Exception("No @UTF signature found.");
+                // try to decrypt (currently only for CPK files since those are the only examples I have)
+                source.Seek(-4, SeekOrigin.Current);
+
+                MemoryStream unmaskedSource = new MemoryStream();
+                Methods.MaskCriTable(source, unmaskedSource, source.Length);
+
+                // try again
+                unmaskedSource.Seek(0, SeekOrigin.Begin);
+
+                if (EndianStream.ReadCString(unmaskedSource, 4) != CriTableHeader.Signature)
+                {
+                    throw new Exception("No @UTF signature found.");
+                }
+
+                // Close the old stream
+                if (!leaveOpen)
+                {
+                    source.Close();
+                }
+
+                source = unmaskedSource;
             }
 
             header.Length = ReadUInt32() + 0x8;

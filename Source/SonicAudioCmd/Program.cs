@@ -20,7 +20,11 @@ namespace SonicAudioCmd
     {
         static void Main(string[] args)
         {
-            // What are you looking at? There's nothing here. Go away.
+            using (Stream source = File.OpenRead(args[0]))
+            using (Stream destination = File.Create(args[0] + "-unmask"))
+            {
+                Methods.MaskCriTable(source, destination, source.Length);
+            }
         }
     }
 }

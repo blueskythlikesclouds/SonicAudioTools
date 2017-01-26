@@ -129,6 +129,7 @@ namespace CsbEditor
                     }
 
                     CriCpkArchive cpkArchive = new CriCpkArchive();
+                //cpkArchive.EnableMask = true;
 
                     CriTable csbFile = new CriTable();
                     csbFile.Load(csbPath);

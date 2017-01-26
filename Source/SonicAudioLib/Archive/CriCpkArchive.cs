@@ -54,6 +54,7 @@ namespace SonicAudioLib.Archive
     {
         private ushort align = 1;
         private CriCpkMode mode = CriCpkMode.FileName;
+        private bool enableMask = false;
 
         public ushort Align
         {
@@ -86,6 +87,19 @@ namespace SonicAudioLib.Archive
             }
         }
 
+        public bool EnableMask
+        {
+            get
+            {
+                return enableMask;
+            }
+
+            set
+            {
+                enableMask = value;
+            }
+        }
+
         public string Comment { get; set; }
 
         public override void Read(Stream source)
@@ -94,17 +108,38 @@ namespace SonicAudioLib.Archive
             {
                 reader.Read();
 
-                // The older CPK versions don't have the CpkMode field, and the other stuff. I will add
-                // support for the older versions when someone reports it. I need file examples.
-                ushort version = reader.GetUInt16("Version");
-                ushort revision = reader.GetUInt16("Revision");
+                bool latest = reader.ContainsField("CpkMode");
 
-                if (version != 7 && revision != 2)
+                if (latest)
                 {
-                    throw new Exception($"This CPK file version ({version}.{revision}) isn't supported yet! Please report the error with the file if you want support for this CPK version.");
+                    mode = (CriCpkMode)reader.GetUInt32("CpkMode");
                 }
 
-                mode = (CriCpkMode)reader.GetUInt32("CpkMode");
+                else
+                {
+                    bool tocEnabled = reader.GetUInt64("TocOffset") > 0;
+                    bool itocEnabled = reader.GetUInt64("ItocOffset") > 0;
+
+                    if (tocEnabled && !itocEnabled)
+                    {
+                        mode = CriCpkMode.FileName;
+                    }
+
+                    else if (!tocEnabled && itocEnabled)
+                    {
+                        mode = CriCpkMode.Id;
+                    }
+
+                    else if (tocEnabled && itocEnabled)
+                    {
+                        mode = CriCpkMode.FileNameAndId;
+                    }
+
+                    else
+                    {
+                        mode = CriCpkMode.None;
+                    }
+                }
 
                 // No need to waste time, stop right there.
                 if (mode == CriCpkMode.None)
@@ -131,7 +166,7 @@ namespace SonicAudioLib.Archive
                             entry.Name = tocReader.GetString("FileName");
                             entry.Length = tocReader.GetUInt32("FileSize");
                             entry.Position = (long)tocReader.GetUInt64("FileOffset");
-                            entry.Id = tocReader.GetUInt32("ID");
+                            entry.Id = latest ? tocReader.GetUInt32("ID") : tocReader.GetUInt32("Info");
                             entry.Comment = tocReader.GetString("UserString");
                             entry.IsCompressed = entry.Length != tocReader.GetUInt32("ExtractSize");
 
@@ -154,7 +189,7 @@ namespace SonicAudioLib.Archive
                         }
                     }
 
-                    if (mode == CriCpkMode.FileNameAndId)
+                    if (mode == CriCpkMode.FileNameAndId && latest)
                     {
                         using (CriTableReader itocReader = CriCpkSection.Open(source, itocPosition))
                         {
@@ -229,7 +264,7 @@ namespace SonicAudioLib.Archive
         {
             VldPool vldPool = new VldPool(Align, 2048);
 
-            using (CriCpkSection cpkSection = new CriCpkSection(destination, "CPK "))
+            using (CriCpkSection cpkSection = new CriCpkSection(destination, "CPK ", enableMask))
             {
                 cpkSection.Writer.WriteStartTable("CpkHeader");
 
@@ -319,8 +354,8 @@ namespace SonicAudioLib.Archive
 
                     var orderedEntries = entries.OrderBy(entry => entry.Name).ToList();
 
-                    using (CriCpkSection tocSection = new CriCpkSection(tocMemoryStream, "TOC "))
-                    using (CriCpkSection etocSection = new CriCpkSection(etocMemoryStream, "ETOC"))
+                    using (CriCpkSection tocSection = new CriCpkSection(tocMemoryStream, "TOC ", enableMask))
+                    using (CriCpkSection etocSection = new CriCpkSection(etocMemoryStream, "ETOC", enableMask))
                     {
                         tocSection.Writer.WriteStartTable("CpkTocInfo");
 
@@ -363,7 +398,7 @@ namespace SonicAudioLib.Archive
                     {
                         itocMemoryStream = new MemoryStream();
 
-                        using (CriCpkSection itocSection = new CriCpkSection(itocMemoryStream, "ITOC"))
+                        using (CriCpkSection itocSection = new CriCpkSection(itocMemoryStream, "ITOC", enableMask))
                         {
                             itocSection.Writer.WriteStartTable("CpkExtendId");
 
@@ -386,7 +421,7 @@ namespace SonicAudioLib.Archive
                 {
                     itocMemoryStream = new MemoryStream();
 
-                    using (CriCpkSection itocSection = new CriCpkSection(itocMemoryStream, "ITOC"))
+                    using (CriCpkSection itocSection = new CriCpkSection(itocMemoryStream, "ITOC", enableMask))
                     {
                         itocSection.Writer.WriteStartTable("CpkItocInfo");
 
@@ -598,18 +633,11 @@ namespace SonicAudioLib.Archive
                 uint tableLength = EndianStream.ReadUInt32(source);
                 uint unknown = EndianStream.ReadUInt32(source);
 
-                try
-                {
-                    return CriTableReader.Create(new Substream(source, source.Position, tableLength));
-                }
 
-                catch
-                {
-                    throw new Exception("CPK file decryption needs to be implemented or it's an unknown error. Please report this error with the file.");
-                }
+                return CriTableReader.Create(new Substream(source, source.Position, tableLength));
             }
 
-            public CriCpkSection(Stream destination, string signature)
+            public CriCpkSection(Stream destination, string signature, bool enableMask)
             {
                 this.destination = destination;
                 headerPosition = destination.Position;
@@ -618,7 +646,7 @@ namespace SonicAudioLib.Archive
                 EndianStream.WriteUInt32(destination, byte.MaxValue);
                 destination.Seek(8, SeekOrigin.Current);
 
-                writer = CriTableWriter.Create(destination, new CriTableWriterSettings() { LeaveOpen = true });
+                writer = CriTableWriter.Create(destination, new CriTableWriterSettings() { LeaveOpen = true, EnableMask = enableMask });
             }
         }
     }
