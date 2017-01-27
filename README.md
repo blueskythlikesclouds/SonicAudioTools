@@ -7,6 +7,7 @@ Sonic Audio Tools is a set of tools for editing the audio formats seen in Sonic 
 4. Build the solution.
 
 ## Projects
+For more information about the projects, visit the [wiki](https://github.com/blueskythlikesclouds/SonicAudioTools/wiki) page.
 ### [SonicAudioLib](https://github.com/blueskythlikesclouds/SonicAudioTools/tree/master/Source/SonicAudioLib)
 Core class library of the solution. Handles the IO work of the other projects.
 ### [AcbEditor](https://github.com/blueskythlikesclouds/SonicAudioTools/tree/master/Source/AcbEditor)
