@@ -108,17 +108,38 @@ namespace SonicAudioLib.Archive
             {
                 reader.Read();
 
-                // The older CPK versions don't have the CpkMode field, and the other stuff. I will add
-                // support for the older versions when someone reports it. I need file examples.
-                ushort version = reader.GetUInt16("Version");
-                ushort revision = reader.GetUInt16("Revision");
+                bool latest = reader.ContainsField("CpkMode");
 
-                if (version != 7 && revision != 2)
+                if (latest)
                 {
-                    throw new Exception($"This CPK file version ({version}.{revision}) isn't supported yet! Please report the error with the file if you want support for this CPK version.");
+                    mode = (CriCpkMode)reader.GetUInt32("CpkMode");
                 }
 
-                mode = (CriCpkMode)reader.GetUInt32("CpkMode");
+                else
+                {
+                    bool tocEnabled = reader.GetUInt64("TocOffset") > 0;
+                    bool itocEnabled = reader.GetUInt64("ItocOffset") > 0;
+
+                    if (tocEnabled && !itocEnabled)
+                    {
+                        mode = CriCpkMode.FileName;
+                    }
+
+                    else if (!tocEnabled && itocEnabled)
+                    {
+                        mode = CriCpkMode.Id;
+                    }
+
+                    else if (tocEnabled && itocEnabled)
+                    {
+                        mode = CriCpkMode.FileNameAndId;
+                    }
+
+                    else
+                    {
+                        mode = CriCpkMode.None;
+                    }
+                }
 
                 // No need to waste time, stop right there.
                 if (mode == CriCpkMode.None)
@@ -145,7 +166,7 @@ namespace SonicAudioLib.Archive
                             entry.Name = tocReader.GetString("FileName");
                             entry.Length = tocReader.GetUInt32("FileSize");
                             entry.Position = (long)tocReader.GetUInt64("FileOffset");
-                            entry.Id = tocReader.GetUInt32("ID");
+                            entry.Id = latest ? tocReader.GetUInt32("ID") : tocReader.GetUInt32("Info");
                             entry.Comment = tocReader.GetString("UserString");
                             entry.IsCompressed = entry.Length != tocReader.GetUInt32("ExtractSize");
 
@@ -168,7 +189,7 @@ namespace SonicAudioLib.Archive
                         }
                     }
 
-                    if (mode == CriCpkMode.FileNameAndId)
+                    if (mode == CriCpkMode.FileNameAndId && latest)
                     {
                         using (CriTableReader itocReader = CriCpkSection.Open(source, itocPosition))
                         {
