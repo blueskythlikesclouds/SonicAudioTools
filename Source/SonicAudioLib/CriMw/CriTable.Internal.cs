@@ -4,10 +4,13 @@ namespace SonicAudioLib.CriMw
 {
     struct CriTableHeader
     {
-        public static readonly string Signature = "@UTF";
+        public const string Signature = "@UTF";
+        public const byte EncodingTypeShiftJis = 0;
+        public const byte EncodingTypeUtf8 = 1;
+
         public uint Length { get; set; }
-        public bool FirstBoolean { get; set; }
-        public bool SecondBoolean { get; set; }
+        public byte UnknownByte { get; set; }
+        public byte EncodingType { get; set; }
         public ushort RowsPosition { get; set; }
         public uint StringPoolPosition { get; set; }
         public uint DataPoolPosition { get; set; }
@@ -18,7 +21,7 @@ namespace SonicAudioLib.CriMw
     }
 
     [Flags]
-    enum CriFieldFlag
+    enum CriFieldFlag : byte
     {
         Name = 16,
         DefaultValue = 32,

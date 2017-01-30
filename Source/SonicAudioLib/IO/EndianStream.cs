@@ -43,6 +43,16 @@ namespace SonicAudioLib.IO
             return buffer;
         }
 
+        public static byte[] ReadBytesAt(Stream source, int length, long position)
+        {
+            long oldPosition = source.Position;
+            source.Position = position;
+            FillBuffer(source, length);
+            source.Position = oldPosition;
+
+            return buffer;
+        }
+
         public static void WriteBytes(Stream destination, byte[] value)
         {
             destination.Write(value, 0, value.Length);

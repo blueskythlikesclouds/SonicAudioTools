@@ -564,7 +564,20 @@ namespace SonicAudioLib.Archive
 
         public CriCpkEntry GetByPath(string path)
         {
-            return entries.FirstOrDefault(entry => ((entry.DirectoryName + "/" + entry.Name) == path));
+            string correctedPath = path.Replace('\\', '/');
+
+            return entries.FirstOrDefault(entry =>
+            {
+                string search = string.Empty;
+                if (!string.IsNullOrEmpty(entry.DirectoryName))
+                {
+                    search += $"{entry.DirectoryName.Replace('\\', '/')}/";
+                }
+
+                search += entry.Name;
+
+                return search == correctedPath;
+            });
         }
 
         private DateTime DateTimeFromCpkDateTime(ulong dateTime)

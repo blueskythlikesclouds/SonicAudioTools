@@ -71,8 +71,8 @@ namespace SonicAudioLib.CriMw
 
             EndianStream.WriteCString(destination, CriTableHeader.Signature, 4);
             WriteUInt32(uint.MinValue);
-            WriteBoolean(false);
-            WriteBoolean(false);
+            WriteByte(byte.MinValue);
+            WriteByte(byte.MinValue);
             WriteUInt16(ushort.MinValue);
             WriteUInt32(uint.MinValue);
             WriteUInt32(uint.MinValue);
@@ -112,13 +112,20 @@ namespace SonicAudioLib.CriMw
 
             header.Length = (uint)destination.Position - headerPosition;
 
-            header.FirstBoolean = false;
-            header.SecondBoolean = false;
+            if (settings.EncodingType == Encoding.GetEncoding("shift-jis"))
+            {
+                header.EncodingType = CriTableHeader.EncodingTypeShiftJis;
+            }
+
+            else if (settings.EncodingType == Encoding.UTF8)
+            {
+                header.EncodingType = CriTableHeader.EncodingTypeUtf8;
+            }
 
             destination.Position = headerPosition + 4;
             WriteUInt32(header.Length - 8);
-            WriteBoolean(header.FirstBoolean);
-            WriteBoolean(header.SecondBoolean);
+            WriteByte(header.UnknownByte);
+            WriteByte(header.EncodingType);
             WriteUInt16((ushort)(header.RowsPosition - 8));
             WriteUInt32(header.StringPoolPosition - 8);
             WriteUInt32(header.DataPoolPosition - 8);
@@ -670,6 +677,11 @@ namespace SonicAudioLib.CriMw
 
             set
             {
+                if (value != Encoding.UTF8 || value != Encoding.GetEncoding("shift-jis"))
+                {
+                    return;
+                }
+
                 encodingType = value;
             }
         }
