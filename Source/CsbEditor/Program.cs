@@ -75,18 +75,21 @@ namespace CsbEditor
                                         {
                                             CriCpkEntry cpkEntry = cpkArchive.GetByPath(sdlName);
 
-                                            using (Stream cpkSource = File.OpenRead(cpkPath))
-                                            using (Stream aaxSource = cpkEntry.Open(cpkSource))
+                                            if (cpkEntry != null)
                                             {
-                                                aaxArchive.Read(aaxSource);
-
-                                                foreach (CriAaxEntry entry in aaxArchive)
+                                                using (Stream cpkSource = File.OpenRead(cpkPath))
+                                                using (Stream aaxSource = cpkEntry.Open(cpkSource))
                                                 {
-                                                    using (Stream destination = File.Create(Path.Combine(destinationPath.FullName,
-                                                        entry.Flag == CriAaxEntryFlag.Intro ? "Intro.adx" : "Loop.adx")))
-                                                    using (Stream entrySource = entry.Open(aaxSource))
+                                                    aaxArchive.Read(aaxSource);
+
+                                                    foreach (CriAaxEntry entry in aaxArchive)
                                                     {
-                                                        entrySource.CopyTo(destination);
+                                                        using (Stream destination = File.Create(Path.Combine(destinationPath.FullName,
+                                                            entry.Flag == CriAaxEntryFlag.Intro ? "Intro.adx" : "Loop.adx")))
+                                                        using (Stream entrySource = entry.Open(aaxSource))
+                                                        {
+                                                            entrySource.CopyTo(destination);
+                                                        }
                                                     }
                                                 }
                                             }

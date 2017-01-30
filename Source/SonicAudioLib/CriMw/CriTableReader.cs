@@ -12,7 +12,8 @@ namespace SonicAudioLib.CriMw
         private List<CriTableField> fields;
         private Stream source;
         private CriTableHeader header;
-        private int rowIndex = -1;
+        private Encoding encoding;
+        private long rowIndex = -1;
         private uint headerPosition;
         private bool leaveOpen;
 
@@ -56,7 +57,7 @@ namespace SonicAudioLib.CriMw
             }
         }
 
-        public int CurrentRow
+        public long CurrentRow
         {
             get
             {
@@ -69,6 +70,14 @@ namespace SonicAudioLib.CriMw
             get
             {
                 return source;
+            }
+        }
+
+        public Encoding EncodingType
+        {
+            get
+            {
+                return encoding;
             }
         }
 
@@ -102,8 +111,29 @@ namespace SonicAudioLib.CriMw
             }
 
             header.Length = ReadUInt32() + 0x8;
-            header.FirstBoolean = ReadBoolean();
-            header.SecondBoolean = ReadBoolean();
+            header.UnknownByte = ReadByte();
+            header.EncodingType = ReadByte();
+
+            if (header.UnknownByte != 0)
+            {
+                throw new Exception($"Invalid byte ({header.UnknownByte}. Please report the error with the file.");
+            }
+			
+			// This actually might be a boolean telling the reader that it's using UTF-8 encoding, but idk
+            switch (header.EncodingType)
+            {
+                case CriTableHeader.EncodingTypeShiftJis:
+                    encoding = Encoding.GetEncoding("shift-jis");
+                    break;
+
+                case CriTableHeader.EncodingTypeUtf8:
+                    encoding = Encoding.UTF8;
+                    break;
+
+                default:
+                    throw new Exception($"Unknown encoding type ({header.EncodingType}). Please report the error with the file.");
+            }
+
             header.RowsPosition = (ushort)(ReadUInt16() + 0x8);
             header.StringPoolPosition = ReadUInt32() + 0x8;
             header.DataPoolPosition = ReadUInt32() + 0x8;
@@ -111,11 +141,6 @@ namespace SonicAudioLib.CriMw
             header.NumberOfFields = ReadUInt16();
             header.RowLength = ReadUInt16();
             header.NumberOfRows = ReadUInt32();
-
-            if (header.FirstBoolean)
-            {
-                throw new Exception($"Invalid boolean ({header.FirstBoolean}. Please report the error with the file.");
-            }
 
             for (ushort i = 0; i < header.NumberOfFields; i++)
             {
@@ -271,7 +296,7 @@ namespace SonicAudioLib.CriMw
             return true;
         }
 
-        public bool MoveToRow(int rowIndex)
+        public bool MoveToRow(long rowIndex)
         {
             if (rowIndex >= header.NumberOfRows)
             {
@@ -617,7 +642,7 @@ namespace SonicAudioLib.CriMw
             long previousPosition = source.Position;
 
             source.Position = headerPosition + header.StringPoolPosition + stringPosition;
-            string strResult = EndianStream.ReadCString(source, Encoding.GetEncoding("shift-jis"));
+            string strResult = EndianStream.ReadCString(source, encoding);
             source.Position = previousPosition;
 
             if (strResult == "<NULL>" ||
@@ -675,12 +700,12 @@ namespace SonicAudioLib.CriMw
 
                         ReadData(out vldPosition, out vldLength);
 
-                        // SecondBoolean being true, check if utf table
+                        // Some ACB files have the length info set to zero for UTF table fields, so find the correct length
                         if (vldPosition > 0 && vldLength == 0)
                         {
                             source.Position = headerPosition + header.DataPoolPosition + vldPosition;
 
-                            if (Encoding.ASCII.GetString(ReadBytes(4)) == "@UTF")
+                            if (EndianStream.ReadCString(source, 4) == "@UTF")
                             {
                                 vldLength = ReadUInt32() + 8;
                             }
