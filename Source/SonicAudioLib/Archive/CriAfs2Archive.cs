@@ -24,7 +24,7 @@ namespace SonicAudioLib.Archive
         {
             if (EndianStream.ReadCString(source, 4) != "AFS2")
             {
-                throw new Exception("No AFS2 signature found.");
+                throw new InvalidDataException("'AFS2' signature could not be found.");
             }
 
             uint information = EndianStream.ReadUInt32(source);
@@ -32,11 +32,11 @@ namespace SonicAudioLib.Archive
             uint type = information & 0xFF;
             if (type != 1)
             {
-                throw new Exception($"Invalid AFS2 type ({type}). Please report the error with the AWB file.");
+                throw new InvalidDataException($"Unknown AFS2 type ({type}). Please report this error with the file(s).");
             }
 
-            IdFieldLength = (information & 0x00FF0000) >> 16;
-            PositionFieldLength = (information & 0x0000FF00) >> 8;
+            IdFieldLength = (information >> 16) & 0xFF;
+            PositionFieldLength = (information >> 8) & 0xFF;
 
             ushort entryCount = (ushort)EndianStream.ReadUInt32(source);
             Align = EndianStream.ReadUInt32(source);
@@ -56,7 +56,7 @@ namespace SonicAudioLib.Archive
                         break;
 
                     default:
-                        throw new Exception($"Unknown CueIndexFieldLength ({IdFieldLength}). Please report the error with the AWB file.");
+                        throw new InvalidDataException($"Unknown IdFieldLength ({IdFieldLength}). Please report this error with the file(s).");
                 }
 
                 long positionPosition = 16 + (entryCount * IdFieldLength) + (i * PositionFieldLength);
@@ -73,7 +73,7 @@ namespace SonicAudioLib.Archive
                         break;
 
                     default:
-                        throw new Exception($"Unknown PositionFieldLength ({PositionFieldLength}). Please report the error with the AWB file.");
+                        throw new InvalidDataException($"Unknown PositionFieldLength ({PositionFieldLength}). Please report this error with the file(s).");
                 }
 
                 if (previousEntry != null)
@@ -123,7 +123,7 @@ namespace SonicAudioLib.Archive
                         break;
 
                     default:
-                        throw new Exception($"Unknown CueIndexFieldLength ({IdFieldLength}). Please set a valid length.");
+                        throw new NotImplementedException($"Unimplemented IdFieldLength ({IdFieldLength}). Implemented length: (2)");
                 }
             }
 
@@ -143,7 +143,7 @@ namespace SonicAudioLib.Archive
                         break;
 
                     default:
-                        throw new Exception($"Unknown PositionFieldLength ({PositionFieldLength}). Please set a valid length.");
+                        throw new InvalidDataException($"Unimplemented PositionFieldLength ({PositionFieldLength}). Implemented lengths: (2, 4)");
                 }
 
                 afs2Entry.Position = entryPosition;

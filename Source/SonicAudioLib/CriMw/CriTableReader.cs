@@ -88,7 +88,7 @@ namespace SonicAudioLib.CriMw
             if (EndianStream.ReadCString(source, 4) != CriTableHeader.Signature)
             {
                 // try to decrypt (currently only for CPK files since those are the only examples I have)
-                source.Seek(-4, SeekOrigin.Current);
+                source.Seek(headerPosition, SeekOrigin.Begin);
 
                 MemoryStream unmaskedSource = new MemoryStream();
                 Methods.MaskCriTable(source, unmaskedSource, source.Length);
@@ -98,7 +98,7 @@ namespace SonicAudioLib.CriMw
 
                 if (EndianStream.ReadCString(unmaskedSource, 4) != CriTableHeader.Signature)
                 {
-                    throw new Exception("No @UTF signature found.");
+                    throw new InvalidDataException("'@UTF' signature could not be found.");
                 }
 
                 // Close the old stream
@@ -116,10 +116,9 @@ namespace SonicAudioLib.CriMw
 
             if (header.UnknownByte != 0)
             {
-                throw new Exception($"Invalid byte ({header.UnknownByte}. Please report the error with the file.");
+                throw new InvalidDataException($"Invalid byte ({header.UnknownByte}. Please report this error with the file(s).");
             }
-			
-			// This actually might be a boolean telling the reader that it's using UTF-8 encoding, but idk
+
             switch (header.EncodingType)
             {
                 case CriTableHeader.EncodingTypeShiftJis:
@@ -131,7 +130,7 @@ namespace SonicAudioLib.CriMw
                     break;
 
                 default:
-                    throw new Exception($"Unknown encoding type ({header.EncodingType}). Please report the error with the file.");
+                    throw new InvalidDataException($"Unknown encoding type ({header.EncodingType}). Please report this error with the file(s).");
             }
 
             header.RowsPosition = (ushort)(ReadUInt16() + 0x8);
@@ -175,16 +174,7 @@ namespace SonicAudioLib.CriMw
                 // Not even per row, and not even constant value? Then there's no storage.
                 else if (!field.Flag.HasFlag(CriFieldFlag.RowStorage) && !field.Flag.HasFlag(CriFieldFlag.DefaultValue))
                 {
-                    if (field.Flag.HasFlag(CriFieldFlag.Data))
-                    {
-                        field.Position = 0;
-                        field.Length = 0;
-                    }
-
-                    else
-                    {
-                        field.Value = CriField.NullValues[(byte)field.Flag & 0x0F];
-                    }
+                    field.Value = CriField.NullValues[(byte)field.Flag & 0x0F];
                 }
 
                 fields.Add(field);
@@ -575,9 +565,7 @@ namespace SonicAudioLib.CriMw
 
         private byte[] ReadBytes(int length)
         {
-            byte[] buff = new byte[length];
-            source.Read(buff, 0, length);
-            return buff;
+            return EndianStream.ReadBytes(source, length);
         }
 
         private byte ReadByte()
@@ -637,21 +625,19 @@ namespace SonicAudioLib.CriMw
 
         private string ReadString()
         {
-            uint stringPosition = ReadUInt32();
-
             long previousPosition = source.Position;
 
+            uint stringPosition = ReadUInt32();
             source.Position = headerPosition + header.StringPoolPosition + stringPosition;
-            string strResult = EndianStream.ReadCString(source, encoding);
-            source.Position = previousPosition;
+            string readString = EndianStream.ReadCString(source, encoding);
 
-            if (strResult == "<NULL>" ||
-                (strResult == header.TableName && stringPosition == 0))
+            if (readString == "<NULL>" || (readString == header.TableName && stringPosition == 0))
             {
                 return string.Empty;
             }
 
-            return strResult;
+            source.Position = previousPosition;
+            return readString;
         }
 
         private void ReadData(out uint vldPosition, out uint vldLength)
@@ -705,7 +691,7 @@ namespace SonicAudioLib.CriMw
                         {
                             source.Position = headerPosition + header.DataPoolPosition + vldPosition;
 
-                            if (EndianStream.ReadCString(source, 4) == "@UTF")
+                            if (EndianStream.ReadCString(source, 4) == CriTableHeader.Signature)
                             {
                                 vldLength = ReadUInt32() + 8;
                             }

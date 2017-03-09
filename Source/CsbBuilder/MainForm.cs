@@ -290,39 +290,35 @@ namespace CsbBuilder
 
         private void RemoveNode(BuilderBaseNode node)
         {
-            if (node is BuilderCueNode)
+            if (node is BuilderCueNode cueNode)
             {
-                project.CueNodes.Remove((BuilderCueNode)node);
+                project.CueNodes.Remove(cueNode);
             }
 
-            else if (node is BuilderSynthNode)
+            else if (node is BuilderSynthNode synthNode)
             {
-                BuilderSynthNode synthNode = (BuilderSynthNode)node;
                 project.SynthNodes.Remove(synthNode);
 
                 project.CueNodes.Where(cue => cue.SynthReference == synthNode.Name).ToList().ForEach(cue => cue.SynthReference = string.Empty);
                 project.SynthNodes.Where(synth => synth.Children.Contains(synthNode.Name)).ToList().ForEach(synth => synth.Children.Remove(synthNode.Name));
             }
 
-            else if (node is BuilderSoundElementNode)
+            else if (node is BuilderSoundElementNode soundElementNode)
             {
-                BuilderSoundElementNode soundElementNode = (BuilderSoundElementNode)node;
                 project.SoundElementNodes.Remove(soundElementNode);
 
                 project.SynthNodes.Where(soundElement => soundElement.SoundElementReference == soundElementNode.Name).ToList().ForEach(synth => synth.SoundElementReference = string.Empty);
             }
 
-            else if (node is BuilderAisacNode)
+            else if (node is BuilderAisacNode aisacNode)
             {
-                BuilderAisacNode aisacNode = (BuilderAisacNode)node;
                 project.AisacNodes.Remove(aisacNode);
 
                 project.SynthNodes.Where(synth => synth.AisacReference == aisacNode.Name).ToList().ForEach(synth => synth.AisacReference = string.Empty);
             }
 
-            else if (node is BuilderVoiceLimitGroupNode)
+            else if (node is BuilderVoiceLimitGroupNode voiceLimitGroupNode)
             {
-                BuilderVoiceLimitGroupNode voiceLimitGroupNode = (BuilderVoiceLimitGroupNode)node;
                 project.VoiceLimitGroupNodes.Remove(voiceLimitGroupNode);
 
                 project.SynthNodes.Where(synth => synth.VoiceLimitGroupReference == voiceLimitGroupNode.Name).ToList().ForEach(voiceLimitGroup => voiceLimitGroup.VoiceLimitGroupReference = string.Empty);
@@ -349,10 +345,8 @@ namespace CsbBuilder
             treeNode.Tag = synthNode;
             project.SynthNodes.Add(synthNode);
 
-            if (parent != null && parent.Tag is BuilderSynthNode)
+            if (parent != null && parent.Tag is BuilderSynthNode parentSynthNode)
             {
-                BuilderSynthNode parentSynthNode = (BuilderSynthNode)parent.Tag;
-
                 if (parentSynthNode.Type == BuilderSynthType.WithChildren)
                 {
                     parentSynthNode.Children.Add(synthNode.Name);
@@ -385,10 +379,8 @@ namespace CsbBuilder
             treeNode.Tag = synthNode;
             project.SynthNodes.Add(synthNode);
 
-            if (parent != null && parent.Tag is BuilderSynthNode)
+            if (parent != null && parent.Tag is BuilderSynthNode parentSynthNode)
             {
-                BuilderSynthNode parentSynthNode = (BuilderSynthNode)parent.Tag;
-
                 if (parentSynthNode.Type == BuilderSynthType.WithChildren)
                 {
                     parentSynthNode.Children.Add(synthNode.Name);
@@ -522,9 +514,8 @@ namespace CsbBuilder
         {
             ContextMenuStrip menuStrip = (ContextMenuStrip)((ToolStripItem)sender).Owner;
 
-            if (menuStrip.SourceControl is TreeView)
+            if (menuStrip.SourceControl is TreeView selectedTree)
             {
-                TreeView selectedTree = (TreeView)menuStrip.SourceControl;
                 TreeNode selectedNode = selectedTree.SelectedNode;
 
                 if (selectedTree == cueTree)
@@ -534,7 +525,7 @@ namespace CsbBuilder
 
                 else if (selectedTree == synthTree)
                 {
-                    if (selectedNode.Tag is BuilderSynthNode && ((BuilderSynthNode)selectedNode.Tag).Type == BuilderSynthType.WithChildren)
+                    if (selectedNode.Tag is BuilderSynthNode synthNode && synthNode.Type == BuilderSynthType.WithChildren)
                     {
                         CreateSoundNode(selectedNode.Nodes, selectedNode);
                     }
@@ -566,10 +557,8 @@ namespace CsbBuilder
         {
             ContextMenuStrip menuStrip = (ContextMenuStrip)((ToolStripItem)sender).Owner;
 
-            if (menuStrip.SourceControl is TreeView)
+            if (menuStrip.SourceControl is TreeView selectedTree)
             {
-                TreeView selectedTree = (TreeView)menuStrip.SourceControl;
-
                 if (selectedTree == cueTree)
                 {
                     CreateCueNode(selectedTree.Nodes, null);
@@ -601,10 +590,8 @@ namespace CsbBuilder
         {
             ContextMenuStrip menuStrip = (ContextMenuStrip)((ToolStripItem)sender).Owner;
 
-            if (menuStrip.SourceControl is TreeView)
+            if (menuStrip.SourceControl is TreeView selectedTree)
             {
-                TreeView selectedTree = (TreeView)menuStrip.SourceControl;
-
                 if (selectedTree == synthTree)
                 {
                     CreateSynthFolder(selectedTree.Nodes);
@@ -621,9 +608,9 @@ namespace CsbBuilder
         {
             foreach (TreeNode node in collection)
             {
-                if (node.Tag is BuilderBaseNode)
+                if (node.Tag is BuilderBaseNode baseNode)
                 {
-                    RemoveNode((BuilderBaseNode)node.Tag);
+                    RemoveNode(baseNode);
                 }
 
                 RemoveNodes(node.Nodes);
@@ -634,9 +621,9 @@ namespace CsbBuilder
         {
             saved = false;
 
-            if (treeNode.Tag is BuilderBaseNode)
+            if (treeNode.Tag is BuilderBaseNode baseNode)
             {
-                RemoveNode((BuilderBaseNode)treeNode.Tag);
+                RemoveNode(baseNode);
             }
 
             RemoveNodes(treeNode.Nodes);
@@ -649,9 +636,8 @@ namespace CsbBuilder
 
             ContextMenuStrip menuStrip = (ContextMenuStrip)((ToolStripItem)sender).Owner;
 
-            if (menuStrip.SourceControl is TreeView)
+            if (menuStrip.SourceControl is TreeView selectedTree)
             {
-                TreeView selectedTree = (TreeView)menuStrip.SourceControl;
                 TreeNode selectedNode = selectedTree.SelectedNode;
 
                 RemoveNode(selectedNode);
@@ -671,9 +657,8 @@ namespace CsbBuilder
         {
             ContextMenuStrip menuStrip = (ContextMenuStrip)((ToolStripItem)sender).Owner;
 
-            if (menuStrip.SourceControl is TreeView)
+            if (menuStrip.SourceControl is TreeView selectedTree)
             {
-                TreeView selectedTree = (TreeView)menuStrip.SourceControl;
                 TreeNode selectedNode = selectedTree.SelectedNode;
 
                 Clipboard.SetText(selectedNode.FullPath);
@@ -684,9 +669,8 @@ namespace CsbBuilder
         {
             ContextMenuStrip menuStrip = (ContextMenuStrip)((ToolStripItem)sender).Owner;
 
-            if (menuStrip.SourceControl is TreeView)
+            if (menuStrip.SourceControl is TreeView selectedTree)
             {
-                TreeView selectedTree = (TreeView)menuStrip.SourceControl;
                 TreeNode selectedNode = selectedTree.SelectedNode;
 
                 if (selectedTree == synthTree)
@@ -708,9 +692,8 @@ namespace CsbBuilder
 
         private void UpdateNodeNoRename(TreeNode treeNode)
         {
-            if (treeNode.Tag is BuilderBaseNode)
+            if (treeNode.Tag is BuilderBaseNode baseNode)
             {
-                BuilderBaseNode baseNode = (BuilderBaseNode)treeNode.Tag;
                 baseNode.Name = treeNode.FullPath;
             }
 
@@ -724,10 +707,8 @@ namespace CsbBuilder
         {
             foreach (TreeNode treeNode in collection)
             {
-                if (treeNode.Tag is BuilderBaseNode)
+                if (treeNode.Tag is BuilderBaseNode baseNode)
                 {
-                    BuilderBaseNode baseNode = (BuilderBaseNode)treeNode.Tag;
-
                     string previousName = baseNode.Name;
                     baseNode.Name = treeNode.FullPath;
 
@@ -1025,7 +1006,7 @@ namespace CsbBuilder
                     PasteNode();
                 }
 
-                else if (treeView.SelectedNode != null && (treeView.SelectedNode.Tag == null || (treeView.SelectedNode.Tag is BuilderSynthNode && ((BuilderSynthNode)treeView.SelectedNode.Tag).Type == BuilderSynthType.WithChildren)))
+                else if (treeView.SelectedNode != null && (treeView.SelectedNode.Tag == null || (treeView.SelectedNode.Tag is BuilderSynthNode synthNode && synthNode.Type == BuilderSynthType.WithChildren)))
                 {
                     PasteAsChildNode(treeView.SelectedNode);
                 }
@@ -1087,15 +1068,12 @@ namespace CsbBuilder
                 {
                     ContextMenuStrip menuStrip = (ContextMenuStrip)((ToolStripItem)sender).Owner;
 
-                    if (menuStrip.SourceControl is TreeView)
+                    if (menuStrip.SourceControl is TreeView selectedTree)
                     {
-                        TreeView selectedTree = (TreeView)menuStrip.SourceControl;
                         TreeNode selectedNode = selectedTree.SelectedNode;
 
-                        if (selectedNode.Tag is BuilderSynthNode)
+                        if (selectedNode.Tag is BuilderSynthNode synthNode)
                         {
-                            BuilderSynthNode synthNode = (BuilderSynthNode)selectedNode.Tag;
-
                             if (setReferenceForm.SelectedNode == null)
                             {
                                 synthNode.AisacReference = string.Empty;
@@ -1128,15 +1106,12 @@ namespace CsbBuilder
                 {
                     ContextMenuStrip menuStrip = (ContextMenuStrip)((ToolStripItem)sender).Owner;
 
-                    if (menuStrip.SourceControl is TreeView)
+                    if (menuStrip.SourceControl is TreeView selectedTree)
                     {
-                        TreeView selectedTree = (TreeView)menuStrip.SourceControl;
                         TreeNode selectedNode = selectedTree.SelectedNode;
 
-                        if (selectedNode.Tag is BuilderSynthNode)
+                        if (selectedNode.Tag is BuilderSynthNode synthNode)
                         {
-                            BuilderSynthNode synthNode = (BuilderSynthNode)selectedNode.Tag;
-
                             if (setReferenceForm.SelectedNode == null)
                             {
                                 synthNode.VoiceLimitGroupReference = string.Empty;
@@ -1169,9 +1144,8 @@ namespace CsbBuilder
                 {
                     ContextMenuStrip menuStrip = (ContextMenuStrip)((ToolStripItem)sender).Owner;
 
-                    if (menuStrip.SourceControl is TreeView)
+                    if (menuStrip.SourceControl is TreeView selectedTree)
                     {
-                        TreeView selectedTree = (TreeView)menuStrip.SourceControl;
                         TreeNode selectedNode = selectedTree.SelectedNode;
 
                         if (selectedNode.Tag is BuilderCueNode)
@@ -1200,14 +1174,12 @@ namespace CsbBuilder
         {
             ContextMenuStrip menuStrip = (ContextMenuStrip)((ToolStripItem)sender).Owner;
 
-            if (menuStrip.SourceControl is TreeView)
+            if (menuStrip.SourceControl is TreeView selectedTree)
             {
-                TreeView selectedTree = (TreeView)menuStrip.SourceControl;
                 TreeNode selectedNode = selectedTree.SelectedNode;
 
-                if (selectedNode.Tag is BuilderCueNode)
+                if (selectedNode.Tag is BuilderCueNode cueNode)
                 {
-                    BuilderCueNode cueNode = (BuilderCueNode)selectedNode.Tag;
                     if (!string.IsNullOrEmpty(cueNode.SynthReference))
                     {
                         TreeNode treeNode = synthTree.FindNodeByFullPath(cueNode.SynthReference);
@@ -1224,14 +1196,12 @@ namespace CsbBuilder
         {
             ContextMenuStrip menuStrip = (ContextMenuStrip)((ToolStripItem)sender).Owner;
 
-            if (menuStrip.SourceControl is TreeView)
+            if (menuStrip.SourceControl is TreeView selectedTree)
             {
-                TreeView selectedTree = (TreeView)menuStrip.SourceControl;
                 TreeNode selectedNode = selectedTree.SelectedNode;
 
-                if (selectedNode.Tag is BuilderSynthNode)
+                if (selectedNode.Tag is BuilderSynthNode synthNode)
                 {
-                    BuilderSynthNode synthNode = (BuilderSynthNode)selectedNode.Tag;
                     if (!string.IsNullOrEmpty(synthNode.AisacReference))
                     {
                         TreeNode treeNode = aisacTree.FindNodeByFullPath(synthNode.AisacReference);
@@ -1249,14 +1219,12 @@ namespace CsbBuilder
         {
             ContextMenuStrip menuStrip = (ContextMenuStrip)((ToolStripItem)sender).Owner;
 
-            if (menuStrip.SourceControl is TreeView)
+            if (menuStrip.SourceControl is TreeView selectedTree)
             {
-                TreeView selectedTree = (TreeView)menuStrip.SourceControl;
                 TreeNode selectedNode = selectedTree.SelectedNode;
 
-                if (selectedNode.Tag is BuilderSynthNode)
+                if (selectedNode.Tag is BuilderSynthNode synthNode)
                 {
-                    BuilderSynthNode synthNode = (BuilderSynthNode)selectedNode.Tag;
                     if (!string.IsNullOrEmpty(synthNode.VoiceLimitGroupReference))
                     {
                         TreeNode treeNode = voiceLimitGroupTree.FindNodeByFullPath(synthNode.VoiceLimitGroupReference);
@@ -1274,14 +1242,12 @@ namespace CsbBuilder
         {
             ContextMenuStrip menuStrip = (ContextMenuStrip)((ToolStripItem)sender).Owner;
 
-            if (menuStrip.SourceControl is TreeView)
+            if (menuStrip.SourceControl is TreeView selectedTree)
             {
-                TreeView selectedTree = (TreeView)menuStrip.SourceControl;
                 TreeNode selectedNode = selectedTree.SelectedNode;
 
-                if (selectedNode.Tag is BuilderSynthNode)
+                if (selectedNode.Tag is BuilderSynthNode synthNode)
                 {
-                    BuilderSynthNode synthNode = (BuilderSynthNode)selectedNode.Tag;
                     if (!string.IsNullOrEmpty(synthNode.SoundElementReference))
                     {
                         TreeNode treeNode = soundElementTree.FindNodeByFullPath(synthNode.SoundElementReference);
@@ -1308,15 +1274,12 @@ namespace CsbBuilder
                 {
                     ContextMenuStrip menuStrip = (ContextMenuStrip)((ToolStripItem)sender).Owner;
 
-                    if (menuStrip.SourceControl is TreeView)
+                    if (menuStrip.SourceControl is TreeView selectedTree)
                     {
-                        TreeView selectedTree = (TreeView)menuStrip.SourceControl;
                         TreeNode selectedNode = selectedTree.SelectedNode;
 
-                        if (selectedNode.Tag is BuilderSynthNode)
+                        if (selectedNode.Tag is BuilderSynthNode synthNode)
                         {
-                            BuilderSynthNode synthNode = (BuilderSynthNode)selectedNode.Tag;
-
                             if (setReferenceForm.SelectedNode == null)
                             {
                                 synthNode.SoundElementReference = string.Empty;
@@ -1339,14 +1302,11 @@ namespace CsbBuilder
         {
             ContextMenuStrip menuStrip = (ContextMenuStrip)((ToolStripItem)sender).Owner;
 
-            if (menuStrip.SourceControl is TreeView)
+            if (menuStrip.SourceControl is TreeView selectedTree)
             {
-                TreeView selectedTree = (TreeView)menuStrip.SourceControl;
                 TreeNode selectedNode = selectedTree.SelectedNode;
 
-                BuilderSoundElementNode soundElementNode = (BuilderSoundElementNode)selectedNode.Tag;
-
-                if (selectedNode.Tag is BuilderSoundElementNode)
+                if (selectedNode.Tag is BuilderSoundElementNode soundElementNode)
                 {
                     string intro = soundElementNode.Intro;
                     if (!string.IsNullOrEmpty(intro))
@@ -1403,9 +1363,8 @@ namespace CsbBuilder
         {
             ContextMenuStrip menuStrip = (ContextMenuStrip)((ToolStripItem)sender).Owner;
 
-            if (menuStrip.SourceControl is TreeView)
+            if (menuStrip.SourceControl is TreeView selectedTree)
             {
-                TreeView selectedTree = (TreeView)menuStrip.SourceControl;
                 TreeNode selectedNode = selectedTree.SelectedNode;
 
                 if (selectedNode.Tag == null)
@@ -1419,10 +1378,8 @@ namespace CsbBuilder
         {
             ContextMenuStrip menuStrip = (ContextMenuStrip)((ToolStripItem)sender).Owner;
 
-            if (menuStrip.SourceControl is TreeView)
+            if (menuStrip.SourceControl is TreeView selectedTree)
             {
-                TreeView selectedTree = (TreeView)menuStrip.SourceControl;
-
                 CreateSoundNode(selectedTree.Nodes, null);
             }
         }
@@ -1544,8 +1501,7 @@ namespace CsbBuilder
 
         private void AddSoundElementSound(TreeNode soundElementTreeNode, double volume, double pitch, int sampleCount, int delayTime)
         {
-            BuilderSoundElementNode soundElementNode = (BuilderSoundElementNode)soundElementTreeNode.Tag;
-            AddSoundElementSound(soundElementNode, volume, pitch, sampleCount, delayTime);
+            AddSoundElementSound((BuilderSoundElementNode)soundElementTreeNode.Tag, volume, pitch, sampleCount, delayTime);
         }
 
         private double GetSecondsFromSampleCount(int sampleCount, int sampleRate)
@@ -1555,10 +1511,8 @@ namespace CsbBuilder
 
         private void GetTheBiggestSampleCount(TreeNode synthTreeNode, ref int sampleCount)
         {
-            if (synthTreeNode.Tag is BuilderSynthNode)
+            if (synthTreeNode.Tag is BuilderSynthNode synthNode)
             {
-                BuilderSynthNode synthNode = (BuilderSynthNode)synthTreeNode.Tag;
-
                 if (synthNode.Type == BuilderSynthType.Single && !string.IsNullOrEmpty(synthNode.SoundElementReference))
                 {
                     BuilderSoundElementNode soundElementNode = (BuilderSoundElementNode)soundElementTree.FindNodeByFullPath(synthNode.SoundElementReference).Tag;
@@ -1590,9 +1544,8 @@ namespace CsbBuilder
 
             while (synthTreeNode != null)
             {
-                if (synthTreeNode.Tag is BuilderSynthNode)
+                if (synthTreeNode.Tag is BuilderSynthNode synthNode)
                 {
-                    BuilderSynthNode synthNode = (BuilderSynthNode)synthTreeNode.Tag;
                     pitch += synthNode.Pitch;
                 }
 
@@ -1608,9 +1561,8 @@ namespace CsbBuilder
 
             while (synthTreeNode != null)
             {
-                if (synthTreeNode.Tag is BuilderSynthNode)
+                if (synthTreeNode.Tag is BuilderSynthNode synthNode)
                 {
-                    BuilderSynthNode synthNode = (BuilderSynthNode)synthTreeNode.Tag;
                     volume = (volume * synthNode.Volume) / 1000;
                 }
 
@@ -1626,9 +1578,8 @@ namespace CsbBuilder
 
             while (synthTreeNode != null)
             {
-                if (synthTreeNode.Tag is BuilderSynthNode)
+                if (synthTreeNode.Tag is BuilderSynthNode synthNode)
                 {
-                    BuilderSynthNode synthNode = (BuilderSynthNode)synthTreeNode.Tag;
                     delayTime += (int)synthNode.DelayTime;
                 }
 
@@ -1716,10 +1667,8 @@ namespace CsbBuilder
         {
             StopSound(sender, e);
 
-            if (cueTree.Focused && cueTree.SelectedNode != null && cueTree.SelectedNode.Tag is BuilderCueNode)
+            if (cueTree.Focused && cueTree.SelectedNode != null && cueTree.SelectedNode.Tag is BuilderCueNode cueNode)
             {
-                BuilderCueNode cueNode = (BuilderCueNode)cueTree.SelectedNode.Tag;
-
                 if (!string.IsNullOrEmpty(cueNode.SynthReference))
                 {
                     TreeNode synthNode = synthTree.FindNodeByFullPath(cueNode.SynthReference);
@@ -1761,9 +1710,9 @@ namespace CsbBuilder
 
         private void CloneTag(TreeNode treeNode)
         {
-            if (treeNode.Tag != null && treeNode.Tag is ICloneable)
+            if (treeNode.Tag != null && treeNode.Tag is ICloneable clonable)
             {
-                treeNode.Tag = ((ICloneable)treeNode.Tag).Clone();
+                treeNode.Tag = clonable.Clone();
             }
 
             foreach (TreeNode childNode in treeNode.Nodes)
@@ -1782,21 +1731,16 @@ namespace CsbBuilder
         {
             ContextMenuStrip menuStrip = (ContextMenuStrip)((ToolStripItem)sender).Owner;
 
-            if (menuStrip.SourceControl is TreeView)
+            if (menuStrip.SourceControl is TreeView selectedTree)
             {
-                TreeView selectedTree = (TreeView)menuStrip.SourceControl;
-                TreeNode selectedNode = selectedTree.SelectedNode;
-
-                CopyNode(selectedNode);
+                CopyNode(selectedTree.SelectedNode);
             }
         }
 
         private void AddToProject(TreeNode treeNode)
         {
-            if (treeNode.Tag is BuilderCueNode)
+            if (treeNode.Tag is BuilderCueNode cueNode)
             {
-                BuilderCueNode cueNode = (BuilderCueNode)treeNode.Tag;
-
                 // Do checks
                 if (!string.IsNullOrEmpty(cueNode.SynthReference) && synthTree.FindNodeByFullPath(cueNode.SynthReference) == null)
                 {
@@ -1806,10 +1750,8 @@ namespace CsbBuilder
                 project.CueNodes.Add(cueNode);
             }
 
-            else if (treeNode.Tag is BuilderSynthNode)
+            else if (treeNode.Tag is BuilderSynthNode synthNode)
             {
-                BuilderSynthNode synthNode = (BuilderSynthNode)treeNode.Tag;
-
                 if (!string.IsNullOrEmpty(synthNode.SoundElementReference) && soundElementTree.FindNodeByFullPath(synthNode.SoundElementReference) == null)
                 {
                     synthNode.SoundElementReference = string.Empty;
@@ -1828,10 +1770,8 @@ namespace CsbBuilder
                 project.SynthNodes.Add(synthNode);
             }
 
-            if (treeNode.Tag is BuilderSoundElementNode)
+            if (treeNode.Tag is BuilderSoundElementNode soundElementNode)
             {
-                BuilderSoundElementNode soundElementNode = (BuilderSoundElementNode)treeNode.Tag;
-
                 if (!string.IsNullOrEmpty(soundElementNode.Intro) && !File.Exists(project.GetFullAudioPath(soundElementNode.Intro)))
                 {
                     soundElementNode.Intro = string.Empty;
@@ -1845,14 +1785,14 @@ namespace CsbBuilder
                 project.SoundElementNodes.Add(soundElementNode);
             }
 
-            if (treeNode.Tag is BuilderAisacNode)
+            if (treeNode.Tag is BuilderAisacNode aisacNode)
             {
-                project.AisacNodes.Add((BuilderAisacNode)treeNode.Tag);
+                project.AisacNodes.Add(aisacNode);
             }
 
-            if (treeNode.Tag is BuilderVoiceLimitGroupNode)
+            if (treeNode.Tag is BuilderVoiceLimitGroupNode voiceLimitGroupNode)
             {
-                project.VoiceLimitGroupNodes.Add((BuilderVoiceLimitGroupNode)treeNode.Tag);
+                project.VoiceLimitGroupNodes.Add(voiceLimitGroupNode);
             }
         }
 
@@ -1888,11 +1828,8 @@ namespace CsbBuilder
             UpdateNodeNoRename(nodeToPaste);
 
             // fix node if the tree is synthTree, and the nodes are synth nodes
-            if (parent.TreeView == synthTree && parent.Tag is BuilderSynthNode && nodeToPaste.Tag is BuilderSynthNode)
+            if (parent.TreeView == synthTree && parent.Tag is BuilderSynthNode synthNode && nodeToPaste.Tag is BuilderSynthNode copiedSynthNode)
             {
-                BuilderSynthNode synthNode = (BuilderSynthNode)parent.Tag;
-                BuilderSynthNode copiedSynthNode = (BuilderSynthNode)nodeToPaste.Tag;
-
                 if (synthNode.Type == BuilderSynthType.WithChildren)
                 {
                     // add the new node to track's children
@@ -1910,9 +1847,8 @@ namespace CsbBuilder
         {
             ContextMenuStrip menuStrip = (ContextMenuStrip)((ToolStripItem)sender).Owner;
 
-            if (menuStrip.SourceControl is TreeView)
+            if (menuStrip.SourceControl is TreeView selectedTree)
             {
-                TreeView selectedTree = (TreeView)menuStrip.SourceControl;
                 TreeNode selectedNode = selectedTree.SelectedNode;
 
                 if (selectedTree == treeViewOfCopiedNode)
@@ -1935,10 +1871,8 @@ namespace CsbBuilder
             TreeNode nodeToPaste = CloneNode(copiedNode);
 
             // check if it's cue and fix duplicate identifier if needed
-            if (nodeToPaste.Tag is BuilderCueNode)
+            if (nodeToPaste.Tag is BuilderCueNode cueNode)
             {
-                BuilderCueNode cueNode = (BuilderCueNode)nodeToPaste.Tag;
-
                 while (project.CueNodes.Exists(cue => cue.Identifier == cueNode.Identifier))
                 {
                     cueNode.Identifier++;
@@ -2006,10 +1940,8 @@ namespace CsbBuilder
         {
             ContextMenuStrip menuStrip = (ContextMenuStrip)((ToolStripItem)sender).Owner;
 
-            if (menuStrip.SourceControl is TreeView)
+            if (menuStrip.SourceControl is TreeView selectedTree)
             {
-                TreeView selectedTree = (TreeView)menuStrip.SourceControl;
-
                 if (selectedTree == treeViewOfCopiedNode)
                 {
                     PasteNode();
@@ -2021,9 +1953,8 @@ namespace CsbBuilder
         {
             ContextMenuStrip menuStrip = (ContextMenuStrip)((ToolStripItem)sender).Owner;
 
-            if (menuStrip.SourceControl is TreeView)
+            if (menuStrip.SourceControl is TreeView selectedTree)
             {
-                TreeView selectedTree = (TreeView)menuStrip.SourceControl;
                 TreeNode selectedNode = selectedTree.SelectedNode;
 
                 if (selectedTree == treeViewOfCopiedNode)
@@ -2042,9 +1973,8 @@ namespace CsbBuilder
         {
             ContextMenuStrip menuStrip = (ContextMenuStrip)((ToolStripItem)sender).Owner;
 
-            if (menuStrip.SourceControl is TreeView)
+            if (menuStrip.SourceControl is TreeView selectedTree)
             {
-                TreeView selectedTree = (TreeView)menuStrip.SourceControl;
                 TreeNode selectedNode = selectedTree.SelectedNode;
 
                 if (selectedTree == synthTree)
@@ -2058,9 +1988,8 @@ namespace CsbBuilder
         {
             ContextMenuStrip menuStrip = (ContextMenuStrip)((ToolStripItem)sender).Owner;
 
-            if (menuStrip.SourceControl is TreeView)
+            if (menuStrip.SourceControl is TreeView selectedTree)
             {
-                TreeView selectedTree = (TreeView)menuStrip.SourceControl;
                 TreeNode selectedNode = selectedTree.SelectedNode;
 
                 if (selectedTree == cueTree)
@@ -2070,7 +1999,7 @@ namespace CsbBuilder
 
                 else if (selectedTree == synthTree)
                 {
-                    if (selectedNode.Tag is BuilderSynthNode && ((BuilderSynthNode)selectedNode.Tag).Type == BuilderSynthType.WithChildren)
+                    if (selectedNode.Tag is BuilderSynthNode synthNode && synthNode.Type == BuilderSynthType.WithChildren)
                     {
                         CreateSoundNode(selectedNode.Nodes, selectedNode, selectedNode.Index + 1);
                     }
@@ -2102,9 +2031,8 @@ namespace CsbBuilder
         {
             ContextMenuStrip menuStrip = (ContextMenuStrip)((ToolStripItem)sender).Owner;
 
-            if (menuStrip.SourceControl is TreeView)
+            if (menuStrip.SourceControl is TreeView selectedTree)
             {
-                TreeView selectedTree = (TreeView)menuStrip.SourceControl;
                 TreeNode selectedNode = selectedTree.SelectedNode;
 
                 if (selectedNode.Tag is BuilderSynthNode)
@@ -2126,9 +2054,8 @@ namespace CsbBuilder
         {
             ContextMenuStrip menuStrip = (ContextMenuStrip)((ToolStripItem)sender).Owner;
 
-            if (menuStrip.SourceControl is TreeView)
+            if (menuStrip.SourceControl is TreeView selectedTree)
             {
-                TreeView selectedTree = (TreeView)menuStrip.SourceControl;
                 TreeNode selectedNode = selectedTree.SelectedNode;
 
                 if (selectedTree == aisacTree)
@@ -2218,9 +2145,8 @@ namespace CsbBuilder
         {
             ContextMenuStrip menuStrip = (ContextMenuStrip)((ToolStripItem)sender).Owner;
 
-            if (menuStrip.SourceControl is TreeView)
+            if (menuStrip.SourceControl is TreeView selectedTree)
             {
-                TreeView selectedTree = (TreeView)menuStrip.SourceControl;
                 TreeNode selectedNode = selectedTree.SelectedNode;
 
                 if (selectedTree == aisacTree)

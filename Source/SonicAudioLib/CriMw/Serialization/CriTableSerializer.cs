@@ -67,7 +67,7 @@ namespace SonicAudioLib.CriMw.Serialization
                     continue;
                 }
 
-                // Also ignore the properties that are not supportable (except FileInfo and Stream)
+                // Ignore the properties that are not supportable
                 if (propertyInfo.PropertyType != typeof(FileInfo) &&
                     propertyInfo.PropertyType != typeof(Stream) &&
                     propertyInfo.PropertyType != typeof(bool) &&    

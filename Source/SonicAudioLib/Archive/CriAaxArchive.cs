@@ -30,7 +30,7 @@ namespace SonicAudioLib.Archive
             {
                 if (reader.TableName != "AAX")
                 {
-                    throw new Exception("Unknown AAX type! Please report the error with the file.");
+                    throw new Exception("Unknown AAX type. Please report the error with the file.");
                 }
 
                 while (reader.Read())
