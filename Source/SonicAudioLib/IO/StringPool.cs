@@ -41,7 +41,7 @@ namespace SonicAudioLib.IO
             long position = length;
             items.Add(new StringItem() { Value = value, Position = position });
 
-            length += value.Length + 1;
+            length += encoding.GetByteCount(value) + 1;
             return position;
         }
 
