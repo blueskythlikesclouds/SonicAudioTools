@@ -67,7 +67,7 @@ namespace SonicAudioLib.CriMw.Serialization
                     continue;
                 }
 
-                // Also ignore the properties that are not supportable (except FileInfo and Stream)
+                // Ignore the properties that are not supportable
                 if (propertyInfo.PropertyType != typeof(FileInfo) &&
                     propertyInfo.PropertyType != typeof(Stream) &&
                     propertyInfo.PropertyType != typeof(bool) &&    
@@ -161,9 +161,9 @@ namespace SonicAudioLib.CriMw.Serialization
                     defaultValue = null;
                 }
 
-                if (defaultValue is bool)
+                if (defaultValue is bool boolean)
                 {
-                    defaultValue = ((bool)defaultValue == true) ? (byte)1 : (byte)0;
+                    defaultValue = boolean ? (byte)1 : (byte)0;
                 }
 
                 else if (defaultValue is Enum)
@@ -197,9 +197,9 @@ namespace SonicAudioLib.CriMw.Serialization
                         object value = propertyInfo.GetValue(obj);
                         Type propertyType = propertyInfo.PropertyType;
 
-                        if (value is bool)
+                        if (value is bool boolean)
                         {
-                            value = ((bool)value == true) ? (byte)1 : (byte)0;
+                            value = boolean ? (byte)1 : (byte)0;
                         }
 
                         else if (value is Enum)
@@ -299,14 +299,14 @@ namespace SonicAudioLib.CriMw.Serialization
 
                         object value = tableReader.GetValue(fieldName);
 
-                        if (value is Substream)
+                        if (value is Substream substream)
                         {
-                            value = ((Substream)value).ToArray();
+                            value = substream.ToArray();
                         }
 
-                        else if (value is byte && propertyInfo.PropertyType == typeof(bool))
+                        else if (value is byte boolean && propertyInfo.PropertyType == typeof(bool))
                         {
-                            value = (byte)value == 1;
+                            value = boolean == 1;
                         }
 
                         else if (propertyInfo.PropertyType.IsEnum)

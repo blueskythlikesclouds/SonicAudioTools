@@ -8,16 +8,16 @@ namespace SonicAudioLib.CriMw
         public const byte EncodingTypeShiftJis = 0;
         public const byte EncodingTypeUtf8 = 1;
 
-        public uint Length { get; set; }
-        public byte UnknownByte { get; set; }
-        public byte EncodingType { get; set; }
-        public ushort RowsPosition { get; set; }
-        public uint StringPoolPosition { get; set; }
-        public uint DataPoolPosition { get; set; }
-        public string TableName { get; set; }
-        public ushort NumberOfFields { get; set; }
-        public ushort RowLength { get; set; }
-        public uint NumberOfRows { get; set; }
+        public uint Length;
+        public byte UnknownByte;
+        public byte EncodingType;
+        public ushort RowsPosition;
+        public uint StringPoolPosition;
+        public uint DataPoolPosition;
+        public string TableName;
+        public ushort NumberOfFields;
+        public ushort RowLength;
+        public uint NumberOfRows;
     }
 
     [Flags]
@@ -35,7 +35,7 @@ namespace SonicAudioLib.CriMw
         Int32 = 5,
         UInt64 = 6,
         Int64 = 7,
-        Float = 8,
+        Single = 8,
         Double = 9,
         String = 10,
         Data = 11,
@@ -46,10 +46,10 @@ namespace SonicAudioLib.CriMw
 
     struct CriTableField
     {
-        public CriFieldFlag Flag { get; set; }
-        public string Name { get; set; }
-        public uint Position { get; set; }
-        public uint Length { get; set; }
-        public object Value { get; set; }
+        public CriFieldFlag Flag;
+        public string Name;
+        public uint Position;
+        public uint Length;
+        public object Value;
     }
 }

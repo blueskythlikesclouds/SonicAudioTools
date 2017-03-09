@@ -44,7 +44,7 @@ namespace SonicAudioLib.IO
                 return 0;
             }
 
-            length = Methods.Align(length, align);
+            length = Helpers.Align(length, align);
 
             long position = length;
             length += data.Length;
@@ -60,7 +60,7 @@ namespace SonicAudioLib.IO
                 return 0;
             }
 
-            length = Methods.Align(length, align);
+            length = Helpers.Align(length, align);
 
             long position = length;
             length += stream.Length;
@@ -76,7 +76,7 @@ namespace SonicAudioLib.IO
                 return 0;
             }
 
-            length = Methods.Align(length, align);
+            length = Helpers.Align(length, align);
 
             long position = length;
             length += fileInfo.Length;
@@ -92,7 +92,7 @@ namespace SonicAudioLib.IO
                 return 0;
             }
 
-            length = Methods.Align(length, align);
+            length = Helpers.Align(length, align);
 
             long position = length;
             length += module.CalculateLength();
@@ -109,32 +109,27 @@ namespace SonicAudioLib.IO
             {
                 EndianStream.Pad(destination, align);
 
-                if (item is byte[])
+                if (item is byte[] bytes)
                 {
-                    byte[] output = (byte[])item;
-                    destination.Write(output, 0, output.Length);
+                    destination.Write(bytes, 0, bytes.Length);
                 }
 
-                else if (item is Stream)
+                else if (item is Stream stream)
                 {
-                    Stream output = (Stream)item;
-                    output.Seek(0, SeekOrigin.Begin);
-
-                    output.CopyTo(destination);
+                    stream.Seek(0, SeekOrigin.Begin);
+                    stream.CopyTo(destination);
                 }
 
-                else if (item is FileInfo)
+                else if (item is FileInfo fileInfo)
                 {
-                    FileInfo fileInfo = (FileInfo)item;
-
-                    Stream output = fileInfo.OpenRead();
-                    output.CopyTo(destination);
-                    output.Close();
+                    using (Stream source = fileInfo.OpenRead())
+                    {
+                        source.CopyTo(destination);
+                    }
                 }
 
-                else if (item is ModuleBase)
+                else if (item is ModuleBase module)
                 {
-                    ModuleBase module = (ModuleBase)item;
                     module.Write(destination);
                 }
             }

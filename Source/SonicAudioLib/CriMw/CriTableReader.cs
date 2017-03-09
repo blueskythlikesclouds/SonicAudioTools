@@ -1,8 +1,7 @@
 ﻿using SonicAudioLib.IO;
 using System;
-using System.IO;
 using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using System.Text;
 
 namespace SonicAudioLib.CriMw
@@ -88,17 +87,17 @@ namespace SonicAudioLib.CriMw
             if (EndianStream.ReadCString(source, 4) != CriTableHeader.Signature)
             {
                 // try to decrypt (currently only for CPK files since those are the only examples I have)
-                source.Seek(-4, SeekOrigin.Current);
+                source.Seek(headerPosition, SeekOrigin.Begin);
 
                 MemoryStream unmaskedSource = new MemoryStream();
-                Methods.MaskCriTable(source, unmaskedSource, source.Length);
+                Helpers.MaskCriTable(source, unmaskedSource, source.Length);
 
                 // try again
                 unmaskedSource.Seek(0, SeekOrigin.Begin);
 
                 if (EndianStream.ReadCString(unmaskedSource, 4) != CriTableHeader.Signature)
                 {
-                    throw new Exception("No @UTF signature found.");
+                    throw new InvalidDataException("'@UTF' signature could not be found.");
                 }
 
                 // Close the old stream
@@ -116,10 +115,9 @@ namespace SonicAudioLib.CriMw
 
             if (header.UnknownByte != 0)
             {
-                throw new Exception($"Invalid byte ({header.UnknownByte}. Please report the error with the file.");
+                throw new InvalidDataException($"Invalid byte ({header.UnknownByte}. Please report this error with the file(s).");
             }
-			
-			// This actually might be a boolean telling the reader that it's using UTF-8 encoding, but idk
+
             switch (header.EncodingType)
             {
                 case CriTableHeader.EncodingTypeShiftJis:
@@ -131,7 +129,7 @@ namespace SonicAudioLib.CriMw
                     break;
 
                 default:
-                    throw new Exception($"Unknown encoding type ({header.EncodingType}). Please report the error with the file.");
+                    throw new InvalidDataException($"Unknown encoding type ({header.EncodingType}). Please report this error with the file(s).");
             }
 
             header.RowsPosition = (ushort)(ReadUInt16() + 0x8);
@@ -157,10 +155,7 @@ namespace SonicAudioLib.CriMw
                 {
                     if (field.Flag.HasFlag(CriFieldFlag.Data))
                     {
-                        uint vldPosition;
-                        uint vldLength;
-
-                        ReadData(out vldPosition, out vldLength);
+                        ReadData(out uint vldPosition, out uint vldLength);
 
                         field.Position = vldPosition;
                         field.Length = vldLength;
@@ -175,16 +170,7 @@ namespace SonicAudioLib.CriMw
                 // Not even per row, and not even constant value? Then there's no storage.
                 else if (!field.Flag.HasFlag(CriFieldFlag.RowStorage) && !field.Flag.HasFlag(CriFieldFlag.DefaultValue))
                 {
-                    if (field.Flag.HasFlag(CriFieldFlag.Data))
-                    {
-                        field.Position = 0;
-                        field.Length = 0;
-                    }
-
-                    else
-                    {
-                        field.Value = CriField.NullValues[(byte)field.Flag & 0x0F];
-                    }
+                    field.Value = CriField.NullValues[(byte)field.Flag & 0x0F];
                 }
 
                 fields.Add(field);
@@ -269,7 +255,7 @@ namespace SonicAudioLib.CriMw
                         break;
                     case CriFieldFlag.Int32:
                     case CriFieldFlag.UInt32:
-                    case CriFieldFlag.Float:
+                    case CriFieldFlag.Single:
                     case CriFieldFlag.String:
                         position += 4;
                         break;
@@ -443,12 +429,12 @@ namespace SonicAudioLib.CriMw
             return (long)GetValue(fieldName);
         }
 
-        public float GetFloat(int fieldIndex)
+        public float GetSingle(int fieldIndex)
         {
             return (float)GetValue(fieldIndex);
         }
 
-        public float GetFloat(string fieldName)
+        public float GetSingle(string fieldName)
         {
             return (float)GetValue(fieldName);
         }
@@ -515,11 +501,8 @@ namespace SonicAudioLib.CriMw
                 return fields[fieldIndex].Length;
             }
 
-            uint vldPosition;
-            uint vldLength;
-
             GoToValue(fieldIndex);
-            ReadData(out vldPosition, out vldLength);
+            ReadData(out uint vldPosition, out uint vldLength);
             return vldLength;
         }
 
@@ -540,11 +523,8 @@ namespace SonicAudioLib.CriMw
                 return fields[fieldIndex].Position;
             }
 
-            uint vldPosition;
-            uint vldLength;
-
             GoToValue(fieldIndex);
-            ReadData(out vldPosition, out vldLength);
+            ReadData(out uint vldPosition, out uint vldLength);
             return (uint)(headerPosition + header.DataPoolPosition + vldPosition);
         }
 
@@ -575,9 +555,7 @@ namespace SonicAudioLib.CriMw
 
         private byte[] ReadBytes(int length)
         {
-            byte[] buff = new byte[length];
-            source.Read(buff, 0, length);
-            return buff;
+            return EndianStream.ReadBytes(source, length);
         }
 
         private byte ReadByte()
@@ -625,9 +603,9 @@ namespace SonicAudioLib.CriMw
             return EndianStream.ReadInt64BE(source);
         }
 
-        private float ReadFloat()
+        private float ReadSingle()
         {
-            return EndianStream.ReadFloatBE(source);
+            return EndianStream.ReadSingleBE(source);
         }
 
         private double ReadDouble()
@@ -638,20 +616,19 @@ namespace SonicAudioLib.CriMw
         private string ReadString()
         {
             uint stringPosition = ReadUInt32();
-
             long previousPosition = source.Position;
 
             source.Position = headerPosition + header.StringPoolPosition + stringPosition;
-            string strResult = EndianStream.ReadCString(source, encoding);
+            string readString = EndianStream.ReadCString(source, encoding);
+            
             source.Position = previousPosition;
 
-            if (strResult == "<NULL>" ||
-                (strResult == header.TableName && stringPosition == 0))
+            if (readString == "<NULL>" || (readString == header.TableName && stringPosition == 0))
             {
                 return string.Empty;
             }
 
-            return strResult;
+            return readString;
         }
 
         private void ReadData(out uint vldPosition, out uint vldLength)
@@ -687,25 +664,22 @@ namespace SonicAudioLib.CriMw
                     return ReadUInt64();
                 case CriFieldFlag.Int64:
                     return ReadInt64();
-                case CriFieldFlag.Float:
-                    return ReadFloat();
+                case CriFieldFlag.Single:
+                    return ReadSingle();
                 case CriFieldFlag.Double:
                     return ReadDouble();
                 case CriFieldFlag.String:
                     return ReadString();
                 case CriFieldFlag.Data:
                     {
-                        uint vldPosition;
-                        uint vldLength;
-
-                        ReadData(out vldPosition, out vldLength);
+                        ReadData(out uint vldPosition, out uint vldLength);
 
                         // Some ACB files have the length info set to zero for UTF table fields, so find the correct length
                         if (vldPosition > 0 && vldLength == 0)
                         {
                             source.Position = headerPosition + header.DataPoolPosition + vldPosition;
 
-                            if (EndianStream.ReadCString(source, 4) == "@UTF")
+                            if (EndianStream.ReadCString(source, 4) == CriTableHeader.Signature)
                             {
                                 vldLength = ReadUInt32() + 8;
                             }

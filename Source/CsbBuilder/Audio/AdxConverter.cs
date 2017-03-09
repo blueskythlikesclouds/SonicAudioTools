@@ -120,10 +120,7 @@ namespace CsbBuilder.Audio
             short secondHistory1 = 0;
             short secondHistory2 = 0;
 
-            short coef1 = 0;
-            short coef2 = 0;
-
-            CalculateCoefficients(header.CutoffFrequency, header.SampleRate, out coef1, out coef2);
+            CalculateCoefficients(header.CutoffFrequency, header.SampleRate, out short coef1, out short coef2);
 
             source.Seek(header.DataPosition + 4, SeekOrigin.Begin);
 

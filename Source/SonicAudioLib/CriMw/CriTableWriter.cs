@@ -137,7 +137,7 @@ namespace SonicAudioLib.CriMw
             if (settings.EnableMask)
             {
                 destination.Position = headerPosition;
-                Methods.MaskCriTable(destination, header.Length);
+                Helpers.MaskCriTable(destination, header.Length);
             }
 
             destination.Seek(previousPosition, SeekOrigin.Begin);
@@ -267,7 +267,7 @@ namespace SonicAudioLib.CriMw
 
         public void WriteValue(int fieldIndex, object rowValue)
         {
-            if (!fields[fieldIndex].Flag.HasFlag(CriFieldFlag.RowStorage) || rowValue == null)
+            if (fieldIndex >= fields.Count || fieldIndex < 0 || !fields[fieldIndex].Flag.HasFlag(CriFieldFlag.RowStorage) || rowValue == null)
             {
                 return;
             }
@@ -304,7 +304,7 @@ namespace SonicAudioLib.CriMw
                         break;
                     case CriFieldFlag.Int32:
                     case CriFieldFlag.UInt32:
-                    case CriFieldFlag.Float:
+                    case CriFieldFlag.Single:
                     case CriFieldFlag.String:
                         position += 4;
                         break;
@@ -343,7 +343,7 @@ namespace SonicAudioLib.CriMw
                         break;
                     case CriFieldFlag.Int32:
                     case CriFieldFlag.UInt32:
-                    case CriFieldFlag.Float:
+                    case CriFieldFlag.Single:
                     case CriFieldFlag.String:
                         length += 4;
                         break;
@@ -429,9 +429,9 @@ namespace SonicAudioLib.CriMw
             EndianStream.WriteInt64BE(destination, value);
         }
 
-        private void WriteFloat(float value)
+        private void WriteSingle(float value)
         {
-            EndianStream.WriteFloatBE(destination, value);
+            EndianStream.WriteSingleBE(destination, value);
         }
 
         private void WriteDouble(double value)
@@ -482,96 +482,83 @@ namespace SonicAudioLib.CriMw
             destination.Write(buffer, 0, buffer.Length);
         }
 
-        private void WriteValue(object value)
+        private void WriteValue(object val)
         {
-            if (value == null)
+            switch (val)
             {
-                return;
-            }
+                case byte value:
+                    WriteByte(value);
+                    break;
 
-            if (value is byte)
-            {
-                WriteByte((byte)value);
-            }
+                case sbyte value:
+                    WriteSByte(value);
+                    break;
 
-            else if (value is sbyte)
-            {
-                WriteSByte((sbyte)value);
-            }
+                case ushort value:
+                    WriteUInt16(value);
+                    break;
 
-            else if (value is ushort)
-            {
-                WriteUInt16((ushort)value);
-            }
+                case short value:
+                    WriteInt16(value);
+                    break;
 
-            else if (value is short)
-            {
-                WriteInt16((short)value);
-            }
+                case uint value:
+                    WriteUInt32(value);
+                    break;
 
-            else if (value is uint)
-            {
-                WriteUInt32((uint)value);
-            }
+                case int value:
+                    WriteInt32(value);
+                    break;
 
-            else if (value is int)
-            {
-                WriteInt32((int)value);
-            }
+                case ulong value:
+                    WriteUInt64(value);
+                    break;
 
-            else if (value is ulong)
-            {
-                WriteUInt64((ulong)value);
-            }
+                case long value:
+                    WriteInt64(value);
+                    break;
 
-            else if (value is long)
-            {
-                WriteInt64((long)value);
-            }
+                case float value:
+                    WriteSingle(value);
+                    break;
 
-            else if (value is float)
-            {
-                WriteFloat((float)value);
-            }
+                case double value:
+                    WriteDouble(value);
+                    break;
 
-            else if (value is double)
-            {
-                WriteDouble((double)value);
-            }
+                case string value:
+                    WriteString(value);
+                    break;
 
-            else if (value is string)
-            {
-                WriteString((string)value);
-            }
+                case byte[] value:
+                    WriteData(value);
+                    break;
 
-            else if (value is byte[])
-            {
-                WriteData((byte[])value);
-            }
+                case Guid value:
+                    WriteGuid(value);
+                    break;
 
-            else if (value is Stream)
-            {
-                WriteStream((Stream)value);
-            }
+                case Stream stream:
+                    WriteStream(stream);
+                    break;
 
-            else if (value is FileInfo)
-            {
-                WriteFile((FileInfo)value);
-            }
+                case ModuleBase module:
+                    WriteModule(module);
+                    break;
 
-            else if (value is ModuleBase)
-            {
-                WriteModule((ModuleBase)value);
-            }
-
-            else if (value is Guid)
-            {
-                WriteGuid((Guid)value);
+                case FileInfo fileInfo:
+                    WriteFile(fileInfo);
+                    break;
             }
         }
 
         public void Dispose()
         {
+            if (status != Status.End)
+            {
+                WriteEndTable();
+            }
+
             fields.Clear();
             stringPool.Clear();
             vldPool.Clear();

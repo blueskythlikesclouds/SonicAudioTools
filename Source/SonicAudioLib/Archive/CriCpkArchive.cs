@@ -67,7 +67,7 @@ namespace SonicAudioLib.Archive
             {
                 if (align != 1)
                 {
-                    new NotImplementedException("Currently, alignment handling in .CPK files is broken. Always use 1.");
+                    new NotImplementedException("Alignment is currently not implemented.");
                 }
 
                 align = value;
@@ -108,9 +108,9 @@ namespace SonicAudioLib.Archive
             {
                 reader.Read();
 
-                bool latest = reader.ContainsField("CpkMode");
+                bool isLatestVersion = reader.ContainsField("CpkMode");
 
-                if (latest)
+                if (isLatestVersion)
                 {
                     mode = (CriCpkMode)reader.GetUInt32("CpkMode");
                 }
@@ -166,7 +166,7 @@ namespace SonicAudioLib.Archive
                             entry.Name = tocReader.GetString("FileName");
                             entry.Length = tocReader.GetUInt32("FileSize");
                             entry.Position = (long)tocReader.GetUInt64("FileOffset");
-                            entry.Id = latest ? tocReader.GetUInt32("ID") : tocReader.GetUInt32("Info");
+                            entry.Id = isLatestVersion ? tocReader.GetUInt32("ID") : tocReader.GetUInt32("Info");
                             entry.Comment = tocReader.GetString("UserString");
                             entry.IsCompressed = entry.Length != tocReader.GetUInt32("ExtractSize");
 
@@ -180,7 +180,7 @@ namespace SonicAudioLib.Archive
                                 entry.Position += tocPosition;
                             }
 
-                            entry.Position = Methods.Align(entry.Position, align);
+                            entry.Position = Helpers.Align(entry.Position, align);
 
                             etocReader.MoveToRow(tocReader.CurrentRow);
                             entry.UpdateDateTime = DateTimeFromCpkDateTime(etocReader.GetUInt64("UpdateDateTime"));
@@ -189,7 +189,7 @@ namespace SonicAudioLib.Archive
                         }
                     }
 
-                    if (mode == CriCpkMode.FileNameAndId && latest)
+                    if (mode == CriCpkMode.FileNameAndId && isLatestVersion)
                     {
                         using (CriTableReader itocReader = CriCpkSection.Open(source, itocPosition))
                         {
@@ -244,7 +244,7 @@ namespace SonicAudioLib.Archive
                     long entryPosition = contentPosition;
                     foreach (CriCpkEntry entry in entries.OrderBy(entry => entry.Id))
                     {
-                        entryPosition = Methods.Align(entryPosition, align);
+                        entryPosition = Helpers.Align(entryPosition, align);
 
                         entry.Position = entryPosition;
                         entryPosition += entry.Length;
@@ -253,7 +253,7 @@ namespace SonicAudioLib.Archive
 
                 else
                 {
-                    throw new Exception($"This CPK mode ({mode}) needs to be implemented. Please report this error with the file.");
+                    throw new NotImplementedException($"Unimplemented CPK mode ({mode})");
                 }
 
                 Comment = reader.GetString("Comment");
@@ -262,6 +262,12 @@ namespace SonicAudioLib.Archive
 
         public override void Write(Stream destination)
         {
+            string GetToolVersion()
+            {
+                AssemblyName assemblyName = Assembly.GetEntryAssembly().GetName();
+                return $"{assemblyName.Name}, {assemblyName.Version.ToString()}";
+            }
+
             VldPool vldPool = new VldPool(Align, 2048);
 
             using (CriCpkSection cpkSection = new CriCpkSection(destination, "CPK ", enableMask))
@@ -493,7 +499,7 @@ namespace SonicAudioLib.Archive
 
                 else
                 {
-                    throw new Exception($"This CPK mode ({mode}) isn't implemented yet! Please choose another mode.");
+                    throw new NotImplementedException($"Unimplemented CPK mode ({mode})");
                 }
 
                 cpkSection.Writer.WriteStartRow();
@@ -601,12 +607,6 @@ namespace SonicAudioLib.Archive
         {
             return ((((ulong)dateTime.Year * 0x100 + (uint)dateTime.Month) * 0x100 + (uint)dateTime.Day) * 0x100000000) +
                 ((((ulong)dateTime.Hour * 0x100 + (uint)dateTime.Minute) * 0x100 + (uint)dateTime.Second) * 0x100);
-        }
-
-        private string GetToolVersion()
-        {
-            AssemblyName assemblyName = Assembly.GetEntryAssembly().GetName();
-            return $"{assemblyName.Name}, {assemblyName.Version.ToString()}";
         }
 
         private class CriCpkSection : IDisposable

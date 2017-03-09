@@ -26,7 +26,7 @@ namespace AcbEditor
                 if (args[0].EndsWith(".acb"))
                 {
                     string baseDirectory = Path.GetDirectoryName(args[0]);
-                    string outputDirectoryPath = Path.Combine(baseDirectory, Path.GetFileNameWithoutExtension(args[0]));
+                    string outputDirectoryPath = Path.ChangeExtension(args[0], null);
                     string extAfs2ArchivePath = string.Empty;
 
                     Directory.CreateDirectory(outputDirectoryPath);
@@ -87,7 +87,7 @@ namespace AcbEditor
 
                             if (!found)
                             {
-                                throw new Exception("Cannot find the external .AWB file for this .ACB file. Please ensure that the external .AWB file is stored in the directory where the .ACB file is.");
+                                throw new FileNotFoundException("Cannot find the external .AWB file for this .ACB file. Please ensure that the external .AWB file is stored in the directory where the .ACB file is.");
                             }
                         }
 
@@ -358,9 +358,7 @@ namespace AcbEditor
         static bool CheckIfAfs2(Stream source)
         {
             long oldPosition = source.Position;
-            bool result = false;
-
-            result = EndianStream.ReadCString(source, 4) == "AFS2";
+            bool result = EndianStream.ReadCString(source, 4) == "AFS2";
             source.Seek(oldPosition, SeekOrigin.Begin);
 
             return result;

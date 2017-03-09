@@ -132,7 +132,6 @@ namespace CsbEditor
                     }
 
                     CriCpkArchive cpkArchive = new CriCpkArchive();
-                //cpkArchive.EnableMask = true;
 
                     CriTable csbFile = new CriTable();
                     csbFile.Load(csbPath);
@@ -187,19 +186,8 @@ namespace CsbEditor
                         if (streaming)
                         {
                             CriCpkEntry entry = new CriCpkEntry();
-
-                            int lastSlash = sdlName.LastIndexOf('/');
-                            if (lastSlash != -1)
-                            {
-                                entry.Name = sdlName.Substring(lastSlash + 1);
-                                entry.DirectoryName = sdlName.Substring(0, lastSlash);
-                            }
-
-                            else
-                            {
-                                entry.Name = sdlName;
-                            }
-
+                            entry.Name = Path.GetFileName(sdlName);
+                            entry.DirectoryName = Path.GetDirectoryName(sdlName);
                             entry.Id = (uint)cpkArchive.Count;
                             entry.FilePath = new FileInfo(Path.GetTempFileName());
                             junks.Add(entry.FilePath);
