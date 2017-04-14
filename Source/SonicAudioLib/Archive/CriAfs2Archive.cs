@@ -81,7 +81,7 @@ namespace SonicAudioLib.Archive
                     previousEntry.Length = afs2Entry.Position - previousEntry.Position;
                 }
 
-                afs2Entry.Position = Methods.Align(afs2Entry.Position, Align);
+                afs2Entry.Position = Helpers.Align(afs2Entry.Position, Align);
 
                 if (i == entryCount - 1)
                 {

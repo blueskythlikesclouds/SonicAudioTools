@@ -180,7 +180,7 @@ namespace SonicAudioLib.Archive
                                 entry.Position += tocPosition;
                             }
 
-                            entry.Position = Methods.Align(entry.Position, align);
+                            entry.Position = Helpers.Align(entry.Position, align);
 
                             etocReader.MoveToRow(tocReader.CurrentRow);
                             entry.UpdateDateTime = DateTimeFromCpkDateTime(etocReader.GetUInt64("UpdateDateTime"));
@@ -244,7 +244,7 @@ namespace SonicAudioLib.Archive
                     long entryPosition = contentPosition;
                     foreach (CriCpkEntry entry in entries.OrderBy(entry => entry.Id))
                     {
-                        entryPosition = Methods.Align(entryPosition, align);
+                        entryPosition = Helpers.Align(entryPosition, align);
 
                         entry.Position = entryPosition;
                         entryPosition += entry.Length;
@@ -460,7 +460,7 @@ namespace SonicAudioLib.Archive
 
                             dataWriter.WriteEndTable();
 
-                            itocSection.Writer.WriteValue("DataL", dataMemoryStream);
+                            itocSection.Writer.WriteValue("DataL", dataMemoryStream.ToArray());
                         }
 
                         using (MemoryStream dataMemoryStream = new MemoryStream())
@@ -482,7 +482,7 @@ namespace SonicAudioLib.Archive
 
                             dataWriter.WriteEndTable();
 
-                            itocSection.Writer.WriteValue("DataH", dataMemoryStream);
+                            itocSection.Writer.WriteValue("DataH", dataMemoryStream.ToArray());
                         }
 
                         itocSection.Writer.WriteValue("FilesL", (uint)filesL.Count);

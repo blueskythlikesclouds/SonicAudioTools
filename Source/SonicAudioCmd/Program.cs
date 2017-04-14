@@ -20,11 +20,11 @@ namespace SonicAudioCmd
     {
         static void Main(string[] args)
         {
-            using (Stream source = File.OpenRead(args[0]))
-            using (Stream destination = File.Create(args[0] + "-unmask"))
-            {
-                Methods.MaskCriTable(source, destination, source.Length);
-            }
+            CriTable table = new CriTable();
+            table.Load("test.utf");
+
+            Console.WriteLine(table.Rows[0]["testField"]);
+            Console.ReadLine();
         }
     }
 }
