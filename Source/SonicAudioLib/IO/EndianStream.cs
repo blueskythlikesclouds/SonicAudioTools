@@ -44,6 +44,30 @@ namespace SonicAudioLib.IO
             }
         }
 
+        public static void CopyPartTo(Stream source, Stream destination, long position, long length, int bufferSize)
+        {
+            source.Position = position;
+
+            byte[] buffer = new byte[bufferSize];
+
+            int num;
+            long totalWrittenBytes = 0;
+
+            while ((num = source.Read(buffer, 0, bufferSize)) != 0)
+            {
+                totalWrittenBytes += num;
+
+                if (totalWrittenBytes > length)
+                {
+                    num -= (int)(totalWrittenBytes - length);
+                    destination.Write(buffer, 0, num);
+                    break;
+                }
+
+                destination.Write(buffer, 0, num);
+            }
+        }
+
         public static byte[] ReadBytes(Stream source, int length)
         {
             byte[] buffer = new byte[length];
@@ -225,14 +249,18 @@ namespace SonicAudioLib.IO
 
         public static ulong ReadUInt64(Stream source)
         {
-            return (uint)(source.ReadByte() | source.ReadByte() << 8 | source.ReadByte() << 16 | source.ReadByte() << 24) |
-                ((ulong)(source.ReadByte() | source.ReadByte() << 8 | source.ReadByte() << 16 | source.ReadByte() << 24) << 32);
+            return ((uint)source.ReadByte() | (ulong)source.ReadByte() << 8 |
+                (ulong)source.ReadByte() << 16 | (ulong)source.ReadByte() << 24 |
+                (ulong)source.ReadByte() << 32 | (ulong)source.ReadByte() << 40 |
+                (ulong)source.ReadByte() << 48 | (ulong)source.ReadByte() << 56);
         }
 
         public static ulong ReadUInt64BE(Stream source)
         {
-            return (uint)(source.ReadByte() << 24 | source.ReadByte() << 16 | source.ReadByte() << 8 | source.ReadByte()) |
-                ((ulong)(source.ReadByte() << 24 | source.ReadByte() << 16 | source.ReadByte() << 8 | source.ReadByte()) << 32);
+            return ((ulong)source.ReadByte() << 56 | (ulong)source.ReadByte() << 48 |
+                (ulong)source.ReadByte() << 40 | (ulong)source.ReadByte() << 32 |
+                (ulong)source.ReadByte() << 24 | (ulong)source.ReadByte() << 16 |
+                (ulong)source.ReadByte() << 8 | (uint)source.ReadByte());
         }
 
         public static void WriteUInt64(Stream destination, ulong value)
@@ -261,14 +289,18 @@ namespace SonicAudioLib.IO
 
         public static long ReadInt64(Stream source)
         {
-            return (uint)(source.ReadByte() | source.ReadByte() << 8 | source.ReadByte() << 16 | source.ReadByte() << 24) | 
-                ((long)(source.ReadByte() | source.ReadByte() << 8 | source.ReadByte() << 16 | source.ReadByte() << 24) << 32);
+            return source.ReadByte() | source.ReadByte() << 8 |
+                source.ReadByte() << 16 | source.ReadByte() << 24 |
+                source.ReadByte() << 32 | source.ReadByte() << 40 |
+                source.ReadByte() << 48 | source.ReadByte() << 56;
         }
 
         public static long ReadInt64BE(Stream source)
         {
-            return (uint)(source.ReadByte() << 24 | source.ReadByte() << 16 | source.ReadByte() << 8 | source.ReadByte()) | 
-                ((long)(source.ReadByte() << 24 | source.ReadByte() << 16 | source.ReadByte() << 8 | source.ReadByte()) << 32);
+            return source.ReadByte() << 56 | source.ReadByte() << 48 |
+                source.ReadByte() << 40 | source.ReadByte() << 32 |
+                source.ReadByte() << 24 | source.ReadByte() << 16 |
+                source.ReadByte() << 8 | source.ReadByte();
         }
 
         public static void WriteInt64(Stream destination, long value)
