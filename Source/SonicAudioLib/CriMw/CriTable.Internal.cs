@@ -51,6 +51,5 @@ namespace SonicAudioLib.CriMw
         public uint Position;
         public uint Length;
         public object Value;
-        public Type Type;
     }
 }

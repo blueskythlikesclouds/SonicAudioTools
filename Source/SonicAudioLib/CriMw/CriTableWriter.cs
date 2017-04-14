@@ -272,11 +272,6 @@ namespace SonicAudioLib.CriMw
                 return;
             }
 
-            if (!fields[fieldIndex].Type.Equals(rowValue))
-            {
-                rowValue = Convert.ChangeType(rowValue, fields[fieldIndex].Type);
-            }
-
             GoToValue(fieldIndex);
             WriteValue(rowValue);
         }
