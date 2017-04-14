@@ -1,7 +1,8 @@
 # Sonic Audio Tools
 Sonic Audio Tools is a set of tools for editing the audio formats seen in Sonic the Hedgehog games. Currently, it's mostly focused on CRIWARE's audio formats, this means that these tools can be used to edit files from any game, as long as they are CSB, CPK, ACB or AWB.
 ## Releases
-[Here.](https://ci.appveyor.com/project/blueskythlikesclouds/sonicaudiotools/build/1.0.0/artifacts)
+[Here.](https://ci.appveyor.com/project/blueskythlikesclouds/sonicaudiotools)
+You can get the binaries from Artifacts tab.
 
 ## Building
 1. Clone from [GitHub](https://github.com/blueskythlikesclouds/SonicAudioTools.git) `git clone https://github.com/blueskythlikesclouds/SonicAudioTools.git`
