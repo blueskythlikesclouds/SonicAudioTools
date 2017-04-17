@@ -11,12 +11,17 @@ namespace SonicAudioLib.Module
         public abstract void Read(Stream source);
         public abstract void Write(Stream destination);
 
-        public virtual void Load(string sourceFileName)
+        public virtual void Load(string sourceFileName, int bufferSize)
         {
-            using (Stream source = File.OpenRead(sourceFileName))
+            using (Stream source = new FileStream(sourceFileName, FileMode.Open, FileAccess.Read, FileShare.None, bufferSize))
             {
                 Read(source);
             }
+        }
+
+        public virtual void Load(string sourceFileName)
+        {
+            Load(sourceFileName, 4096);
         }
 
         public virtual void Load(byte[] sourceByteArray)
@@ -29,7 +34,12 @@ namespace SonicAudioLib.Module
 
         public virtual void Save(string destinationFileName)
         {
-            using (Stream destination = File.Create(destinationFileName))
+            Save(destinationFileName, 4096);
+        }
+
+        public virtual void Save(string destinationFileName, int bufferSize)
+        {
+            using (Stream destination = File.Create(destinationFileName, bufferSize))
             {
                 Write(destination);
             }
@@ -42,11 +52,6 @@ namespace SonicAudioLib.Module
                 Write(destination);
                 return destination.ToArray();
             }
-        }
-
-        public virtual long CalculateLength()
-        {
-            return -1;
         }
     }
 }

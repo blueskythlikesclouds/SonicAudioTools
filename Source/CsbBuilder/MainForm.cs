@@ -23,6 +23,7 @@ using CsbBuilder.Serialization;
 using CsbBuilder.Properties;
 
 using SonicAudioLib.IO;
+using SonicAudioLib.Archive;
 
 using NAudio.Wave;
 
@@ -30,6 +31,8 @@ namespace CsbBuilder
 {
     public partial class MainForm : Form
     {
+        public static Settings Settings;
+
         private bool enabled = false;
         private bool saved = true;
         private CsbProject project = null;
@@ -47,6 +50,8 @@ namespace CsbBuilder
             imageList.Images.Add("Folder", Resources.Folder);
             imageList.Images.Add("FolderOpen", Resources.FolderOpen);
             imageList.Images.Add("Sound", Resources.Sound);
+
+            Settings = Settings.Load();
         }
 
         public void ClearTreeViews()
@@ -263,12 +268,13 @@ namespace CsbBuilder
 
             int index = 0;
 
-            while (collection.ContainsKey($"Cue_{index}"))
+            string parentName = parent != null && Settings.NameNodeAfterParent ? parent.Name : "Cue";
+            while (collection.ContainsKey($"{parentName}_{index}"))
             {
                 index++;
             }
 
-            TreeNode treeNode = nodeIndex == -1 ? collection.Add($"Cue_{index}") : collection.Insert(nodeIndex, $"Cue_{index}");
+            TreeNode treeNode = nodeIndex == -1 ? collection.Add($"{parentName}_{index}") : collection.Insert(nodeIndex, $"{parentName}_{index}");
             treeNode.Name = treeNode.Text;
             treeNode.ContextMenuStrip = cueReferenceMenu;
             BuilderCueNode cueNode = new BuilderCueNode();
@@ -331,12 +337,13 @@ namespace CsbBuilder
 
             int index = 0;
 
-            while (collection.ContainsKey($"Synth_{index}"))
+            string parentName = parent != null && Settings.NameNodeAfterParent ? parent.Name : "Synth";
+            while (collection.ContainsKey($"{parentName}_{index}"))
             {
                 index++;
             }
 
-            TreeNode treeNode = nodeIndex == -1 ? collection.Add($"Synth_{index}") : collection.Insert(nodeIndex, $"Synth_{index}");
+            TreeNode treeNode = nodeIndex == -1 ? collection.Add($"{parentName}_{index}") : collection.Insert(nodeIndex, $"{parentName}_{index}");
             treeNode.Name = treeNode.Text;
             treeNode.ContextMenuStrip = trackMenu;
             BuilderSynthNode synthNode = new BuilderSynthNode();
@@ -364,12 +371,13 @@ namespace CsbBuilder
 
             int index = 0;
 
-            while (collection.ContainsKey($"Sound_{index}"))
+            string parentName = parent != null && Settings.NameNodeAfterParent ? parent.Name : "Sound";
+            while (collection.ContainsKey($"{parentName}_{index}"))
             {
                 index++;
             }
 
-            TreeNode treeNode = nodeIndex == -1 ? collection.Add($"Sound_{index}") : collection.Insert(nodeIndex, $"Sound_{index}");
+            TreeNode treeNode = nodeIndex == -1 ? collection.Add($"{parentName}_{index}") : collection.Insert(nodeIndex, $"{parentName}_{index}");
             treeNode.Name = treeNode.Text;
             treeNode.ContextMenuStrip = trackItemMenu;
             treeNode.ImageIndex = 3;
@@ -398,12 +406,13 @@ namespace CsbBuilder
 
             int index = 0;
 
-            while (collection.ContainsKey($"SoundElement_{index}"))
+            string parentName = parent != null && Settings.NameNodeAfterParent ? parent.Name : "SoundElement";
+            while (collection.ContainsKey($"{parentName}_{index}"))
             {
                 index++;
             }
 
-            TreeNode treeNode = nodeIndex == -1 ? collection.Add($"SoundElement_{index}") : collection.Insert(nodeIndex, $"SoundElement_{index}");
+            TreeNode treeNode = nodeIndex == -1 ? collection.Add($"{parentName}_{index}") : collection.Insert(nodeIndex, $"{parentName}_{index}");
             treeNode.Name = treeNode.Text;
             treeNode.ContextMenuStrip = soundElementMenu;
             BuilderSoundElementNode soundElementNode = new BuilderSoundElementNode();
@@ -424,12 +433,13 @@ namespace CsbBuilder
 
             int index = 0;
 
-            while (collection.ContainsKey($"AISAC_{index}"))
+            string parentName = parent != null && Settings.NameNodeAfterParent ? parent.Name : "AISAC";
+            while (collection.ContainsKey($"{parentName}_{index}"))
             {
                 index++;
             }
 
-            TreeNode treeNode = nodeIndex == -1 ? collection.Add($"AISAC_{index}") : collection.Insert(nodeIndex, $"AISAC_{index}");
+            TreeNode treeNode = nodeIndex == -1 ? collection.Add($"{parentName}_{index}") : collection.Insert(nodeIndex, $"{parentName}_{index}");
             treeNode.Name = treeNode.Text;
             treeNode.ContextMenuStrip = aisacNodeMenu;
             BuilderAisacNode aisacNode = aisacNodeToImport != null ? aisacNodeToImport : new BuilderAisacNode();
@@ -448,12 +458,13 @@ namespace CsbBuilder
 
             int index = 0;
 
-            while (collection.ContainsKey($"VoiceLimitGroup_{index}"))
+            string parentName = parent != null && Settings.NameNodeAfterParent ? parent.Name : "VoiceLimitGroup";
+            while (collection.ContainsKey($"{parentName}_{index}"))
             {
                 index++;
             }
 
-            TreeNode treeNode = nodeIndex == -1 ? collection.Add($"VoiceLimitGroup_{index}") : collection.Insert(nodeIndex, $"VoiceLimitGroup_{index}");
+            TreeNode treeNode = nodeIndex == -1 ? collection.Add($"{parentName}_{index}") : collection.Insert(nodeIndex, $"{parentName}_{index}");
             treeNode.Name = treeNode.Text;
             treeNode.ContextMenuStrip = nodeMenu;
             BuilderVoiceLimitGroupNode voiceLimitGroup = new BuilderVoiceLimitGroupNode();
@@ -472,6 +483,7 @@ namespace CsbBuilder
 
             int index = 0;
 
+            string parentName = parent != null && Settings.NameNodeAfterParent ? parent.Name : "Folder";
             while (collection.ContainsKey($"Folder_{index}"))
             {
                 index++;
@@ -758,46 +770,64 @@ namespace CsbBuilder
             UpdateNodes(voiceLimitGroupTree.Nodes);
         }
 
-        private void OnRenameEnd(object sender, NodeLabelEditEventArgs e)
+        private void RenameNode(TreeNode node, string name)
         {
-            if (string.IsNullOrEmpty(e.Label))
+            saved = false;
+            string previousName = node.FullPath;
+
+            // check siblings before rename
+            TreeNodeCollection collection = node.Parent != null ? node.Parent.Nodes : node.TreeView.Nodes;
+
+            if (collection.ContainsKey(name))
             {
-                e.CancelEdit = true;
-                return;
+                int index = -1;
+                string _name = name;
+                while (collection.ContainsKey(name))
+                {
+                    name = $"{_name}_{++index}";
+                }
             }
 
-            saved = false;
-            string previousName = e.Node.FullPath;
+            node.Name = name;
+            node.Text = name;
 
-            e.Node.Name = e.Label;
-            e.Node.Text = e.Label;
-
-            string fullPath = e.Node.FullPath;
+            string fullPath = node.FullPath;
 
             UpdateAllNodes();
 
-            if (e.Node.Tag is BuilderSynthNode)
+            if (node.Tag is BuilderSynthNode)
             {
                 project.CueNodes.Where(cue => cue.SynthReference == previousName).ToList().ForEach(cue => cue.SynthReference = fullPath);
                 project.SynthNodes.Where(synth => synth.Children.Contains(previousName)).ToList().ForEach(synth => synth.Children[synth.Children.IndexOf(previousName)] = fullPath);
             }
 
-            else if (e.Node.Tag is BuilderSoundElementNode)
+            else if (node.Tag is BuilderSoundElementNode)
             {
                 project.SynthNodes.Where(synth => synth.SoundElementReference == previousName).ToList().ForEach(synth => synth.SoundElementReference = fullPath);
             }
 
-            else if (e.Node.Tag is BuilderAisacNode)
+            else if (node.Tag is BuilderAisacNode)
             {
                 project.SynthNodes.Where(synth => synth.AisacReference == previousName).ToList().ForEach(synth => synth.AisacReference = fullPath);
             }
 
-            else if (e.Node.Tag is BuilderVoiceLimitGroupNode)
+            else if (node.Tag is BuilderVoiceLimitGroupNode)
             {
                 project.SynthNodes.Where(synth => synth.VoiceLimitGroupReference == previousName).ToList().ForEach(synth => synth.VoiceLimitGroupReference = fullPath);
             }
 
             propertyGrid.Refresh();
+        }
+
+        private void OnRenameEnd(object sender, NodeLabelEditEventArgs e)
+        {
+            if (string.IsNullOrEmpty(e.Label) || e.Label == e.Node.Name)
+            {
+                e.CancelEdit = true;
+                return;
+            }
+
+            RenameNode(e.Node, e.Label);
         }
 
         private void OnPropertyChange(object s, PropertyValueChangedEventArgs e)
@@ -1288,6 +1318,11 @@ namespace CsbBuilder
                             else
                             {
                                 synthNode.SoundElementReference = setReferenceForm.SelectedNode.FullPath;
+
+                                if (Settings.RenameToSoundElement)
+                                {
+                                    RenameNode(selectedNode, setReferenceForm.SelectedNode.Name);
+                                }
                             }
                         }
 
@@ -1353,7 +1388,7 @@ namespace CsbBuilder
 
         public void ReadAdx(string path, out uint sampleRate, out byte channelCount, out uint sampleCount)
         {
-            AdxHeader header = AdxConverter.LoadHeader(path);
+            AdxHeader header = AdxFileReader.LoadHeader(path);
             sampleRate = header.SampleRate;
             channelCount = header.ChannelCount;
             sampleCount = header.SampleCount;
@@ -1391,111 +1426,28 @@ namespace CsbBuilder
 
         private void AddSoundElementSound(BuilderSoundElementNode soundElementNode, double volume, double pitch, int sampleCount, int delayTime)
         {
-            BufferedWaveProvider provider = null;
-            int delayInBytes = 0;
+            WaveStream waveStream = null;
 
-            if (!string.IsNullOrEmpty(soundElementNode.Intro))
+            if (!string.IsNullOrEmpty(soundElementNode.Intro) && string.IsNullOrEmpty(soundElementNode.Loop))
             {
-                provider = AdxConverter.Decode(project.GetFullAudioPath(soundElementNode.Intro), volume, pitch);
+                waveStream = new AdxFileReader(project.GetFullAudioPath(soundElementNode.Intro)) { Volume = volume, Pitch = pitch, DelayTime = delayTime };
+            } 
 
-                if (delayTime != 0)
-                {
-                    delayInBytes = GetByteCountFromMiliseconds(delayTime, provider.WaveFormat.SampleRate, provider.WaveFormat.Channels, provider.WaveFormat.BitsPerSample);
-
-                    byte[] buffer = new byte[provider.BufferLength];
-                    provider.Read(buffer, 0, buffer.Length);
-
-                    provider = new BufferedWaveProvider(provider.WaveFormat);
-                    provider.BufferLength = delayInBytes + buffer.Length;
-                    provider.ReadFully = false;
-
-                    provider.AddSamples(new byte[delayInBytes], 0, delayInBytes);
-                    provider.AddSamples(buffer, 0, buffer.Length);
-                }
+            else if (string.IsNullOrEmpty(soundElementNode.Intro) && !string.IsNullOrEmpty(soundElementNode.Loop))
+            {
+                waveStream = new ExtendedAdxFileReader(project.GetFullAudioPath(soundElementNode.Loop)) { Volume = volume, Pitch = pitch, DelayTime = delayTime };
             }
 
-            // If there's ANYTHING that can loop audio files in NAudio... please, tell me!
-            if (!string.IsNullOrEmpty(soundElementNode.Loop))
+            else if (!string.IsNullOrEmpty(soundElementNode.Intro) && !string.IsNullOrEmpty(soundElementNode.Loop))
             {
-                BufferedWaveProvider loopProvider = AdxConverter.Decode(project.GetFullAudioPath(soundElementNode.Loop), volume, pitch);
-
-                if (provider == null && delayTime != 0)
-                {
-                    delayInBytes = GetByteCountFromMiliseconds(delayTime, loopProvider.WaveFormat.SampleRate, loopProvider.WaveFormat.Channels, loopProvider.WaveFormat.BitsPerSample);
-                }
-
-                int writtenByteCount = 0;
-
-                byte[] intro = null;
-
-                byte[] loop = new byte[loopProvider.BufferLength];
-                loopProvider.Read(loop, 0, loop.Length);
-
-                if (provider != null)
-                {
-                    intro = new byte[provider.BufferLength];
-                    provider.Read(intro, 0, intro.Length);
-                }
-
-                provider = new BufferedWaveProvider(loopProvider.WaveFormat);
-                provider.BufferLength = 0;
-
-                if (sampleCount != -1)
-                {
-                    provider.BufferLength = delayInBytes + (sampleCount * provider.WaveFormat.Channels * provider.WaveFormat.BitsPerSample / 8);
-                }
-
-                else
-                {
-                    if (intro != null)
-                    {
-                        provider.BufferLength += intro.Length;
-                    }
-
-                    provider.BufferLength += loop.Length;
-                }
-
-                provider.ReadFully = false;
-
-                if (intro != null)
-                {
-                    provider.AddSamples(intro, 0, intro.Length);
-                    writtenByteCount += intro.Length;
-                }
-
-                else if (intro == null && delayTime != 0)
-                {
-                    provider.BufferLength += delayInBytes;
-                    provider.AddSamples(new byte[delayInBytes], 0, delayInBytes);
-                    writtenByteCount += delayInBytes;
-                }
-
-                if (sampleCount != -1)
-                {
-                    while (writtenByteCount < provider.BufferLength)
-                    {
-                        if ((writtenByteCount + loop.Length) > provider.BufferLength)
-                        {
-                            provider.AddSamples(loop, 0, provider.BufferLength - writtenByteCount);
-                            break;
-                        }
-
-                        writtenByteCount += loop.Length;
-                        provider.AddSamples(loop, 0, loop.Length);
-                    }
-                }
-
-                else
-                {
-                    provider.AddSamples(loop, 0, loop.Length);
-                }
+                waveStream = new ExtendedAdxFileReader(project.GetFullAudioPath(soundElementNode.Intro), project.GetFullAudioPath(soundElementNode.Loop)) { Volume = volume, Pitch = pitch, DelayTime = delayTime };
             }
 
-            if (provider != null)
+            if (waveStream != null)
             {
-                WaveOut sound = new WaveOut();
-                sound.Init(provider);
-                sounds.Add(sound);
+                DirectSoundOut waveOut = new DirectSoundOut();
+                waveOut.Init(waveStream);
+                sounds.Add(waveOut);
             }
         }
 
@@ -1552,7 +1504,7 @@ namespace CsbBuilder
                 synthTreeNode = synthTreeNode.Parent;
             }
 
-            return pitch / 1000.0;
+            return pitch / 100.0;
         }
 
         private double GetAbsoluteVolume(TreeNode synthTreeNode)
@@ -2170,6 +2122,157 @@ namespace CsbBuilder
                                     aisacSerializer.Serialize(destination, selectedNode.Tag);
                                 }
                             }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void OpenSettings(object sender, EventArgs e)
+        {
+            using (SettingsForm settings = new SettingsForm())
+            {
+                settings.ShowDialog(this);
+            }
+        }
+
+        private void convertADXsToWAVToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Title = "Convert ADX Files",
+                FileName = "Select ADX files you want to convert and press Open",
+                Filter = "ADX Files|*.adx",
+                DefaultExt = "adx",
+                Multiselect = true,
+            })
+            {
+                if (openFileDialog.ShowDialog(this) == DialogResult.OK)
+                {
+                    using (SaveFileDialog saveFileDialog = new SaveFileDialog
+                    {
+                        Title = "Output Directory",
+                        FileName = "Enter into a directory and press Save",
+                    })
+                    {
+                        if (saveFileDialog.ShowDialog(this) == DialogResult.OK)
+                        {
+                            foreach (string fileName in openFileDialog.FileNames)
+                            {
+                                using (AdxFileReader reader = new AdxFileReader(fileName))
+                                using (WaveFileWriter writer = new WaveFileWriter(
+                                    Path.Combine(
+                                        Path.GetDirectoryName(saveFileDialog.FileName),
+                                        Path.GetFileNameWithoutExtension(fileName) + ".wav"),
+                                    reader.WaveFormat))
+                                {
+                                    int num;
+                                    byte[] buffer = new byte[Settings.BufferSize];
+
+                                    while ((num = reader.Read(buffer, 0, Settings.BufferSize)) != 0)
+                                    {
+                                        writer.Write(buffer, 0, num);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void extractAAXToFolderToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Title = "Extract AAX Files",
+                FileName = "Select AAX files you want to extract and press Open",
+                Filter = "AAX Files|*.aax",
+                DefaultExt = "aax",
+                Multiselect = true,
+            })
+            {
+                if (openFileDialog.ShowDialog(this) == DialogResult.OK)
+                {
+                    using (SaveFileDialog saveFileDialog = new SaveFileDialog
+                    {
+                        Title = "Output Directory",
+                        FileName = "Enter into a directory and press Save",
+                    })
+                    {
+                        if (saveFileDialog.ShowDialog(this) == DialogResult.OK)
+                        {
+                            foreach (string fileName in openFileDialog.FileNames)
+                            {
+                                CriAaxArchive aaxArchive = new CriAaxArchive();
+                                aaxArchive.Load(fileName, Settings.BufferSize);
+
+                                foreach (CriAaxEntry entry in aaxArchive)
+                                {
+                                    using (Stream source = File.OpenRead(fileName))
+                                    using (Stream destination = File.Create(
+                                        Path.Combine(
+                                            Path.GetDirectoryName(saveFileDialog.FileName),
+                                            $"{Path.GetFileNameWithoutExtension(fileName)}_{entry.Flag}.adx")))
+                                    {
+                                        EndianStream.CopyPartTo(source, destination, entry.Position, entry.Length, Settings.BufferSize);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void packFolderToAAXToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Title = "Extract ADX Files",
+                FileName = "Select ADX files you want to pack and press Open",
+                Filter = "ADX Files|*.adx",
+                DefaultExt = "adx",
+                Multiselect = true,
+            })
+            {
+                string[] files = null;
+                DialogResult dialogResult;
+
+                while ((dialogResult = openFileDialog.ShowDialog(this)) == DialogResult.OK)
+                {
+                    if (openFileDialog.FileNames.Length > 2)
+                    {
+                        MessageBox.Show("You can select maximum 2 ADX files.", "CSB Builder", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+
+                    else
+                    {
+                        files = openFileDialog.FileNames;
+                        break;
+                    }
+                }
+
+                if (dialogResult == DialogResult.OK)
+                {
+                    using (SaveFileDialog saveFileDialog = new SaveFileDialog
+                    {
+                        Title = "Output File",
+                        FileName = "*.aax",
+                        Filter = "AAX Files|*.aax",
+                        DefaultExt = "aax",
+                    })
+                    {
+                        if (saveFileDialog.ShowDialog(this) == DialogResult.OK)
+                        {
+                            CriAaxArchive archive = new CriAaxArchive();
+
+                            for (int i = 0; i < files.Length; i++)
+                            {
+                                archive.Add(new CriAaxEntry { FilePath = new FileInfo(files[i]), Flag = (CriAaxEntryFlag)i });
+                            }
+
+                            archive.Save(saveFileDialog.FileName);
                         }
                     }
                 }

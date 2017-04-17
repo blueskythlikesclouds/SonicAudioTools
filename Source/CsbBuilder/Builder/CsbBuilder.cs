@@ -307,11 +307,11 @@ namespace CsbBuilder.Builder
             });
 
             // Finally, serialize the CSB file.
-            CriTableSerializer.Serialize(outputFileName, cueSheetTables, CriTableWriterSettings.AdxSettings);
+            CriTableSerializer.Serialize(outputFileName, cueSheetTables, CriTableWriterSettings.AdxSettings, MainForm.Settings.BufferSize);
 
             if (cpkArchive.Count > 0)
             {
-                cpkArchive.Save(Path.ChangeExtension(outputFileName, "cpk"));
+                cpkArchive.Save(Path.ChangeExtension(outputFileName, "cpk"), MainForm.Settings.BufferSize);
             }
 
             foreach (FileInfo junk in junks)

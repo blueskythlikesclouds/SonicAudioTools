@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 
 namespace SonicAudioLib.IO
 {
@@ -170,10 +171,10 @@ namespace SonicAudioLib.IO
         /// </summary>
         public byte[] ToArray()
         {
-            using (MemoryStream memoryStream = new MemoryStream())
+            using (MemoryStream destination = new MemoryStream())
             {
-                CopyTo(memoryStream);
-                return memoryStream.ToArray();
+                CopyTo(destination);
+                return destination.ToArray();
             }
         }
 

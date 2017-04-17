@@ -20,11 +20,28 @@ namespace SonicAudioCmd
     {
         static void Main(string[] args)
         {
-            CriTable table = new CriTable();
-            table.Load("test.utf");
+            try
+            {
+                CriCpkArchive archive = new CriCpkArchive();
+                archive.Load(args[0]);
 
-            Console.WriteLine(table.Rows[0]["testField"]);
-            Console.ReadLine();
+                using (Stream source = File.OpenRead(args[0]))
+                {
+                    foreach (CriCpkEntry entry in archive)
+                    {
+                        using (Stream destination = File.Create(entry.Name))
+                        {
+                            EndianStream.CopyPartTo(source, destination, entry.Position, entry.Length, ushort.MaxValue);
+                        }
+                    }
+                }
+            }
+
+            catch (Exception exception)
+            {
+                Console.WriteLine(exception);
+                Console.ReadLine();
+            }
         }
     }
 }
