@@ -15,8 +15,8 @@ namespace CsbBuilder.Project
 {
     public class CsbProject
     {
-        private string name = "New CSB Project";
-        private DirectoryInfo directory = new DirectoryInfo(Path.Combine(Program.ProjectsPath, "New CSB Project"));
+        private string name;
+        private DirectoryInfo directory;
 
         private List<BuilderCueNode> cueNodes = new List<BuilderCueNode>();
         private List<BuilderSynthNode> synthNodes = new List<BuilderSynthNode>();
@@ -256,6 +256,12 @@ namespace CsbBuilder.Project
         {
             directory.Create();
             AudioDirectory.Create();
+        }
+
+        public CsbProject()
+        {
+            name = MainForm.Settings.ProjectsName;
+            directory = new DirectoryInfo(Path.Combine(MainForm.Settings.ProjectsDirectory, name));
         }
     }
 }

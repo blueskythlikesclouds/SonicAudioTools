@@ -29,7 +29,7 @@ namespace CsbBuilder.Importer
             CriCpkArchive cpkArchive = new CriCpkArchive();
 
             // First, deserialize the main tables
-            List<SerializationCueSheetTable> cueSheets = CriTableSerializer.Deserialize<SerializationCueSheetTable>(path);
+            List<SerializationCueSheetTable> cueSheets = CriTableSerializer.Deserialize<SerializationCueSheetTable>(path, MainForm.Settings.BufferSize);
 
             /* Deserialize all the tables we need to import.
              * None = 0,
@@ -111,7 +111,7 @@ namespace CsbBuilder.Importer
                     File.WriteAllBytes(outputFileName, data);
 
                     // Read the samples just in case
-                    soundElementNode.SampleCount += AdxConverter.LoadHeader(outputFileName).SampleCount;
+                    soundElementNode.SampleCount += AdxFileReader.LoadHeader(outputFileName).SampleCount;
                 }
 
                 project.SoundElementNodes.Add(soundElementNode);

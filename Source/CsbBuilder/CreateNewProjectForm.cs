@@ -30,7 +30,7 @@ namespace CsbBuilder
             maskedTextBox1.Text = Path.GetFileNameWithoutExtension(name);
 
             string directoryName = Path.GetDirectoryName(name);
-            maskedTextBox2.Text = !string.IsNullOrEmpty(directoryName) ? Path.ChangeExtension(name, null) : Path.Combine(Program.ProjectsPath, name);
+            maskedTextBox2.Text = !string.IsNullOrEmpty(directoryName) && MainForm.Settings.ImportedCsbProjectDirectory == Settings.ProjectDirectory.DirectoryOfCsb ? Path.ChangeExtension(name, null) : Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), MainForm.Settings.ProjectsDirectory, Path.GetFileNameWithoutExtension(name));
         }
 
         public CreateNewProjectForm()

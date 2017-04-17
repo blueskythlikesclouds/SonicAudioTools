@@ -8,6 +8,7 @@ using System.IO;
 using System.Reflection;
 using System.Globalization;
 
+using NAudio.Wave;
 
 namespace CsbBuilder
 {
@@ -36,12 +37,6 @@ namespace CsbBuilder
         [STAThread]
         static void Main(string[] args)
         {
-            if (args.Length > 0)
-            {
-                Audio.AdxConverter.ConvertToWav(args[0]);
-                return;
-            }
-
             Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo("en-US");
             Application.ThreadException += OnException;
             Application.EnableVisualStyles();

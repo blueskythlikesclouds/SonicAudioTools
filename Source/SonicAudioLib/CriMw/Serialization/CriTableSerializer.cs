@@ -25,7 +25,12 @@ namespace SonicAudioLib.CriMw.Serialization
 
         public static void Serialize<T>(string destinationFileName, List<T> objects, CriTableWriterSettings settings)
         {
-            using (Stream destination = File.Create(destinationFileName))
+            Serialize(destinationFileName, objects, settings, 4096);
+        }
+
+        public static void Serialize<T>(string destinationFileName, List<T> objects, CriTableWriterSettings settings, int bufferSize)
+        {
+            using (Stream destination = File.Create(destinationFileName, bufferSize))
             {
                 Serialize(destination, objects, settings);
             }
@@ -226,7 +231,12 @@ namespace SonicAudioLib.CriMw.Serialization
 
         public static List<T> Deserialize<T>(string sourceFileName)
         {
-            return Deserialize(sourceFileName, typeof(T)).OfType<T>().ToList();
+            return Deserialize<T>(sourceFileName, 4096);
+        }
+
+        public static List<T> Deserialize<T>(string sourceFileName, int bufferSize)
+        {
+            return Deserialize(sourceFileName, typeof(T), bufferSize).OfType<T>().ToList();
         }
 
         public static List<T> Deserialize<T>(Stream source)
@@ -247,14 +257,14 @@ namespace SonicAudioLib.CriMw.Serialization
             }
         }
 
-        public static ArrayList Deserialize(string sourceFileName, Type type)
+        public static ArrayList Deserialize(string sourceFileName, Type type, int bufferSize)
         {
             if (!File.Exists(sourceFileName))
             {
                 return new ArrayList();
             }
 
-            using (Stream source = File.OpenRead(sourceFileName))
+            using (Stream source = new FileStream(sourceFileName, FileMode.Open, FileAccess.Read, FileShare.None, bufferSize))
             {
                 return Deserialize(source, type);
             }
@@ -313,6 +323,8 @@ namespace SonicAudioLib.CriMw.Serialization
                         {
                             value = Convert.ChangeType(value, Enum.GetUnderlyingType(propertyInfo.PropertyType));
                         }
+
+                        value = Convert.ChangeType(value, propertyInfo.PropertyType);
 
                         propertyInfo.SetValue(obj, value);
                     }

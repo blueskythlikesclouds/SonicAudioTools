@@ -473,7 +473,7 @@ namespace SonicAudioLib.CriMw
         private void WriteModule(ModuleBase module)
         {
             WriteUInt32((uint)vldPool.Put(module));
-            WriteUInt32((uint)module.CalculateLength());
+            WriteUInt32(0);
         }
 
         private void WriteGuid(Guid guid)

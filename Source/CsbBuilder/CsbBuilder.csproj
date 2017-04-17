@@ -53,6 +53,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Audio\AdxFileReader.cs" />
     <Compile Include="BuilderNode\BuilderAisacGraphNode.cs" />
     <Compile Include="BuilderNode\BuilderAisacNode.cs" />
     <Compile Include="BuilderNode\BuilderAisacPointNode.cs" />
@@ -74,9 +75,9 @@
     <Compile Include="CreateNewProjectForm.Designer.cs">
       <DependentUpon>CreateNewProjectForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Audio\AdxConverter.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Importer\CsbImporter.cs" />
+    <Compile Include="Settings.cs" />
     <Compile Include="SetAudioForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -107,6 +108,12 @@
     <Compile Include="SetReferenceForm.Designer.cs">
       <DependentUpon>SetReferenceForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="SettingsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SettingsForm.Designer.cs">
+      <DependentUpon>SettingsForm.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="ExceptionForm.resx">
       <DependentUpon>ExceptionForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -132,16 +139,10 @@
     <EmbeddedResource Include="SetReferenceForm.resx">
       <DependentUpon>SetReferenceForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="SettingsForm.resx">
+      <DependentUpon>SettingsForm.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="packages.config" />
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -223,6 +224,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="NAudio.LICENSE.txt" />
+    <None Include="Resources\Settings_16x.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

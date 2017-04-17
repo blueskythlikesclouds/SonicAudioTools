@@ -95,7 +95,7 @@ namespace SonicAudioLib.IO
             length = Helpers.Align(length, align);
 
             long position = length;
-            length += module.CalculateLength();
+            length += 0;
             items.Add(module);
 
             return position;
