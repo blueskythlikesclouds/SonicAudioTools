@@ -20,6 +20,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -58,11 +59,13 @@
     <Compile Include="CriMw\Serialization\CriTableSerializer.cs" />
     <Compile Include="CriMw\CriTableWriter.cs" />
     <Compile Include="IO\EndianStream.cs" />
+    <Compile Include="IO\DataExtractor.cs" />
     <Compile Include="IO\StringPool.cs" />
     <Compile Include="IO\Substream.cs" />
-    <Compile Include="IO\Helpers.cs" />
+    <Compile Include="Helpers.cs" />
     <Compile Include="IO\VldPool.cs" />
     <Compile Include="Module\ModuleBase.cs" />
+    <Compile Include="ProgressChangedEvent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />

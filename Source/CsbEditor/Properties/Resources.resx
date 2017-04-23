@@ -139,6 +139,19 @@ rate or channel count than original.
 To pack the .CSB file back, you gotta have the extracted directory
 and the .CSB file in the same directory. Drag and drop the directory 
 to the .EXE file, it will collect all the files inside directory
-and pack them back.</value>
+and pack them back.
+
+Settings (.exe.config)
+=======================
+BufferSize: Buffer size used to load/save data from files. Higher
+values may make the progress faster or slower.
+
+EnableThreading: Determines whether to use multiple threads to 
+extract data from files.
+
+MaxThreads: Maximum amount of threads to extract data from files.
+Higher values may make the progress faster or slower.
+
+^ Go up.</value>
   </data>
 </root>

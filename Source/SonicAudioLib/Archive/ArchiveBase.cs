@@ -52,6 +52,8 @@ namespace SonicAudioLib.Archive
     {
         protected List<T> entries = new List<T>();
 
+        public virtual event ProgressChanged ProgressChanged;
+
         public virtual T this[int index]
         {
             get
@@ -106,6 +108,11 @@ namespace SonicAudioLib.Archive
         IEnumerator IEnumerable.GetEnumerator()
         {
             return entries.GetEnumerator();
+        }
+
+        protected void OnProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            ProgressChanged?.Invoke(this, e);
         }
 
 #if DEBUG

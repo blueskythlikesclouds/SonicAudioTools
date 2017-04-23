@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Diagnostics;
 
 using SonicAudioLib.IO;
 using SonicAudioLib.Module;
@@ -11,17 +12,39 @@ namespace SonicAudioLib.Archive
 {
     public class CriAfs2Entry : EntryBase
     {
-        public ushort Id { get; set; }
+        public uint Id { get; set; }
     }
 
     public class CriAfs2Archive : ArchiveBase<CriAfs2Entry>
     {
         public uint Align { get; set; }
-        public uint IdFieldLength { get; set; }
-        public uint PositionFieldLength { get; set; }
+
+        /// <summary>
+        /// Gets header of the written AFS2 archive.
+        /// Should be gotten after <see cref="Write(Stream)"/> is called.
+        /// </summary>
+        public byte[] Header { get; private set; }
 
         public override void Read(Stream source)
         {
+            long ReadByLength(uint length)
+            {
+                switch (length)
+                {
+                    case 2:
+                        return EndianStream.ReadUInt16(source);
+
+                    case 4:
+                        return EndianStream.ReadUInt32(source);
+
+                    case 8:
+                        return EndianStream.ReadInt64(source);
+
+                    default:
+                        throw new ArgumentException($"Unimplemented field length ({length})", nameof(length));
+                }
+            }
+
             if (EndianStream.ReadCString(source, 4) != "AFS2")
             {
                 throw new InvalidDataException("'AFS2' signature could not be found.");
@@ -35,10 +58,10 @@ namespace SonicAudioLib.Archive
                 throw new InvalidDataException($"Unknown AFS2 type ({type}). Please report this error with the file(s).");
             }
 
-            IdFieldLength = (information >> 16) & 0xFF;
-            PositionFieldLength = (information >> 8) & 0xFF;
+            uint idFieldLength = (information >> 16) & 0xFF;
+            uint positionFieldLength = (information >> 8) & 0xFF;
 
-            ushort entryCount = (ushort)EndianStream.ReadUInt32(source);
+            uint entryCount = EndianStream.ReadUInt32(source);
             Align = EndianStream.ReadUInt32(source);
 
             CriAfs2Entry previousEntry = null;
@@ -46,35 +69,13 @@ namespace SonicAudioLib.Archive
             {
                 CriAfs2Entry afs2Entry = new CriAfs2Entry();
 
-                long idPosition = 16 + (i * IdFieldLength);
+                long idPosition = 16 + (i * idFieldLength);
                 source.Seek(idPosition, SeekOrigin.Begin);
+                afs2Entry.Id = (uint)ReadByLength(idFieldLength);
 
-                switch (IdFieldLength)
-                {
-                    case 2:
-                        afs2Entry.Id = EndianStream.ReadUInt16(source);
-                        break;
-
-                    default:
-                        throw new InvalidDataException($"Unknown IdFieldLength ({IdFieldLength}). Please report this error with the file(s).");
-                }
-
-                long positionPosition = 16 + (entryCount * IdFieldLength) + (i * PositionFieldLength);
+                long positionPosition = 16 + (entryCount * idFieldLength) + (i * positionFieldLength);
                 source.Seek(positionPosition, SeekOrigin.Begin);
-
-                switch (PositionFieldLength)
-                {
-                    case 2:
-                        afs2Entry.Position = EndianStream.ReadUInt16(source);
-                        break;
-
-                    case 4:
-                        afs2Entry.Position = EndianStream.ReadUInt32(source);
-                        break;
-
-                    default:
-                        throw new InvalidDataException($"Unknown PositionFieldLength ({PositionFieldLength}). Please report this error with the file(s).");
-                }
+                afs2Entry.Position = ReadByLength(positionFieldLength);
 
                 if (previousEntry != null)
                 {
@@ -85,16 +86,7 @@ namespace SonicAudioLib.Archive
 
                 if (i == entryCount - 1)
                 {
-                    switch (PositionFieldLength)
-                    {
-                        case 2:
-                            afs2Entry.Length = EndianStream.ReadUInt16(source) - afs2Entry.Position;
-                            break;
-
-                        case 4:
-                            afs2Entry.Length = EndianStream.ReadUInt32(source) - afs2Entry.Position;
-                            break;
-                    }
+                    afs2Entry.Length = ReadByLength(positionFieldLength) - afs2Entry.Position;
                 }
 
                 entries.Add(afs2Entry);
@@ -103,68 +95,108 @@ namespace SonicAudioLib.Archive
         }
 
         public override void Write(Stream destination)
-        {
-            uint headerLength = (uint)(16 + (entries.Count * IdFieldLength) + (entries.Count * PositionFieldLength) + PositionFieldLength);
+        {   
+            long GetHeaderLength(uint idFieldLen, uint positionFieldLen)
+            {
+                return 16 + (idFieldLen * entries.Count) + (positionFieldLen * entries.Count) + positionFieldLen;
+            }
 
-            EndianStream.WriteCString(destination, "AFS2", 4);
-            EndianStream.WriteUInt32(destination, 1 | (IdFieldLength << 16) | (PositionFieldLength << 8));
-            EndianStream.WriteUInt32(destination, (ushort)entries.Count);
-            EndianStream.WriteUInt32(destination, Align);
+            long Calculate(out uint idFieldLen, out uint positionFieldLen)
+            {
+                // It's kind of impossible to have more than 65535 waveforms in one ACB, but just to make sure.
+                idFieldLen = entries.Count <= ushort.MaxValue ? 2u : 4u;
+
+                long dataLength = 0;
+
+                foreach (CriAfs2Entry entry in entries)
+                {
+                    dataLength = Helpers.Align(dataLength, Align);
+                    dataLength += entry.Length;
+                }
+
+                positionFieldLen = 2;
+                long headerLen;
+
+                // Check 2, 4 and 8
+                if (Helpers.Align((headerLen = GetHeaderLength(idFieldLen, positionFieldLen)), Align) + dataLength > ushort.MaxValue)
+                {
+                    positionFieldLen = 4;
+
+                    if (Helpers.Align((headerLen = GetHeaderLength(idFieldLen, positionFieldLen)), Align) + dataLength > uint.MaxValue)
+                    {
+                        positionFieldLen = 8;
+                    }
+                }
+
+                return headerLen;
+            }
+
+            var mDestination = new MemoryStream();
+
+            void WriteByLength(uint length, long value)
+            {
+                switch (length)
+                {
+                    case 2:
+                        EndianStream.WriteUInt16(mDestination, (ushort)value);
+                        break;
+
+                    case 4:
+                        EndianStream.WriteUInt32(mDestination, (uint)value);
+                        break;
+
+                    case 8:
+                        EndianStream.WriteInt64(mDestination, value);
+                        break;
+
+                    default:
+                        throw new ArgumentException($"Unimplemented field length ({length})", nameof(length));
+                }
+            }
+
+            long headerLength = Calculate(out uint idFieldLength, out uint positionFieldLength);
+
+            EndianStream.WriteCString(mDestination, "AFS2", 4);
+            EndianStream.WriteUInt32(mDestination, 1 | (idFieldLength << 16) | (positionFieldLength << 8));
+            EndianStream.WriteUInt32(mDestination, (uint)entries.Count);
+            EndianStream.WriteUInt32(mDestination, Align);
             
             VldPool vldPool = new VldPool(Align, headerLength);
+            vldPool.ProgressChanged += OnProgressChanged;
 
             var orderedEntries = entries.OrderBy(entry => entry.Id);
             foreach (CriAfs2Entry afs2Entry in orderedEntries)
             {
-                switch (IdFieldLength)
-                {
-                    case 2:
-                        EndianStream.WriteUInt16(destination, (ushort)afs2Entry.Id);
-                        break;
-
-                    default:
-                        throw new NotImplementedException($"Unimplemented IdFieldLength ({IdFieldLength}). Implemented length: (2)");
-                }
+                WriteByLength(idFieldLength, afs2Entry.Id);
             }
 
             foreach (CriAfs2Entry afs2Entry in orderedEntries)
             {
-                uint entryPosition = (uint)vldPool.Length;
+                long entryPosition = vldPool.Length;
                 vldPool.Put(afs2Entry.FilePath);
 
-                switch (PositionFieldLength)
-                {
-                    case 2:
-                        EndianStream.WriteUInt16(destination, (ushort)entryPosition);
-                        break;
-
-                    case 4:
-                        EndianStream.WriteUInt32(destination, entryPosition);
-                        break;
-
-                    default:
-                        throw new InvalidDataException($"Unimplemented PositionFieldLength ({PositionFieldLength}). Implemented lengths: (2, 4)");
-                }
-
-                afs2Entry.Position = entryPosition;
+                WriteByLength(positionFieldLength, entryPosition);
             }
 
-            EndianStream.WriteUInt32(destination, (uint)vldPool.Length);
+            WriteByLength(positionFieldLength, vldPool.Length);
 
+            // Copy the header to Header property and save it to destination
+            Header = mDestination.ToArray();
+            mDestination.Close();
+
+            destination.Write(Header, 0, Header.Length);
             vldPool.Write(destination);
             vldPool.Clear();
         }
 
-        public CriAfs2Entry GetById(uint cueIndex)
+        public CriAfs2Entry GetById(uint id)
         {
-            return entries.FirstOrDefault(e => (e.Id == cueIndex));
+            return entries.FirstOrDefault(e => (e.Id == id));
         }
         
         public CriAfs2Archive()
         {
             Align = 32;
-            IdFieldLength = 2;
-            PositionFieldLength = 4;
         }
     }
 }

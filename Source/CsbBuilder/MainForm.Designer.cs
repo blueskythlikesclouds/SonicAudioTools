@@ -385,7 +385,7 @@
             this.aAXToolStripMenuItem});
             this.toolStripMenuItem49.Image = global::CsbBuilder.Properties.Resources.Sound;
             this.toolStripMenuItem49.Name = "toolStripMenuItem49";
-            this.toolStripMenuItem49.Size = new System.Drawing.Size(152, 22);
+            this.toolStripMenuItem49.Size = new System.Drawing.Size(138, 22);
             this.toolStripMenuItem49.Text = "Audio Tools";
             // 
             // aDXToolStripMenuItem
@@ -393,7 +393,7 @@
             this.aDXToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.convertADXsToWAVToolStripMenuItem});
             this.aDXToolStripMenuItem.Name = "aDXToolStripMenuItem";
-            this.aDXToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.aDXToolStripMenuItem.Size = new System.Drawing.Size(97, 22);
             this.aDXToolStripMenuItem.Text = "ADX";
             // 
             // convertADXsToWAVToolStripMenuItem
@@ -409,33 +409,33 @@
             this.extractAAXToFolderToolStripMenuItem,
             this.packFolderToAAXToolStripMenuItem});
             this.aAXToolStripMenuItem.Name = "aAXToolStripMenuItem";
-            this.aAXToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.aAXToolStripMenuItem.Size = new System.Drawing.Size(97, 22);
             this.aAXToolStripMenuItem.Text = "AAX";
             // 
             // extractAAXToFolderToolStripMenuItem
             // 
             this.extractAAXToFolderToolStripMenuItem.Name = "extractAAXToFolderToolStripMenuItem";
-            this.extractAAXToFolderToolStripMenuItem.Size = new System.Drawing.Size(198, 22);
+            this.extractAAXToFolderToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             this.extractAAXToFolderToolStripMenuItem.Text = "Extract AAX(s) to folder";
             this.extractAAXToFolderToolStripMenuItem.Click += new System.EventHandler(this.extractAAXToFolderToolStripMenuItem_Click);
             // 
             // packFolderToAAXToolStripMenuItem
             // 
             this.packFolderToAAXToolStripMenuItem.Name = "packFolderToAAXToolStripMenuItem";
-            this.packFolderToAAXToolStripMenuItem.Size = new System.Drawing.Size(198, 22);
+            this.packFolderToAAXToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             this.packFolderToAAXToolStripMenuItem.Text = "Pack ADX(s) to AAX";
             this.packFolderToAAXToolStripMenuItem.Click += new System.EventHandler(this.packFolderToAAXToolStripMenuItem_Click);
             // 
             // toolStripSeparator26
             // 
             this.toolStripSeparator26.Name = "toolStripSeparator26";
-            this.toolStripSeparator26.Size = new System.Drawing.Size(149, 6);
+            this.toolStripSeparator26.Size = new System.Drawing.Size(135, 6);
             // 
             // settingsButton
             // 
             this.settingsButton.Image = global::CsbBuilder.Properties.Resources.Settings;
             this.settingsButton.Name = "settingsButton";
-            this.settingsButton.Size = new System.Drawing.Size(152, 22);
+            this.settingsButton.Size = new System.Drawing.Size(138, 22);
             this.settingsButton.Text = "Settings";
             this.settingsButton.Click += new System.EventHandler(this.OpenSettings);
             // 

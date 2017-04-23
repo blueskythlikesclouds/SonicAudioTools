@@ -137,7 +137,7 @@ namespace SonicAudioLib.CriMw
             if (settings.EnableMask)
             {
                 destination.Position = headerPosition;
-                Helpers.MaskCriTable(destination, header.Length);
+                CriTableMasker.Mask(destination, header.Length, settings.MaskXor, settings.MaskXorMultiplier);
             }
 
             destination.Seek(previousPosition, SeekOrigin.Begin);
@@ -698,6 +698,9 @@ namespace SonicAudioLib.CriMw
                 enableMask = value;
             }
         }
+
+        public uint MaskXor { get; set; }
+        public uint MaskXorMultiplier { get; set; }
 
         public static CriTableWriterSettings AdxSettings
         {

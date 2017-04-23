@@ -32,7 +32,7 @@ namespace CsbBuilder
         private void CopyReport(object sender, EventArgs e)
         {
             StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.AppendLine($"Application: {Program.ApplicationVersion}");
+            stringBuilder.AppendLine($"Application: {Program.ApplicationTitle}");
             stringBuilder.AppendLine($"Exception Message: {exception.Message}");
             stringBuilder.AppendLine($"Exception Details:");
             stringBuilder.AppendLine(exception.StackTrace);
