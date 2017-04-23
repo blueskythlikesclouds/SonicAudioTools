@@ -42,14 +42,22 @@ namespace CsbBuilder.Project
         [DisplayName("Rename Sound node to referenced Sound Element node"), Category("Application")]
         public bool RenameToSoundElement { get; set; }
 
+        [DisplayName("Enable threading"), Category("Stream")]
+        [Description("Determines whether to use threads to extract data from CSB/CPK files during importing. It may make the importing faster or slower.")]
+        public bool EnableThreading { get; set; }
+
+        [DisplayName("Maximum amount of cores"), Category("Stream")]
+        [Description("Maximum amount of threads used to extract data from CSB/CPK files during importing.")]
+        public int MaxCores { get; set; }
+
         public static Settings Load()
         {
             string path = Path.ChangeExtension(Application.ExecutablePath, "xml");
 
             Settings settings = null;
             
-            if (File.Exists(path))
-            {
+                if (File.Exists(path))
+                {
                 XmlSerializer serializer = new XmlSerializer(typeof(Settings));
 
                 using (Stream source = File.OpenRead(path))
@@ -90,6 +98,8 @@ namespace CsbBuilder.Project
             ProjectsName = "New CSB Project";
             ImportedCsbProjectDirectory = ProjectDirectory.DirectoryOfCsb;
             RenameToSoundElement = true;
+            EnableThreading = true;
+            MaxCores = 4;
         }
     }
 }

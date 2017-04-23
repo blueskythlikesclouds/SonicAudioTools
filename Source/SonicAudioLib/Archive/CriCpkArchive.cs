@@ -104,7 +104,7 @@ namespace SonicAudioLib.Archive
 
         public override void Read(Stream source)
         {
-            using (CriTableReader reader = CriCpkSection.Open(source, source.Position))
+            using (CriTableReader reader = CriCpkSection.Open(source, source.Position, "CPK "))
             {
                 reader.Read();
 
@@ -156,8 +156,8 @@ namespace SonicAudioLib.Archive
 
                 if (mode == CriCpkMode.FileName || mode == CriCpkMode.FileNameAndId)
                 {
-                    using (CriTableReader tocReader = CriCpkSection.Open(source, tocPosition))
-                    using (CriTableReader etocReader = CriCpkSection.Open(source, etocPosition))
+                    using (CriTableReader tocReader = CriCpkSection.Open(source, tocPosition, "TOC "))
+                    using (CriTableReader etocReader = CriCpkSection.Open(source, etocPosition, "ETOC"))
                     {
                         while (tocReader.Read())
                         {
@@ -191,7 +191,7 @@ namespace SonicAudioLib.Archive
 
                     if (mode == CriCpkMode.FileNameAndId && isLatestVersion)
                     {
-                        using (CriTableReader itocReader = CriCpkSection.Open(source, itocPosition))
+                        using (CriTableReader itocReader = CriCpkSection.Open(source, itocPosition, "ITOC"))
                         {
                             while (itocReader.Read())
                             {
@@ -203,7 +203,7 @@ namespace SonicAudioLib.Archive
 
                 else if (mode == CriCpkMode.Id)
                 {
-                    using (CriTableReader itocReader = CriCpkSection.Open(source, itocPosition))
+                    using (CriTableReader itocReader = CriCpkSection.Open(source, itocPosition, "ITOC"))
                     {
                         while (itocReader.Read())
                         {
@@ -269,6 +269,7 @@ namespace SonicAudioLib.Archive
             }
 
             VldPool vldPool = new VldPool(Align, 2048);
+            vldPool.ProgressChanged += OnProgressChanged;
 
             using (CriCpkSection cpkSection = new CriCpkSection(destination, "CPK ", enableMask))
             {
@@ -391,7 +392,7 @@ namespace SonicAudioLib.Archive
 
                             etocSection.Writer.WriteRow(true,
                                 CpkDateTimeFromDateTime(entry.UpdateDateTime),
-                                entry.FilePath.DirectoryName.Replace('\\', '/'));
+                                entry.DirectoryName);
 
                             vldPool.Put(entry.FilePath);
                         }
@@ -586,27 +587,121 @@ namespace SonicAudioLib.Archive
             });
         }
 
-        private DateTime DateTimeFromCpkDateTime(ulong dateTime)
+        public static void Decompress(Stream source, long position, Stream destination)
         {
-            if (dateTime == 0)
+            source.Position = position;
+
+            if (EndianStream.ReadCString(source, 8) != "CRILAYLA")
             {
-                return new DateTime();
+                throw new InvalidDataException("'CRILAYLA' signature could not be found.");
             }
 
-            return new DateTime(
-                                (int)(uint)(dateTime >> 32) >> 16, // year
-                                (int)(uint)(dateTime >> 32) >> 8 & byte.MaxValue, // month
-                                (int)(uint)(dateTime >> 32) & byte.MaxValue, // day
-                                (int)(uint)dateTime >> 24, // hour
-                                (int)(uint)dateTime >> 16 & byte.MaxValue, // minute
-                                (int)(uint)dateTime >> 8 & byte.MaxValue // second
-                                );
+            uint uncompressedLength = EndianStream.ReadUInt32(source);
+            uint compressedLength = EndianStream.ReadUInt32(source);
+
+            // Copy the uncompressed header to destination
+            EndianStream.CopyPartTo(source, destination, position + 0x10 + compressedLength, 0x100, 4096);
+
+            // Bit methods
+            int bitCount = 0;
+            int bitData = 0;
+
+            int ReadBits(int count)
+            {
+                if (bitCount < count)
+                {
+                    int neededBytes = ((24 - bitCount) >> 3) + 1;
+                    bitCount += neededBytes * 8;
+
+                    while (neededBytes > 0)
+                    {
+                        bitData = (bitData << 8) | source.ReadByte();
+                        neededBytes--;
+                        source.Position -= 2;
+                    }
+                }
+
+                bitCount -= count;
+                return (bitData >> bitCount) & ((1 << count) - 1);
+            }
+
+            // Deflate levels
+            IEnumerable<int> GetDeflateLevels()
+            {
+                yield return 2;
+                yield return 3;
+                yield return 5;
+
+                while (true)
+                {
+                    yield return 8;
+                }
+            }
+
+            // Decompression
+            source.Position = position + 0x10 + compressedLength - 1;
+
+            long writtenBytes = 0;
+            byte[] buffer = new byte[uncompressedLength];
+
+            while (writtenBytes < uncompressedLength)
+            {
+                // Verbatim byte, directly copy
+                if (ReadBits(1) == 0)
+                {
+                    buffer[uncompressedLength - (writtenBytes++) - 1] = (byte)ReadBits(8);
+                }
+
+                // Referenced bytes
+                else
+                {
+                    long pos = uncompressedLength - 1 - writtenBytes + ReadBits(13) + 3;
+                    long length = 3;
+
+                    foreach (var deflateLevel in GetDeflateLevels())
+                    {
+                        long len = ReadBits(deflateLevel);
+                        length += len;
+
+                        if (len != ((1 << deflateLevel) - 1))
+                        {
+                            break;
+                        }
+                    }
+
+                    while (length > 0)
+                    {
+                        buffer[uncompressedLength - 1 - (writtenBytes++)] = buffer[pos--];
+                        length--;
+                    }
+                }
+            }
+
+            destination.Write(buffer, 0, buffer.Length);
+        }
+
+        private DateTime DateTimeFromCpkDateTime(ulong dateTime)
+        {
+            return dateTime > 0 ? 
+                new DateTime(
+                    (int)(dateTime >> 48),          // Year (ushort)
+                    (int)(dateTime >> 40) & 0xFF,   // Month (byte)
+                    (int)(dateTime >> 32) & 0xFF,   // Day (byte)
+                    (int)(dateTime >> 24) & 0xFF,   // Hour (byte)
+                    (int)(dateTime >> 16) & 0xFF,   // Minute (byte)
+                    (int)(dateTime >> 8) & 0xFF)    // Second (byte)
+                : new DateTime();
         }
 
         private ulong CpkDateTimeFromDateTime(DateTime dateTime)
         {
-            return ((((ulong)dateTime.Year * 0x100 + (uint)dateTime.Month) * 0x100 + (uint)dateTime.Day) * 0x100000000) +
-                ((((ulong)dateTime.Hour * 0x100 + (uint)dateTime.Minute) * 0x100 + (uint)dateTime.Second) * 0x100);
+            return 
+                (ulong)dateTime.Year << 48 | 
+                (ulong)dateTime.Month << 40 |
+                (ulong)dateTime.Day << 32 |
+                (ulong)dateTime.Hour << 24 |
+                (ulong)dateTime.Minute << 16 |
+                (ulong)dateTime.Second << 8;
         }
 
         private class CriCpkSection : IDisposable
@@ -637,15 +732,18 @@ namespace SonicAudioLib.Archive
                 destination.Seek(position, SeekOrigin.Begin);
             }
 
-            public static CriTableReader Open(Stream source, long position)
+            public static CriTableReader Open(Stream source, long position, string expectedSignature)
             {
                 source.Seek(position, SeekOrigin.Begin);
 
-                string signature = EndianStream.ReadCString(source, 4);
+                if (EndianStream.ReadCString(source, 4) != expectedSignature)
+                {
+                    throw new InvalidDataException($"'{expectedSignature}' signature could not be found.");
+                }
+
                 uint flag = EndianStream.ReadUInt32(source);
                 uint tableLength = EndianStream.ReadUInt32(source);
                 uint unknown = EndianStream.ReadUInt32(source);
-
 
                 return CriTableReader.Create(new Substream(source, source.Position, tableLength));
             }
@@ -656,10 +754,10 @@ namespace SonicAudioLib.Archive
                 headerPosition = destination.Position;
 
                 EndianStream.WriteCString(destination, signature, 4);
-                EndianStream.WriteUInt32(destination, byte.MaxValue);
+                EndianStream.WriteUInt32(destination, 0xFF);
                 destination.Seek(8, SeekOrigin.Current);
 
-                writer = CriTableWriter.Create(destination, new CriTableWriterSettings() { LeaveOpen = true, EnableMask = enableMask });
+                writer = CriTableWriter.Create(destination, new CriTableWriterSettings() { LeaveOpen = true, EnableMask = enableMask, MaskXor = 25951, MaskXorMultiplier = 16661 });
             }
         }
     }

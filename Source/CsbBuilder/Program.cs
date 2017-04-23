@@ -22,12 +22,12 @@ namespace CsbBuilder
             }
         }
 
-        public static string ApplicationVersion
+        public static string ApplicationTitle
         {
             get
             {
                 AssemblyName assemblyName = Assembly.GetEntryAssembly().GetName();
-                return $"{assemblyName.Name} (Version {assemblyName.Version.ToString()})";
+                return $"CSB Builder {assemblyName.Version.ToString()}";
             }
         }
 

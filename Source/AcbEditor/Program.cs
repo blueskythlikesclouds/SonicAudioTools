@@ -2,7 +2,11 @@
 using System.IO;
 using System.Windows.Forms;
 using System.Text;
+using System.Threading.Tasks;
 
+using AcbEditor.Properties;
+
+using SonicAudioLib;
 using SonicAudioLib.CriMw;
 using SonicAudioLib.IO;
 using SonicAudioLib.Archive;
@@ -22,9 +26,16 @@ namespace AcbEditor
 #if !DEBUG
             try
             {
-#endif
+#endif      
                 if (args[0].EndsWith(".acb"))
                 {
+                    var extractor = new DataExtractor();
+                    extractor.ProgressChanged += OnProgressChanged;
+
+                    extractor.BufferSize = Settings.Default.BufferSize;
+                    extractor.EnableThreading = Settings.Default.EnableThreading;
+                    extractor.MaxThreads = Settings.Default.MaxThreads;
+
                     string baseDirectory = Path.GetDirectoryName(args[0]);
                     string outputDirectoryPath = Path.ChangeExtension(args[0], null);
                     string extAfs2ArchivePath = string.Empty;
@@ -58,6 +69,7 @@ namespace AcbEditor
 
                         bool cpkMode = true;
 
+                        long awbPosition = acbReader.GetPosition("AwbFile");
                         if (acbReader.GetLength("AwbFile") > 0)
                         {
                             using (Substream afs2Stream = acbReader.GetSubstream("AwbFile"))
@@ -109,8 +121,6 @@ namespace AcbEditor
                                 outputName += GetExtension(encodeType);
                                 outputName = Path.Combine(outputDirectoryPath, outputName);
 
-                                Console.WriteLine("Extracting {0} file with id {1}...", GetExtension(encodeType).ToUpper(), id);
-
                                 if (streaming)
                                 {
                                     if (!found)
@@ -121,7 +131,7 @@ namespace AcbEditor
                                     else if (extCpkArchive == null && cpkMode)
                                     {
                                         extCpkArchive = new CriCpkArchive();
-                                        extCpkArchive.Load(extAfs2ArchivePath);
+                                        extCpkArchive.Load(extAfs2ArchivePath, Settings.Default.BufferSize);
                                     }
 
                                     EntryBase afs2Entry = null;
@@ -136,12 +146,7 @@ namespace AcbEditor
                                         afs2Entry = extAfs2Archive.GetById(id);
                                     }
 
-                                    using (Stream extAfs2Stream = File.OpenRead(extAfs2ArchivePath))
-                                    using (Stream afs2EntryStream = afs2Entry.Open(extAfs2Stream))
-                                    using (Stream afs2EntryDestination = File.Create(outputName))
-                                    {
-                                        afs2EntryStream.CopyTo(afs2EntryDestination);
-                                    }
+                                    extractor.Add(extAfs2ArchivePath, outputName, afs2Entry.Position, afs2Entry.Length);
                                 }
 
                                 else
@@ -158,16 +163,13 @@ namespace AcbEditor
                                         afs2Entry = afs2Archive.GetById(id);
                                     }
 
-                                    using (Substream afs2Stream = acbReader.GetSubstream("AwbFile"))
-                                    using (Stream afs2EntryStream = afs2Entry.Open(afs2Stream))
-                                    using (Stream afs2EntryDestination = File.Create(outputName))
-                                    {
-                                        afs2EntryStream.CopyTo(afs2EntryDestination);
-                                    }
+                                    extractor.Add(args[0], outputName, awbPosition + afs2Entry.Position, afs2Entry.Length);
                                 }
                             }
                         }
                     }
+
+                    extractor.Run();
                 }
 
                 else if (File.GetAttributes(args[0]).HasFlag(FileAttributes.Directory))
@@ -191,11 +193,11 @@ namespace AcbEditor
 
                     if (!File.Exists(acbPath))
                     {
-                        throw new Exception("Cannot find the .ACB file for this directory. Please ensure that the .ACB file is stored in the directory where this directory is.");
+                        throw new FileNotFoundException("Cannot find the .ACB file for this directory. Please ensure that the .ACB file is stored in the directory where this directory is.");
                     }
 
                     CriTable acbFile = new CriTable();
-                    acbFile.Load(acbPath);
+                    acbFile.Load(acbPath, Settings.Default.BufferSize);
 
                     CriAfs2Archive afs2Archive = new CriAfs2Archive();
                     CriAfs2Archive extAfs2Archive = new CriAfs2Archive();
@@ -203,6 +205,11 @@ namespace AcbEditor
                     CriCpkArchive cpkArchive = new CriCpkArchive();
                     CriCpkArchive extCpkArchive = new CriCpkArchive();
                     cpkArchive.Mode = extCpkArchive.Mode = CriCpkMode.Id;
+
+                    afs2Archive.ProgressChanged += OnProgressChanged;
+                    extAfs2Archive.ProgressChanged += OnProgressChanged;
+                    cpkArchive.ProgressChanged += OnProgressChanged;
+                    extCpkArchive.ProgressChanged += OnProgressChanged;
 
                     bool cpkMode = true;
 
@@ -222,7 +229,7 @@ namespace AcbEditor
                             string inputName = id.ToString("D5");
                             if (streaming)
                             {
-                                inputName += "_streaming";
+                                inputName += "_streaming";  
                             }
 
                             inputName += GetExtension(encodeType);
@@ -230,10 +237,8 @@ namespace AcbEditor
 
                             if (!File.Exists(inputName))
                             {
-                                throw new Exception($"Cannot find audio file with id {id} for replacement.\nPath attempt: {inputName}");
+                                throw new FileNotFoundException($"Cannot find audio file with id {id} for replacement.\nPath attempt: {inputName}");
                             }
-
-                            Console.WriteLine("Adding {0}...", Path.GetFileName(inputName));
 
                             if (cpkMode)
                             {
@@ -278,6 +283,7 @@ namespace AcbEditor
                     {
                         Console.WriteLine("Saving internal AWB...");
                         acbFile.Rows[0]["AwbFile"] = cpkMode ? cpkArchive.Save() : afs2Archive.Save();
+                        Console.WriteLine();
                     }
 
                     if (extAfs2Archive.Count > 0 || extCpkArchive.Count > 0)
@@ -285,30 +291,19 @@ namespace AcbEditor
                         Console.WriteLine("Saving external AWB...");
                         if (cpkMode)
                         {
-                            extCpkArchive.Save(awbPath);
+                            extCpkArchive.Save(awbPath, Settings.Default.BufferSize);
                         }
 
                         else
                         {
-                            extAfs2Archive.Save(awbPath);
-
-                            byte[] afs2Header = new byte[16 +
-                                (extAfs2Archive.Count * extAfs2Archive.IdFieldLength) +
-                                (extAfs2Archive.Count * extAfs2Archive.PositionFieldLength) +
-                                extAfs2Archive.PositionFieldLength];
-
-                            using (FileStream fileStream = File.OpenRead(awbPath))
-                            {
-                                fileStream.Read(afs2Header, 0, afs2Header.Length);
-                            }
-
-                            acbFile.Rows[0]["StreamAwbAfs2Header"] = afs2Header;
+                            extAfs2Archive.Save(awbPath, Settings.Default.BufferSize);
+                            acbFile.Rows[0]["StreamAwbAfs2Header"] = extAfs2Archive.Header;
                         }
                     }
 
                     acbFile.WriterSettings = CriTableWriterSettings.Adx2Settings;
-                    acbFile.Save(acbPath);
-                }
+                    acbFile.Save(acbPath, Settings.Default.BufferSize);
+            }
 #if !DEBUG
             }
 
@@ -362,6 +357,19 @@ namespace AcbEditor
             source.Seek(oldPosition, SeekOrigin.Begin);
 
             return result;
+        }
+
+        private static string buffer = new string(' ', 17);
+
+        private static void OnProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            int left = Console.CursorLeft;
+            int top = Console.CursorTop;
+
+            Console.Write(buffer);
+            Console.SetCursorPosition(left, top);
+            Console.WriteLine("Progress: {0}%", e.Progress);
+            Console.SetCursorPosition(left, top);
         }
     }
 }

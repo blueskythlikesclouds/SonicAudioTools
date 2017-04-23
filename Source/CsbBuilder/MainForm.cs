@@ -100,7 +100,7 @@ namespace CsbBuilder
         {
             project = null;
             ClearTreeViews();
-            Text = "CSB Builder";
+            Text = Program.ApplicationTitle;
             saved = true;
         }
 
@@ -1918,7 +1918,7 @@ namespace CsbBuilder
 
         private void ShowAbout(object sender, EventArgs e)
         {
-            MessageBox.Show($"{Program.ApplicationVersion} by Skyth (blueskythlikesclouds)", "CSB Builder");
+            MessageBox.Show($"{Program.ApplicationTitle} by Skyth (blueskythlikesclouds)", "CSB Builder");
         }
 
         private void CreateChildTrackNode(object sender, EventArgs e)

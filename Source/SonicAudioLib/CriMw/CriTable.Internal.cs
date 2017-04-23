@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 namespace SonicAudioLib.CriMw
 {
@@ -51,5 +52,82 @@ namespace SonicAudioLib.CriMw
         public uint Position;
         public uint Length;
         public object Value;
+    }
+
+    static class CriTableMasker
+    {
+        public static void FindKeys(byte[] signature, out uint xor, out uint xorMultiplier)
+        {
+            for (byte x = 0; x <= byte.MaxValue; x++)
+            {
+                // Find XOR using first byte
+                if ((signature[0] ^ x) == CriTableHeader.Signature[0])
+                {
+                    // Matched the first byte, try finding the multiplier with the second byte
+                    for (byte m = 0; m <= byte.MaxValue; m++)
+                    {
+                        // Matched the second byte, now make sure the other bytes match as well
+                        if ((signature[1] ^ (byte)(x * m)) == CriTableHeader.Signature[1])
+                        {
+                            byte _x = (byte)(x * m);
+
+                            bool allMatches = true;
+                            for (int i = 2; i < 4; i++)
+                            {
+                                _x *= m;
+
+                                if ((signature[i] ^ _x) != CriTableHeader.Signature[i])
+                                {
+                                    allMatches = false;
+                                    break;
+                                }
+                            }
+
+                            // All matches, return the xor and multiplier
+                            if (allMatches)
+                            {
+                                xor = x;
+                                xorMultiplier = m;
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+
+            throw new InvalidDataException("'@UTF' signature could not be found.");
+        }
+
+        public static void Mask(Stream source, Stream destination, long length, uint xor, uint xorMultiplier)
+        {
+            uint currentXor = xor;
+            long currentPosition = source.Position;
+
+            while (source.Position < currentPosition + length)
+            {
+                byte maskedByte = (byte)(source.ReadByte() ^ currentXor);
+                currentXor *= xorMultiplier;
+
+                destination.WriteByte(maskedByte);
+            }
+        }
+
+        public static void Mask(Stream source, long length, uint xor, uint xorMultiplier)
+        {
+            if (source.CanRead && source.CanWrite)
+            {
+                uint currentXor = xor;
+                long currentPosition = source.Position;
+
+                while (source.Position < currentPosition + length)
+                {
+                    byte maskedByte = (byte)(source.ReadByte() ^ currentXor);
+                    currentXor *= xorMultiplier;
+
+                    source.Position--;
+                    source.WriteByte(maskedByte);
+                }
+            }
+        }
     }
 }

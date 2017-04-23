@@ -22,6 +22,11 @@ namespace CsbBuilder.Importer
     {
         public static void Import(string path, CsbProject project)
         {
+            var extractor = new DataExtractor();
+            extractor.BufferSize = MainForm.Settings.BufferSize;
+            extractor.EnableThreading = MainForm.Settings.EnableThreading;
+            extractor.MaxThreads = MainForm.Settings.MaxCores;
+
             // Find the CPK first
             string cpkPath = Path.ChangeExtension(path, "cpk");
             bool exists = File.Exists(cpkPath);
@@ -74,27 +79,27 @@ namespace CsbBuilder.Importer
                 soundElementNode.ChannelCount = soundElementTable.NumberChannels;
                 soundElementNode.SampleRate = soundElementTable.SoundFrequency;
                 soundElementNode.Streaming = soundElementTable.Streaming;
+                soundElementNode.SampleCount = soundElementTable.NumberSamples;
 
                 CriAaxArchive aaxArchive = new CriAaxArchive();
 
-                byte[] aaxData = soundElementTable.Data;
-
-                if (exists && soundElementNode.Streaming)
+                CriCpkEntry cpkEntry = null;
+                if (soundElementNode.Streaming)
                 {
                     using (Stream source = File.OpenRead(cpkPath))
-                    using (Stream entrySource = cpkArchive.GetByPath(soundElementTable.Name).Open(source))
+                    using (Stream entrySource = (cpkEntry = cpkArchive.GetByPath(soundElementTable.Name)).Open(source))
                     {
-                        aaxData = ((Substream)entrySource).ToArray();
+                        aaxArchive.Read(entrySource);
                     }
                 }
 
-                aaxArchive.Load(aaxData);
+                else
+                {
+                    aaxArchive.Load(soundElementTable.Data);
+                }
 
                 foreach (CriAaxEntry entry in aaxArchive)
                 {
-                    byte[] data = new byte[entry.Length];
-                    Array.Copy(aaxData, entry.Position, data, 0, data.Length);
-
                     string outputFileName = Path.Combine(project.AudioDirectory.FullName, soundElementTable.Name.Replace('/', '_'));
                     if (entry.Flag == CriAaxEntryFlag.Intro)
                     {
@@ -108,10 +113,15 @@ namespace CsbBuilder.Importer
                         soundElementNode.Loop = Path.GetFileName(outputFileName);
                     }
 
-                    File.WriteAllBytes(outputFileName, data);
+                    if (soundElementNode.Streaming)
+                    {
+                        extractor.Add(cpkPath, outputFileName, cpkEntry.Position + entry.Position, entry.Length);
+                    }
 
-                    // Read the samples just in case
-                    soundElementNode.SampleCount += AdxFileReader.LoadHeader(outputFileName).SampleCount;
+                    else
+                    {
+                        extractor.Add(soundElementTable.Data, outputFileName, entry.Position, entry.Length);
+                    }
                 }
 
                 project.SoundElementNodes.Add(soundElementNode);
@@ -300,6 +310,9 @@ namespace CsbBuilder.Importer
                     synthNode.VoiceLimitGroupReference = synthTable.VoiceLimitGroupName;
                 }
             }
+
+            // Extract everything
+            extractor.Run();
         }
     }
 }

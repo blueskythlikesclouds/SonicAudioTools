@@ -86,19 +86,13 @@ namespace SonicAudioLib.CriMw
 
             if (EndianStream.ReadCString(source, 4) != CriTableHeader.Signature)
             {
-                // try to decrypt (currently only for CPK files since those are the only examples I have)
-                source.Seek(headerPosition, SeekOrigin.Begin);
-
                 MemoryStream unmaskedSource = new MemoryStream();
-                Helpers.MaskCriTable(source, unmaskedSource, source.Length);
 
-                // try again
-                unmaskedSource.Seek(0, SeekOrigin.Begin);
+                source.Position = headerPosition;
+                CriTableMasker.FindKeys(EndianStream.ReadBytes(source, 4), out uint x, out uint m);
 
-                if (EndianStream.ReadCString(unmaskedSource, 4) != CriTableHeader.Signature)
-                {
-                    throw new InvalidDataException("'@UTF' signature could not be found.");
-                }
+                source.Position = headerPosition;
+                CriTableMasker.Mask(source, unmaskedSource, source.Length, x, m);
 
                 // Close the old stream
                 if (!leaveOpen)
@@ -107,6 +101,7 @@ namespace SonicAudioLib.CriMw
                 }
 
                 source = unmaskedSource;
+                source.Position = 4;
             }
 
             header.Length = ReadUInt32() + 0x8;
@@ -143,7 +138,6 @@ namespace SonicAudioLib.CriMw
             for (ushort i = 0; i < header.NumberOfFields; i++)
             {
                 CriTableField field = new CriTableField();
-
                 field.Flag = (CriFieldFlag)ReadByte();
 
                 if (field.Flag.HasFlag(CriFieldFlag.Name))
@@ -155,10 +149,7 @@ namespace SonicAudioLib.CriMw
                 {
                     if (field.Flag.HasFlag(CriFieldFlag.Data))
                     {
-                        ReadData(out uint vldPosition, out uint vldLength);
-
-                        field.Position = vldPosition;
-                        field.Length = vldLength;
+                        ReadData(out field.Position, out field.Length);
                     }
 
                     else
@@ -525,7 +516,7 @@ namespace SonicAudioLib.CriMw
 
             GoToValue(fieldIndex);
             ReadData(out uint vldPosition, out uint vldLength);
-            return (uint)(headerPosition + header.DataPoolPosition + vldPosition);
+            return headerPosition + header.DataPoolPosition + vldPosition;
         }
 
         public uint GetPosition(string fieldName)
@@ -623,7 +614,7 @@ namespace SonicAudioLib.CriMw
             
             source.Position = previousPosition;
 
-            if (readString == "<NULL>" || (readString == header.TableName && stringPosition == 0))
+            if (readString == StringPool.AdxBlankString || (readString == header.TableName && stringPosition == 0))
             {
                 return string.Empty;
             }

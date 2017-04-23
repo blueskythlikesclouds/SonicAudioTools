@@ -224,6 +224,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="NAudio.LICENSE.txt" />
+    <None Include="Resources\Redo_grey_16x.png" />
+    <None Include="Resources\Undo_grey_16x.png" />
     <None Include="Resources\Settings_16x.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

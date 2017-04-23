@@ -12,6 +12,7 @@ namespace SonicAudioLib.IO
         private long startPosition = 0;
         private uint align = 1;
         private long length = 0;
+        private long baseLength = 0;
 
         public long Position
         {
@@ -36,6 +37,8 @@ namespace SonicAudioLib.IO
                 return align;
             }
         }
+
+        public event ProgressChanged ProgressChanged;
 
         public long Put(byte[] data)
         {
@@ -132,6 +135,8 @@ namespace SonicAudioLib.IO
                 {
                     module.Write(destination);
                 }
+
+                ProgressChanged?.Invoke(this, new ProgressChangedEventArgs(((destination.Position - startPosition) / (double)(length - baseLength)) * 100.0));
             }
         }
 
@@ -143,7 +148,9 @@ namespace SonicAudioLib.IO
         public VldPool(uint align, long baseLength)
         {
             this.align = align;
-            length = baseLength;
+
+            this.baseLength = baseLength;
+            length = this.baseLength;
         }
         
         public VldPool(uint align)

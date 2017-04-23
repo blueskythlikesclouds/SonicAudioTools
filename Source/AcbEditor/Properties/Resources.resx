@@ -137,6 +137,19 @@ files, or remove any of them.
 To pack the .ACB file back, you gotta have the extracted directory
 and the .ACB file in the same directory, and also the external .AWB
 file if it exists. Drag and drop the directory to the .EXE file,
-it will collect all the files inside directory and pack them back.</value>
+it will collect all the files inside directory and pack them back.
+
+Settings (.exe.config)
+=======================
+BufferSize: Buffer size used to load/save data from files. Higher
+values may make the progress faster or slower.
+
+EnableThreading: Determines whether to use multiple threads to 
+extract data from files.
+
+MaxThreads: Maximum amount of threads to extract data from files.
+Higher values may make the progress faster or slower.
+
+^ Go up.</value>
   </data>
 </root>

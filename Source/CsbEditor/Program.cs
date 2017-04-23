@@ -4,6 +4,9 @@ using System.IO;
 using System.Windows.Forms;
 using System.Collections.Generic;
 
+using CsbEditor.Properties;
+
+using SonicAudioLib;
 using SonicAudioLib.CriMw;
 using SonicAudioLib.IO;
 using SonicAudioLib.Archive;
@@ -18,7 +21,7 @@ namespace CsbEditor
         {
             if (args.Length < 1)
             {
-                Console.WriteLine(Properties.Resources.Description);
+                Console.WriteLine(Resources.Description);
                 Console.ReadLine();
                 return;
             }
@@ -29,6 +32,13 @@ namespace CsbEditor
 #endif
                 if (args[0].EndsWith(".csb"))
                 {
+                    var extractor = new DataExtractor();
+                    extractor.ProgressChanged += OnProgressChanged;
+
+                    extractor.BufferSize = Settings.Default.BufferSize;
+                    extractor.EnableThreading = Settings.Default.EnableThreading;
+                    extractor.MaxThreads = Settings.Default.MaxThreads;
+
                     string baseDirectory = Path.GetDirectoryName(args[0]);
                     string outputDirectoryName = Path.Combine(baseDirectory, Path.GetFileNameWithoutExtension(args[0]));
 
@@ -42,6 +52,7 @@ namespace CsbEditor
                         {
                             if (reader.GetString("name") == "SOUND_ELEMENT")
                             {
+                                long tablePosition = reader.GetPosition("utf");
                                 using (CriTableReader sdlReader = CriTableReader.Create(reader.GetSubstream("utf")))
                                 {
                                     while (sdlReader.Read())
@@ -60,14 +71,12 @@ namespace CsbEditor
                                         else if (streaming && found && cpkArchive == null)
                                         {
                                             cpkArchive = new CriCpkArchive();
-                                            cpkArchive.Load(cpkPath);
+                                            cpkArchive.Load(cpkPath, Settings.Default.BufferSize);
                                         }
 
                                         string sdlName = sdlReader.GetString("name");
                                         DirectoryInfo destinationPath = new DirectoryInfo(Path.Combine(outputDirectoryName, sdlName));
                                         destinationPath.Create();
-
-                                        Console.WriteLine("Extracting {0}...", sdlName);
 
                                         CriAaxArchive aaxArchive = new CriAaxArchive();
 
@@ -84,12 +93,10 @@ namespace CsbEditor
 
                                                     foreach (CriAaxEntry entry in aaxArchive)
                                                     {
-                                                        using (Stream destination = File.Create(Path.Combine(destinationPath.FullName,
-                                                            entry.Flag == CriAaxEntryFlag.Intro ? "Intro.adx" : "Loop.adx")))
-                                                        using (Stream entrySource = entry.Open(aaxSource))
-                                                        {
-                                                            entrySource.CopyTo(destination);
-                                                        }
+                                                        extractor.Add(cpkPath,
+                                                            Path.Combine(destinationPath.FullName,
+                                                            entry.Flag == CriAaxEntryFlag.Intro ? "Intro.adx" : "Loop.adx"),
+                                                            cpkEntry.Position + entry.Position, entry.Length);
                                                     }
                                                 }
                                             }
@@ -97,18 +104,17 @@ namespace CsbEditor
 
                                         else
                                         {
+                                            long aaxPosition = sdlReader.GetPosition("data");
                                             using (Stream aaxSource = sdlReader.GetSubstream("data"))
                                             {
                                                 aaxArchive.Read(aaxSource);
 
                                                 foreach (CriAaxEntry entry in aaxArchive)
                                                 {
-                                                    using (Stream destination = File.Create(Path.Combine(destinationPath.FullName,
-                                                        entry.Flag == CriAaxEntryFlag.Intro ? "Intro.adx" : "Loop.adx")))
-                                                    using (Stream entrySource = entry.Open(aaxSource))
-                                                    {
-                                                        entrySource.CopyTo(destination);
-                                                    }
+                                                    extractor.Add(args[0],
+                                                        Path.Combine(destinationPath.FullName,
+                                                        entry.Flag == CriAaxEntryFlag.Intro ? "Intro.adx" : "Loop.adx"),
+                                                        tablePosition + aaxPosition + entry.Position, entry.Length);
                                                 }
                                             }
                                         }
@@ -119,6 +125,8 @@ namespace CsbEditor
                             }
                         }
                     }
+
+                    extractor.Run();
                 }
 
                 else if (File.GetAttributes(args[0]).HasFlag(FileAttributes.Directory))
@@ -132,9 +140,10 @@ namespace CsbEditor
                     }
 
                     CriCpkArchive cpkArchive = new CriCpkArchive();
+                    cpkArchive.ProgressChanged += OnProgressChanged;
 
                     CriTable csbFile = new CriTable();
-                    csbFile.Load(csbPath);
+                    csbFile.Load(csbPath, Settings.Default.BufferSize);
 
                     CriRow soundElementRow = csbFile.Rows.First(row => (string)row["name"] == "SOUND_ELEMENT");
 
@@ -157,8 +166,6 @@ namespace CsbEditor
                         bool streaming = (byte)sdlRow["stmflg"] != 0;
                         uint sampleRate = (uint)sdlRow["sfreq"];
                         byte numberChannels = (byte)sdlRow["nch"];
-
-                        Console.WriteLine("Adding {0}...", sdlName);
 
                         CriAaxArchive aaxArchive = new CriAaxArchive();
                         foreach (FileInfo file in sdlDirectory.GetFiles("*.adx"))
@@ -193,7 +200,7 @@ namespace CsbEditor
                             junks.Add(entry.FilePath);
 
                             cpkArchive.Add(entry);
-                            aaxArchive.Save(entry.FilePath.FullName);
+                            aaxArchive.Save(entry.FilePath.FullName, Settings.Default.BufferSize);
                         }
 
                         else
@@ -209,11 +216,11 @@ namespace CsbEditor
                     soundElementRow["utf"] = soundElementTable.Save();
 
                     csbFile.WriterSettings = CriTableWriterSettings.AdxSettings;
-                    csbFile.Save(args[0] + ".csb");
+                    csbFile.Save(args[0] + ".csb", Settings.Default.BufferSize);
 
                     if (cpkArchive.Count > 0)
                     {
-                        cpkArchive.Save(args[0] + ".cpk");
+                        cpkArchive.Save(args[0] + ".cpk", Settings.Default.BufferSize);
                     }
 
                     foreach (FileInfo junk in junks)
@@ -239,6 +246,19 @@ namespace CsbEditor
                 numberChannels = EndianStream.ReadByte(source);
                 sampleRate = EndianStream.ReadUInt32BE(source);
             }
+        }
+
+        private static string buffer = new string(' ', 17);
+
+        private static void OnProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            int left = Console.CursorLeft;
+            int top = Console.CursorTop;
+
+            Console.Write(buffer);
+            Console.SetCursorPosition(left, top);
+            Console.WriteLine("Progress: {0}%", e.Progress);
+            Console.SetCursorPosition(left, top);
         }
     }
 }

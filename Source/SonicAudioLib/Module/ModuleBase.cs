@@ -8,6 +8,8 @@ namespace SonicAudioLib.Module
 {
     public abstract class ModuleBase
     {
+        protected int bufferSize = 4096;
+
         public abstract void Read(Stream source);
         public abstract void Write(Stream destination);
 
@@ -17,6 +19,8 @@ namespace SonicAudioLib.Module
             {
                 Read(source);
             }
+
+            this.bufferSize = bufferSize;
         }
 
         public virtual void Load(string sourceFileName)
@@ -43,6 +47,8 @@ namespace SonicAudioLib.Module
             {
                 Write(destination);
             }
+
+            this.bufferSize = bufferSize;
         }
 
         public virtual byte[] Save()
