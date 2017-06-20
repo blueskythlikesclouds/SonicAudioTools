@@ -19,6 +19,14 @@ namespace CsbBuilder.Project
             DirectoryOfCsb,
         }
 
+        public enum NAudioWavePlayer
+        {
+            WaveOut,
+            WasapiOut,
+            DirectSoundOut,
+            AsioOut,
+        }
+
         [DisplayName("Name node after its parent"), Category("General")]
         [Description("Names a node after its parent if it exists, or the node tree name.")]
         public bool NameNodeAfterParent { get; set; }
@@ -48,7 +56,23 @@ namespace CsbBuilder.Project
 
         [DisplayName("Maximum amount of cores"), Category("Stream")]
         [Description("Maximum amount of threads used to extract data from CSB/CPK files during importing.")]
-        public int MaxCores { get; set; }
+        public int MaxThreads { get; set; }
+
+        [DisplayName("Wave Player"), Category("Sound")]
+        [Description("Sound device for audio playback. If not supported, application is going to crash.")]
+        public NAudioWavePlayer WavePlayer { get; set; }
+
+        [DisplayName("Loop Count"), Category("Audio Converter")]
+        [Description("Count of loop times for audio converter if input audio has loop information.")]
+        public int LoopCount { get; set; }
+
+        [DisplayName("Fade Out Time"), Category("Audio Converter")]
+        [Description("Fade out time in seconds after total 'Loop Count' loops for audio with loop information.")]
+        public double FadeTime { get; set; }
+
+        [DisplayName("Fade Out Delay Time"), Category("Audio Converter")]
+        [Description("Delay time in seconds before audio starts to fade out.")]
+        public double FadeDelay { get; set; }
 
         public static Settings Load()
         {
@@ -57,7 +81,7 @@ namespace CsbBuilder.Project
             Settings settings = null;
             
                 if (File.Exists(path))
-                {
+                {   
                 XmlSerializer serializer = new XmlSerializer(typeof(Settings));
 
                 using (Stream source = File.OpenRead(path))
@@ -92,6 +116,7 @@ namespace CsbBuilder.Project
 
         public Settings()
         {
+            WavePlayer = NAudioWavePlayer.WaveOut;
             NameNodeAfterParent = true;
             BufferSize = 4096;
             ProjectsDirectory = "Projects";
@@ -99,7 +124,10 @@ namespace CsbBuilder.Project
             ImportedCsbProjectDirectory = ProjectDirectory.DirectoryOfCsb;
             RenameToSoundElement = true;
             EnableThreading = true;
-            MaxCores = 4;
+            MaxThreads = 4;
+            LoopCount = 2;
+            FadeTime = 10;
+            FadeDelay = 0;
         }
     }
 }

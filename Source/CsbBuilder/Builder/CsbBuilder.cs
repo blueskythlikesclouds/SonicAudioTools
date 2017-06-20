@@ -5,12 +5,12 @@ using System.Text;
 using System.IO;
 
 using CsbBuilder.Project;
-using CsbBuilder.BuilderNode;
+using CsbBuilder.BuilderNodes;
 using CsbBuilder.Serialization;
 
 using SonicAudioLib.CriMw;
 using SonicAudioLib.CriMw.Serialization;
-using SonicAudioLib.Archive;
+using SonicAudioLib.Archives;
 
 namespace CsbBuilder.Builder
 {
@@ -192,6 +192,8 @@ namespace CsbBuilder.Builder
                         Flag = CriAaxEntryFlag.Intro,
                         FilePath = new FileInfo(Path.Combine(project.AudioDirectory.FullName, soundElementNode.Intro)),
                     });
+
+                    aaxArchive.SetModeFromExtension(soundElementNode.Intro);
                 }
 
                 if (!string.IsNullOrEmpty(soundElementNode.Loop))
@@ -201,6 +203,8 @@ namespace CsbBuilder.Builder
                         Flag = CriAaxEntryFlag.Loop,
                         FilePath = new FileInfo(Path.Combine(project.AudioDirectory.FullName, soundElementNode.Loop)),
                     });
+
+                    aaxArchive.SetModeFromExtension(soundElementNode.Loop);
                 }
 
                 byte[] data = new byte[0];
@@ -228,7 +232,7 @@ namespace CsbBuilder.Builder
                 {
                     Name = soundElementNode.Name,
                     Data = data,
-                    FormatType = 0,
+                    FormatType = (byte)aaxArchive.Mode,
                     SoundFrequency = soundElementNode.SampleRate,
                     NumberChannels = soundElementNode.ChannelCount,
                     Streaming = soundElementNode.Streaming,

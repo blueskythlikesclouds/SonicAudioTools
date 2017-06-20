@@ -94,6 +94,21 @@ namespace SonicAudioLib.CriMw
             }
         }
 
+        public T GetValue<T>(CriField criField)
+        {
+            return (T)this[criField];
+        }
+
+        public T GetValue<T>(string fieldName)
+        {
+            return (T)this[fieldName];
+        }
+
+        public T GetValue<T>(int fieldIndex)
+        {
+            return (T)this[fieldIndex];
+        }
+
         public object[] GetValueArray()
         {
             object[] values = new object[records.Count];

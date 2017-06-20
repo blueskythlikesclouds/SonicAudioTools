@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel;
 
-namespace CsbBuilder.BuilderNode
+namespace CsbBuilder.BuilderNodes
 {
     public class BuilderVoiceLimitGroupNode : BuilderBaseNode
     {

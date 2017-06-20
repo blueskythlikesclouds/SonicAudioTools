@@ -1,11 +1,11 @@
 ﻿using System.Collections;
 using System.IO;
 
-using SonicAudioLib.Module;
+using SonicAudioLib.FileBases;
 
 namespace SonicAudioLib.IO
 {
-    public class VldPool
+    public class DataPool
     {
         private ArrayList items = new ArrayList();
 
@@ -88,29 +88,13 @@ namespace SonicAudioLib.IO
             return position;
         }
 
-        public long Put(ModuleBase module)
-        {
-            if (module == null)
-            {
-                return 0;
-            }
-
-            length = Helpers.Align(length, align);
-
-            long position = length;
-            length += 0;
-            items.Add(module);
-
-            return position;
-        }
-
         public void Write(Stream destination)
         {
             startPosition = destination.Position;
 
             foreach (object item in items)
             {
-                EndianStream.Pad(destination, align);
+                DataStream.Pad(destination, align);
 
                 if (item is byte[] bytes)
                 {
@@ -131,11 +115,6 @@ namespace SonicAudioLib.IO
                     }
                 }
 
-                else if (item is ModuleBase module)
-                {
-                    module.Write(destination);
-                }
-
                 ProgressChanged?.Invoke(this, new ProgressChangedEventArgs(((destination.Position - startPosition) / (double)(length - baseLength)) * 100.0));
             }
         }
@@ -145,7 +124,7 @@ namespace SonicAudioLib.IO
             items.Clear();
         }
 
-        public VldPool(uint align, long baseLength)
+        public DataPool(uint align, long baseLength)
         {
             this.align = align;
 
@@ -153,12 +132,12 @@ namespace SonicAudioLib.IO
             length = this.baseLength;
         }
         
-        public VldPool(uint align)
+        public DataPool(uint align)
         {
             this.align = align;
         }
 
-        public VldPool()
+        public DataPool()
         {
         }
     }

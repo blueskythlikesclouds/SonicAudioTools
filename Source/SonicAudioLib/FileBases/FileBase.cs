@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.IO;
 
-namespace SonicAudioLib.Module
+namespace SonicAudioLib.FileBases
 {
-    public abstract class ModuleBase
+    public abstract class FileBase
     {
         protected int bufferSize = 4096;
 

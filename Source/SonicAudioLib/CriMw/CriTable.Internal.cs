@@ -5,20 +5,23 @@ namespace SonicAudioLib.CriMw
 {
     struct CriTableHeader
     {
-        public const string Signature = "@UTF";
+        public static readonly byte[] SignatureBytes = { 0x40, 0x55, 0x54, 0x46 };
+
         public const byte EncodingTypeShiftJis = 0;
         public const byte EncodingTypeUtf8 = 1;
 
+        public byte[] Signature;
         public uint Length;
         public byte UnknownByte;
         public byte EncodingType;
         public ushort RowsPosition;
         public uint StringPoolPosition;
         public uint DataPoolPosition;
+        public uint TableNamePosition;
         public string TableName;
-        public ushort NumberOfFields;
+        public ushort FieldCount;
         public ushort RowLength;
-        public uint NumberOfRows;
+        public uint RowCount;
     }
 
     [Flags]
@@ -47,6 +50,7 @@ namespace SonicAudioLib.CriMw
 
     struct CriTableField
     {
+        public uint Offset;
         public CriFieldFlag Flag;
         public string Name;
         public uint Position;
@@ -61,13 +65,13 @@ namespace SonicAudioLib.CriMw
             for (byte x = 0; x <= byte.MaxValue; x++)
             {
                 // Find XOR using first byte
-                if ((signature[0] ^ x) == CriTableHeader.Signature[0])
+                if ((signature[0] ^ x) == CriTableHeader.SignatureBytes[0])
                 {
                     // Matched the first byte, try finding the multiplier with the second byte
                     for (byte m = 0; m <= byte.MaxValue; m++)
                     {
                         // Matched the second byte, now make sure the other bytes match as well
-                        if ((signature[1] ^ (byte)(x * m)) == CriTableHeader.Signature[1])
+                        if ((signature[1] ^ (byte)(x * m)) == CriTableHeader.SignatureBytes[1])
                         {
                             byte _x = (byte)(x * m);
 
@@ -76,7 +80,7 @@ namespace SonicAudioLib.CriMw
                             {
                                 _x *= m;
 
-                                if ((signature[i] ^ _x) != CriTableHeader.Signature[i])
+                                if ((signature[i] ^ _x) != CriTableHeader.SignatureBytes[i])
                                 {
                                     allMatches = false;
                                     break;

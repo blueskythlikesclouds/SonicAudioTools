@@ -13,9 +13,10 @@ using System.IO;
 using System.Reflection;
 using System.Xml;
 using System.Xml.Serialization;
+using System.Runtime.InteropServices;
 
 using CsbBuilder.Builder;
-using CsbBuilder.BuilderNode;
+using CsbBuilder.BuilderNodes;
 using CsbBuilder.Audio;
 using CsbBuilder.Importer;
 using CsbBuilder.Project;
@@ -23,7 +24,7 @@ using CsbBuilder.Serialization;
 using CsbBuilder.Properties;
 
 using SonicAudioLib.IO;
-using SonicAudioLib.Archive;
+using SonicAudioLib.Archives;
 
 using NAudio.Wave;
 
@@ -41,6 +42,25 @@ namespace CsbBuilder
         private TreeView treeViewOfCopiedNode = null;
 
         private List<IWavePlayer> sounds = new List<IWavePlayer>();
+
+        private string filters = null;
+
+        private string Filters
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(filters))
+                {
+                    var culture = Thread.CurrentThread.CurrentUICulture;
+
+                    var formats = VGMStreamNative.GetFormats().OrderBy(format => format);
+                    var formatFilter = formats.Select(format => $"{format.ToUpper(culture)} Files|*.{format}");
+                    filters = $"All Formats|{string.Join(";", formats.Select(format => $"*.{format}"))}|{string.Join("|", formatFilter)}";
+                }
+
+                return filters;
+            }
+        }
 
         public MainForm()
         {
@@ -1388,10 +1408,12 @@ namespace CsbBuilder
 
         public void ReadAdx(string path, out uint sampleRate, out byte channelCount, out uint sampleCount)
         {
-            AdxHeader header = AdxFileReader.LoadHeader(path);
-            sampleRate = header.SampleRate;
-            channelCount = header.ChannelCount;
-            sampleCount = header.SampleCount;
+            using (var reader = new VGMStreamReader(path))
+            {
+                sampleRate = (uint)reader.WaveFormat.SampleRate;
+                channelCount = (byte)reader.WaveFormat.Channels;
+                sampleCount = (uint)(reader.Length / 2);
+            }
         }
 
         private void CreateChildSoundNode(object sender, EventArgs e)
@@ -1424,30 +1446,94 @@ namespace CsbBuilder
             return (int)(miliseconds * sampleRate / 1000.0) * channelCount * bitsPerSample / 8;
         }
 
+        private int GetMilisecondsFromByteCount(int byteCount, int sampleRate, int channelCount, int bitsPerSample)
+        {
+            return (int)((8000.0 * byteCount) / (sampleRate * channelCount * bitsPerSample));
+        }
+
+        private WaveStream GetWaveStream(string path)
+        {
+            if (path.EndsWith(".wav", StringComparison.OrdinalIgnoreCase))
+            {
+                return new WaveFileReader(project.GetFullAudioPath(path));
+            }
+
+            return new VGMStreamReader(project.GetFullAudioPath(path));
+        }
+
         private void AddSoundElementSound(BuilderSoundElementNode soundElementNode, double volume, double pitch, int sampleCount, int delayTime)
         {
             WaveStream waveStream = null;
 
             if (!string.IsNullOrEmpty(soundElementNode.Intro) && string.IsNullOrEmpty(soundElementNode.Loop))
             {
-                waveStream = new AdxFileReader(project.GetFullAudioPath(soundElementNode.Intro)) { Volume = volume, Pitch = pitch, DelayTime = delayTime };
+                var reader = new VGMStreamReader(project.GetFullAudioPath(soundElementNode.Intro));
+                reader.DisableLoop();
+
+                waveStream = new ExtendedWaveStream(reader)
+                {
+                    DelayTime = delayTime,
+                    Volume = volume,
+                    Pitch = pitch,
+                };
             } 
 
             else if (string.IsNullOrEmpty(soundElementNode.Intro) && !string.IsNullOrEmpty(soundElementNode.Loop))
             {
-                waveStream = new ExtendedAdxFileReader(project.GetFullAudioPath(soundElementNode.Loop)) { Volume = volume, Pitch = pitch, DelayTime = delayTime };
+                var reader = new VGMStreamReader(project.GetFullAudioPath(soundElementNode.Loop));
+                reader.ForceLoop();
+
+                waveStream = new ExtendedWaveStream(reader)
+                {
+                    DelayTime = delayTime,
+                    Volume = volume,
+                    Pitch = pitch,
+                    ForceLoop = true,
+                };
             }
 
             else if (!string.IsNullOrEmpty(soundElementNode.Intro) && !string.IsNullOrEmpty(soundElementNode.Loop))
             {
-                waveStream = new ExtendedAdxFileReader(project.GetFullAudioPath(soundElementNode.Intro), project.GetFullAudioPath(soundElementNode.Loop)) { Volume = volume, Pitch = pitch, DelayTime = delayTime };
+                var intro = new VGMStreamReader(project.GetFullAudioPath(soundElementNode.Intro));
+                intro.DisableLoop();
+
+                var loop = new VGMStreamReader(project.GetFullAudioPath(soundElementNode.Loop));
+                loop.ForceLoop();
+
+                waveStream = new ExtendedWaveStream(intro, loop)
+                {
+                    DelayTime = delayTime,
+                    Volume = volume,
+                    Pitch = pitch,
+                    ForceLoop = true,
+                };
             }
 
             if (waveStream != null)
             {
-                DirectSoundOut waveOut = new DirectSoundOut();
-                waveOut.Init(waveStream);
-                sounds.Add(waveOut);
+                IWavePlayer wavePlayer = null;
+
+                switch (Settings.WavePlayer)
+                {
+                    case Settings.NAudioWavePlayer.WaveOut:
+                        wavePlayer = new WaveOut();
+                        break;
+
+                    case Settings.NAudioWavePlayer.WasapiOut:
+                        wavePlayer = new WasapiOut();
+                        break;
+
+                    case Settings.NAudioWavePlayer.DirectSoundOut:
+                        wavePlayer = new DirectSoundOut();
+                        break;
+
+                    case Settings.NAudioWavePlayer.AsioOut:
+                        wavePlayer = new AsioOut();
+                        break;
+                }
+
+                wavePlayer.Init(waveStream);
+                sounds.Add(wavePlayer);
             }
         }
 
@@ -2140,10 +2226,9 @@ namespace CsbBuilder
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog
             {
-                Title = "Convert ADX Files",
-                FileName = "Select ADX files you want to convert and press Open",
-                Filter = "ADX Files|*.adx",
-                DefaultExt = "adx",
+                Title = "Convert Audio Files",
+                FileName = "Select audio files you want to convert and press Open",
+                Filter = Filters,
                 Multiselect = true,
             })
             {
@@ -2157,23 +2242,88 @@ namespace CsbBuilder
                     {
                         if (saveFileDialog.ShowDialog(this) == DialogResult.OK)
                         {
-                            foreach (string fileName in openFileDialog.FileNames)
+                            var failedFiles = new List<string>();
+
+                            Action<string> action = fileName =>
                             {
-                                using (AdxFileReader reader = new AdxFileReader(fileName))
+                                VGMStreamReader reader = null;
+
+                                try
+                                {
+                                    reader = new VGMStreamReader(fileName);
+                                }
+
+                                catch (NullReferenceException)
+                                {
+                                    failedFiles.Add(Path.GetFileName(fileName));
+                                    return;
+                                }
+
+                                using (reader)
                                 using (WaveFileWriter writer = new WaveFileWriter(
                                     Path.Combine(
                                         Path.GetDirectoryName(saveFileDialog.FileName),
                                         Path.GetFileNameWithoutExtension(fileName) + ".wav"),
                                     reader.WaveFormat))
                                 {
-                                    int num;
-                                    byte[] buffer = new byte[Settings.BufferSize];
-
-                                    while ((num = reader.Read(buffer, 0, Settings.BufferSize)) != 0)
+                                    if (reader.LoopFlag)
                                     {
-                                        writer.Write(buffer, 0, num);
+                                        // Intro
+                                        DataStream.CopyPartTo(reader, writer, reader.LoopStartPosition, Settings.BufferSize);
+
+                                        // Loops
+                                        DataStream.CopyPartTo(reader, writer, (reader.LoopEndPosition - reader.LoopStartPosition) * Settings.LoopCount, Settings.BufferSize);
+
+                                        // Last loop, fade away
+                                        byte[] buffer = new byte[Settings.BufferSize];
+
+                                        // Fade will be 10 seconds
+                                        double sampleCount = (int)(reader.WaveFormat.AverageBytesPerSecond * Settings.FadeTime);
+
+                                        int i;
+                                        int j = (int)(sampleCount + reader.WaveFormat.AverageBytesPerSecond * Settings.FadeDelay);
+
+                                        while (j > 0)
+                                        {
+                                            reader.Read(buffer, 0, buffer.Length);
+
+                                            for (i = 0; i < buffer.Length && j > 0; i += 2, j--)
+                                            {
+                                                double volume = j / sampleCount;
+
+                                                // Clamp to 0.0-1.0 range so delay actually works
+                                                volume = volume > 1.0 ? 1.0 : volume;
+
+                                                PostSampleEditor.ApplyVolume(buffer, i, volume);
+                                            }
+
+                                            writer.Write(buffer, 0, i);
+                                        }
+                                    }
+
+                                    else
+                                    {
+                                        DataStream.CopyTo(reader, writer, Settings.BufferSize);
                                     }
                                 }
+                            };
+
+                            if (Settings.EnableThreading)
+                            {
+                                Parallel.ForEach(openFileDialog.FileNames, new ParallelOptions { MaxDegreeOfParallelism = Settings.MaxThreads }, action);
+                            }
+
+                            else
+                            {
+                                foreach (var item in openFileDialog.FileNames)
+                                {
+                                    action(item);
+                                }
+                            }
+
+                            if (failedFiles.Count != 0)
+                            {
+                                MessageBox.Show($"Following files could not be converted:\n{string.Join("\n", failedFiles)}", "CSB Builder", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             }
                         }
                     }
@@ -2202,6 +2352,11 @@ namespace CsbBuilder
                     {
                         if (saveFileDialog.ShowDialog(this) == DialogResult.OK)
                         {
+                            DataExtractor extractor = new DataExtractor();
+                            extractor.EnableThreading = Settings.EnableThreading;
+                            extractor.MaxThreads = Settings.MaxThreads;
+                            extractor.BufferSize = Settings.BufferSize;
+
                             foreach (string fileName in openFileDialog.FileNames)
                             {
                                 CriAaxArchive aaxArchive = new CriAaxArchive();
@@ -2210,15 +2365,17 @@ namespace CsbBuilder
                                 foreach (CriAaxEntry entry in aaxArchive)
                                 {
                                     using (Stream source = File.OpenRead(fileName))
-                                    using (Stream destination = File.Create(
-                                        Path.Combine(
-                                            Path.GetDirectoryName(saveFileDialog.FileName),
-                                            $"{Path.GetFileNameWithoutExtension(fileName)}_{entry.Flag}.adx")))
                                     {
-                                        EndianStream.CopyPartTo(source, destination, entry.Position, entry.Length, Settings.BufferSize);
+                                        extractor.Add(fileName, Path.Combine(
+                                            Path.GetDirectoryName(saveFileDialog.FileName),
+                                            $"{Path.GetFileNameWithoutExtension(fileName)}_{entry.Flag}{aaxArchive.GetModeExtension()}"),
+                                            entry.Position,
+                                            entry.Length);
                                     }
                                 }
                             }
+
+                            extractor.Run();
                         }
                     }
                 }
@@ -2229,10 +2386,9 @@ namespace CsbBuilder
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog
             {
-                Title = "Extract ADX Files",
+                Title = "Pack ADX Files",
                 FileName = "Select ADX files you want to pack and press Open",
-                Filter = "ADX Files|*.adx",
-                DefaultExt = "adx",
+                Filter = "All Files|*.adx;*.wav|ADX Files|*.adx|WAV Files|*.wav",
                 Multiselect = true,
             })
             {
@@ -2244,6 +2400,13 @@ namespace CsbBuilder
                     if (openFileDialog.FileNames.Length > 2)
                     {
                         MessageBox.Show("You can select maximum 2 ADX files.", "CSB Builder", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+
+                    else if (openFileDialog.FileNames.Length == 2 && 
+                        !Path.GetExtension(openFileDialog.FileNames[0]).Equals(
+                            Path.GetExtension(openFileDialog.FileNames[1]), StringComparison.OrdinalIgnoreCase))
+                    {
+                        MessageBox.Show("You can select only the same type of files.", "CSB Builder", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
 
                     else
@@ -2258,7 +2421,7 @@ namespace CsbBuilder
                     using (SaveFileDialog saveFileDialog = new SaveFileDialog
                     {
                         Title = "Output File",
-                        FileName = "*.aax",
+                        FileName = $"{Path.GetFileNameWithoutExtension(files[0])}.aax",
                         Filter = "AAX Files|*.aax",
                         DefaultExt = "aax",
                     })
@@ -2266,6 +2429,7 @@ namespace CsbBuilder
                         if (saveFileDialog.ShowDialog(this) == DialogResult.OK)
                         {
                             CriAaxArchive archive = new CriAaxArchive();
+                            archive.SetModeFromExtension(files[0]);
 
                             for (int i = 0; i < files.Length; i++)
                             {
@@ -2273,6 +2437,97 @@ namespace CsbBuilder
                             }
 
                             archive.Save(saveFileDialog.FileName);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void convertAndSplitLoopingToWAVToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Title = "Convert And Split Audio Files",
+                FileName = "Select audio files you want to convert and press Open",
+                Filter = Filters,
+                Multiselect = true,
+            })
+            {
+                if (openFileDialog.ShowDialog(this) == DialogResult.OK)
+                {
+                    using (SaveFileDialog saveFileDialog = new SaveFileDialog
+                    {
+                        Title = "Output Directory",
+                        FileName = "Enter into a directory and press Save",
+                    })
+                    {
+                        if (saveFileDialog.ShowDialog(this) == DialogResult.OK)
+                        {
+                            var failedFiles = new List<string>();
+
+                            Action<string> action = fileName =>
+                            {
+                                VGMStreamReader reader = null;
+
+                                try
+                                {
+                                    reader = new VGMStreamReader(fileName);
+                                }
+
+                                catch (NullReferenceException)
+                                {
+                                    failedFiles.Add(Path.GetFileName(fileName));
+                                    return;
+                                }
+
+                                using (reader)
+                                {
+                                    string outputFileName = 
+                                        Path.Combine(
+                                            Path.GetDirectoryName(saveFileDialog.FileName), 
+                                            Path.GetFileNameWithoutExtension(fileName));
+
+                                    WaveFileWriter introWriter;
+                                    WaveFileWriter loopWriter;
+
+                                    if (reader.LoopFlag)
+                                    {
+                                        using (introWriter = new WaveFileWriter(outputFileName + "_Intro.wav", reader.WaveFormat))
+                                        using (loopWriter = new WaveFileWriter(outputFileName + "_Loop.wav", reader.WaveFormat))
+                                        {
+                                            DataStream.CopyPartTo(reader, introWriter, 0, reader.LoopStartPosition, Settings.BufferSize);
+                                            DataStream.CopyPartTo(reader, loopWriter, reader.LoopStartPosition, reader.LoopEndPosition - reader.LoopStartPosition, Settings.BufferSize);
+                                        }
+                                    }
+
+                                    // No loop enabled, directly extract the intro
+                                    else
+                                    {
+                                        using (introWriter = new WaveFileWriter(outputFileName + "_Intro.wav", reader.WaveFormat))
+                                        {
+                                            DataStream.CopyTo(reader, introWriter, Settings.BufferSize);
+                                        }
+                                    }
+                                }
+                            };
+
+                            if (Settings.EnableThreading)
+                            {
+                                Parallel.ForEach(openFileDialog.FileNames, new ParallelOptions { MaxDegreeOfParallelism = Settings.MaxThreads }, action);
+                            }
+
+                            else
+                            {
+                                foreach (var item in openFileDialog.FileNames)
+                                {
+                                    action(item);
+                                }
+                            }
+
+                            if (failedFiles.Count != 0)
+                            {
+                                MessageBox.Show($"Following files could not be converted:\n{string.Join("\n", failedFiles)}", "CSB Builder", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            }
                         }
                     }
                 }

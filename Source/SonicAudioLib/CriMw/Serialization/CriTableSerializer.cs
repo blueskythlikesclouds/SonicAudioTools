@@ -160,7 +160,7 @@ namespace SonicAudioLib.CriMw.Serialization
                     }
                 }
 
-                else if (arrayList == null || (arrayList != null && arrayList.Count == 0))
+                else if (arrayList == null || (arrayList != null && (arrayList.Count == 0 || (arrayList.Count == 1 && propertyInfo.GetValue(arrayList[0]) is null))))
                 {
                     useDefaultValue = true;
                     defaultValue = null;
@@ -168,7 +168,7 @@ namespace SonicAudioLib.CriMw.Serialization
 
                 if (defaultValue is bool boolean)
                 {
-                    defaultValue = boolean ? (byte)1 : (byte)0;
+                    defaultValue = (byte)(boolean ? 1 : 0);
                 }
 
                 else if (defaultValue is Enum)
@@ -204,7 +204,7 @@ namespace SonicAudioLib.CriMw.Serialization
 
                         if (value is bool boolean)
                         {
-                            value = boolean ? (byte)1 : (byte)0;
+                            value = (byte)(boolean ? 1 : 0);
                         }
 
                         else if (value is Enum)
@@ -309,7 +309,7 @@ namespace SonicAudioLib.CriMw.Serialization
 
                         object value = tableReader.GetValue(fieldName);
 
-                        if (value is Substream substream)
+                        if (value is SubStream substream)
                         {
                             value = substream.ToArray();
                         }

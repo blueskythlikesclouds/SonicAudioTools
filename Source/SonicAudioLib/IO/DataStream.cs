@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 
 namespace SonicAudioLib.IO
 {
-    public static class EndianStream
+    public static class DataStream
     {
         [StructLayout(LayoutKind.Explicit)]
         private struct SingleUnion
@@ -28,6 +28,9 @@ namespace SonicAudioLib.IO
             public ulong ULong;
         }
 
+        // Not thread safe... but I guess it's OK.
+        private static byte[] buffer = new byte[8];
+
         public static void CopyTo(Stream source, Stream destination)
         {
             CopyTo(source, destination, 4096);
@@ -44,34 +47,35 @@ namespace SonicAudioLib.IO
             }
         }
 
-        public static void CopyPartTo(Stream source, Stream destination, long position, long length, int bufferSize)
+        public static void CopyPartTo(Stream source, Stream destination, long length, int bufferSize)
         {
-            source.Position = position;
-
+            int num;
             byte[] buffer = new byte[bufferSize];
 
-            int num;
-            long totalWrittenBytes = 0;
-
-            while ((num = source.Read(buffer, 0, bufferSize)) != 0)
+            long copiedBytes = 0;
+            while (copiedBytes < length && (num = source.Read(buffer, 0, bufferSize)) != 0)
             {
-                totalWrittenBytes += num;
-
-                if (totalWrittenBytes > length)
+                if (copiedBytes + num >= length)
                 {
-                    num -= (int)(totalWrittenBytes - length);
-                    destination.Write(buffer, 0, num);
-                    break;
+                    num = (int)(length - copiedBytes);
                 }
 
+                copiedBytes += num;
                 destination.Write(buffer, 0, num);
             }
+        }
+
+        public static void CopyPartTo(Stream source, Stream destination, long position, long length, int bufferSize)
+        {
+            source.Seek(position, SeekOrigin.Begin);
+            CopyPartTo(source, destination, length, bufferSize);
         }
 
         public static byte[] ReadBytes(Stream source, int length)
         {
             byte[] buffer = new byte[length];
             source.Read(buffer, 0, length);
+
             return buffer;
         }
 
@@ -97,13 +101,9 @@ namespace SonicAudioLib.IO
 
         public static byte ReadByte(Stream source)
         {
-            int value = source.ReadByte();
-            if (value == -1)
-            {
-                throw new EndOfStreamException();
-            }
+            source.Read(buffer, 0, 1);
 
-            return (byte)value;
+            return buffer[0];
         }
 
         public static byte ReadByteAt(Stream source, long position)
@@ -119,7 +119,9 @@ namespace SonicAudioLib.IO
 
         public static void WriteByte(Stream destination, byte value)
         {
-            destination.WriteByte(value);
+            buffer[0] = value;
+
+            destination.Write(buffer, 0, 1);
         }
 
         public static void WriteByteAt(Stream destination, byte value, long position)
@@ -133,198 +135,254 @@ namespace SonicAudioLib.IO
 
         public static bool ReadBoolean(Stream source)
         {
-            return source.ReadByte() > 0;
+            source.Read(buffer, 0, 1);
+
+            return buffer[0] == 1;
         }
 
         public static void WriteBoolean(Stream destination, bool value)
         {
-            WriteByte(destination, (byte)(value ? 1 : 0));
+            buffer[0] = (byte)(value ? 1 : 0);
+
+            destination.Write(buffer, 0, 1);
         }
 
         public static sbyte ReadSByte(Stream source)
         {
-            return (sbyte)ReadByte(source);
+            source.Read(buffer, 0, 1);
+
+            return (sbyte)buffer[0];
         }
 
-        public static void WriteSByte(Stream source, sbyte value)
+        public static void WriteSByte(Stream destination, sbyte value)
         {
-            WriteByte(source, (byte)value);
+            buffer[0] = (byte)value;
+
+            destination.Write(buffer, 0, 1);
         }
 
         public static ushort ReadUInt16(Stream source)
         {
-            return (ushort)(source.ReadByte() | source.ReadByte() << 8);
+            source.Read(buffer, 0, 2);
+
+            return (ushort)(buffer[0] | buffer[1] << 8);
         }
 
         public static ushort ReadUInt16BE(Stream source)
         {
-            return (ushort)(source.ReadByte() << 8 | source.ReadByte());
+            source.Read(buffer, 0, 2);
+
+            return (ushort)(buffer[0] << 8 | buffer[1]);
         }
 
         public static void WriteUInt16(Stream destination, ushort value)
         {
-            destination.WriteByte((byte)(value));
-            destination.WriteByte((byte)(value >> 8));
+            buffer[0] = (byte)(value);
+            buffer[1] = (byte)(value >> 8);
+
+            destination.Write(buffer, 0, 2);
         }
 
         public static void WriteUInt16BE(Stream destination, ushort value)
         {
-            destination.WriteByte((byte)(value >> 8));
-            destination.WriteByte((byte)(value));
+            buffer[0] = (byte)(value >> 8);
+            buffer[1] = (byte)(value);
+
+            destination.Write(buffer, 0, 2);
         }
 
         public static short ReadInt16(Stream source)
         {
-            return (short)(source.ReadByte() | source.ReadByte() << 8);
+            source.Read(buffer, 0, 2);
+
+            return (short)(buffer[0] | buffer[1] << 8);
         }
 
         public static short ReadInt16BE(Stream source)
         {
-            return (short)(source.ReadByte() << 8 | source.ReadByte());
+            source.Read(buffer, 0, 2);
+
+            return (short)(buffer[0] << 8 | buffer[1]);
         }
 
         public static void WriteInt16(Stream destination, short value)
         {
-            destination.WriteByte((byte)(value));
-            destination.WriteByte((byte)(value >> 8));
+            buffer[0] = (byte)(value);
+            buffer[1] = (byte)(value >> 8);
+
+            destination.Write(buffer, 0, 2);
         }
 
         public static void WriteInt16BE(Stream destination, short value)
         {
-            destination.WriteByte((byte)(value >> 8));
-            destination.WriteByte((byte)(value));
+            buffer[0] = (byte)(value >> 8);
+            buffer[1] = (byte)(value);
+
+            destination.Write(buffer, 0, 2);
         }
 
         public static uint ReadUInt32(Stream source)
         {
-            return (uint)(source.ReadByte() | source.ReadByte() << 8 | source.ReadByte() << 16 | source.ReadByte() << 24);
+            source.Read(buffer, 0, 4);
+
+            return (uint)(buffer[0] | buffer[1] << 8 | buffer[2] << 16 | buffer[3] << 24);
         }
 
         public static uint ReadUInt32BE(Stream source)
         {
-            return (uint)(source.ReadByte() << 24 | source.ReadByte() << 16 | source.ReadByte() << 8 | source.ReadByte());
+            source.Read(buffer, 0, 4);
+
+            return (uint)(buffer[0] << 24 | buffer[1] << 16 | buffer[2] << 8 | buffer[3]);
         }
 
         public static void WriteUInt32(Stream destination, uint value)
         {
-            destination.WriteByte((byte)(value));
-            destination.WriteByte((byte)(value >> 8));
-            destination.WriteByte((byte)(value >> 16));
-            destination.WriteByte((byte)(value >> 24));
+            buffer[0] = (byte)(value);
+            buffer[1] = (byte)(value >> 8);
+            buffer[2] = (byte)(value >> 16);
+            buffer[3] = (byte)(value >> 24);
+
+            destination.Write(buffer, 0, 4);
         }
 
         public static void WriteUInt32BE(Stream destination, uint value)
         {
-            destination.WriteByte((byte)((value >> 24)));
-            destination.WriteByte((byte)((value >> 16)));
-            destination.WriteByte((byte)((value >> 8)));
-            destination.WriteByte((byte)(value));
+            buffer[0] = (byte)((value >> 24));
+            buffer[1] = (byte)((value >> 16));
+            buffer[2] = (byte)((value >> 8));
+            buffer[3] = (byte)(value);
+
+            destination.Write(buffer, 0, 4);
         }
 
         public static int ReadInt32(Stream source)
         {
-            return source.ReadByte() | source.ReadByte() << 8 | source.ReadByte() << 16 | source.ReadByte() << 24;
+            source.Read(buffer, 0, 4);
+
+            return buffer[0] | buffer[1] << 8 | buffer[2] << 16 | buffer[3] << 24;
         }
 
         public static int ReadInt32BE(Stream source)
         {
-            return source.ReadByte() << 24 | source.ReadByte() << 16 | source.ReadByte() << 8 | source.ReadByte();
+            source.Read(buffer, 0, 4);
+
+            return buffer[0] << 24 | buffer[1] << 16 | buffer[2] << 8 | buffer[3];
         }
 
         public static void WriteInt32(Stream destination, int value)
         {
-            destination.WriteByte((byte)(value));
-            destination.WriteByte((byte)(value >> 8));
-            destination.WriteByte((byte)(value >> 16));
-            destination.WriteByte((byte)(value >> 24));
+            buffer[0] = (byte)(value);
+            buffer[1] = (byte)(value >> 8);
+            buffer[2] = (byte)(value >> 16);
+            buffer[3] = (byte)(value >> 24);
+
+            destination.Write(buffer, 0, 4);
         }
 
         public static void WriteInt32BE(Stream destination, int value)
         {
-            destination.WriteByte((byte)((value >> 24)));
-            destination.WriteByte((byte)((value >> 16)));
-            destination.WriteByte((byte)((value >> 8)));
-            destination.WriteByte((byte)(value));
+            buffer[0] = (byte)((value >> 24));
+            buffer[1] = (byte)((value >> 16));
+            buffer[2] = (byte)((value >> 8));
+            buffer[3] = (byte)(value);
+
+            destination.Write(buffer, 0, 4);
         }
 
         public static ulong ReadUInt64(Stream source)
         {
-            return ((uint)source.ReadByte() | (ulong)source.ReadByte() << 8 |
-                (ulong)source.ReadByte() << 16 | (ulong)source.ReadByte() << 24 |
-                (ulong)source.ReadByte() << 32 | (ulong)source.ReadByte() << 40 |
-                (ulong)source.ReadByte() << 48 | (ulong)source.ReadByte() << 56);
+            source.Read(buffer, 0, 8);
+
+            return (buffer[0] | (ulong)buffer[1] << 8 |
+                (ulong)buffer[2] << 16 | (ulong)buffer[3] << 24 |
+                (ulong)buffer[4] << 32 | (ulong)buffer[5] << 40 |
+                (ulong)buffer[6] << 48 | (ulong)buffer[7] << 56);
         }
 
         public static ulong ReadUInt64BE(Stream source)
         {
-            return ((ulong)source.ReadByte() << 56 | (ulong)source.ReadByte() << 48 |
-                (ulong)source.ReadByte() << 40 | (ulong)source.ReadByte() << 32 |
-                (ulong)source.ReadByte() << 24 | (ulong)source.ReadByte() << 16 |
-                (ulong)source.ReadByte() << 8 | (uint)source.ReadByte());
+            source.Read(buffer, 0, 8);
+
+            return ((ulong)buffer[0] << 56 | (ulong)buffer[1] << 48 |
+                (ulong)buffer[2] << 40 | (ulong)buffer[3] << 32 |
+                (ulong)buffer[4] << 24 | (ulong)buffer[5] << 16 |
+                (ulong)buffer[6] << 8 | buffer[7]);
         }
 
         public static void WriteUInt64(Stream destination, ulong value)
         {
-            destination.WriteByte((byte)(value));
-            destination.WriteByte((byte)(value >> 8));
-            destination.WriteByte((byte)(value >> 16));
-            destination.WriteByte((byte)(value >> 24));
-            destination.WriteByte((byte)(value >> 32));
-            destination.WriteByte((byte)(value >> 40));
-            destination.WriteByte((byte)(value >> 48));
-            destination.WriteByte((byte)(value >> 56));
+            buffer[0] = (byte)(value);
+            buffer[1] = (byte)(value >> 8);
+            buffer[2] = (byte)(value >> 16);
+            buffer[3] = (byte)(value >> 24);
+            buffer[4] = (byte)(value >> 32);
+            buffer[5] = (byte)(value >> 40);
+            buffer[6] = (byte)(value >> 48);
+            buffer[7] = (byte)(value >> 56);
+
+            destination.Write(buffer, 0, 8);
         }
 
         public static void WriteUInt64BE(Stream destination, ulong value)
         {
-            destination.WriteByte((byte)((value >> 56)));
-            destination.WriteByte((byte)((value >> 48)));
-            destination.WriteByte((byte)((value >> 40)));
-            destination.WriteByte((byte)((value >> 32)));
-            destination.WriteByte((byte)((value >> 24)));
-            destination.WriteByte((byte)((value >> 16)));
-            destination.WriteByte((byte)((value >> 8)));
-            destination.WriteByte((byte)(value));
+            buffer[0] = (byte)((value >> 56));
+            buffer[1] = (byte)((value >> 48));
+            buffer[2] = (byte)((value >> 40));
+            buffer[3] = (byte)((value >> 32));
+            buffer[4] = (byte)((value >> 24));
+            buffer[5] = (byte)((value >> 16));
+            buffer[6] = (byte)((value >> 8));
+            buffer[7] = (byte)(value);
+
+            destination.Write(buffer, 0, 8);
         }
 
         public static long ReadInt64(Stream source)
         {
-            return source.ReadByte() | source.ReadByte() << 8 |
-                source.ReadByte() << 16 | source.ReadByte() << 24 |
-                source.ReadByte() << 32 | source.ReadByte() << 40 |
-                source.ReadByte() << 48 | source.ReadByte() << 56;
+            source.Read(buffer, 0, 8);
+
+            return buffer[0] | buffer[1] << 8 |
+                buffer[2] << 16 | buffer[3] << 24 |
+                buffer[4] << 32 | buffer[5] << 40 |
+                buffer[6] << 48 | buffer[7] << 56;
         }
 
         public static long ReadInt64BE(Stream source)
         {
-            return source.ReadByte() << 56 | source.ReadByte() << 48 |
-                source.ReadByte() << 40 | source.ReadByte() << 32 |
-                source.ReadByte() << 24 | source.ReadByte() << 16 |
-                source.ReadByte() << 8 | source.ReadByte();
+            source.Read(buffer, 0, 8);
+
+            return buffer[0] << 56 | buffer[1] << 48 |
+                buffer[2] << 40 | buffer[3] << 32 |
+                buffer[4] << 24 | buffer[5] << 16 |
+                buffer[6] << 8 | buffer[7];
         }
 
         public static void WriteInt64(Stream destination, long value)
         {
-            destination.WriteByte((byte)(value));
-            destination.WriteByte((byte)(value >> 8));
-            destination.WriteByte((byte)(value >> 16));
-            destination.WriteByte((byte)(value >> 24));
-            destination.WriteByte((byte)(value >> 32));
-            destination.WriteByte((byte)(value >> 40));
-            destination.WriteByte((byte)(value >> 48));
-            destination.WriteByte((byte)(value >> 56));
+            buffer[0] = (byte)(value);
+            buffer[1] = (byte)(value >> 8);
+            buffer[2] = (byte)(value >> 16);
+            buffer[3] = (byte)(value >> 24);
+            buffer[4] = (byte)(value >> 32);
+            buffer[5] = (byte)(value >> 40);
+            buffer[6] = (byte)(value >> 48);
+            buffer[7] = (byte)(value >> 56);
+
+            destination.Write(buffer, 0, 8);
         }
 
         public static void WriteInt64BE(Stream destination, long value)
         {
-            destination.WriteByte((byte)((value >> 56)));
-            destination.WriteByte((byte)((value >> 48)));
-            destination.WriteByte((byte)((value >> 40)));
-            destination.WriteByte((byte)((value >> 32)));
-            destination.WriteByte((byte)((value >> 24)));
-            destination.WriteByte((byte)((value >> 16)));
-            destination.WriteByte((byte)((value >> 8)));
-            destination.WriteByte((byte)(value));
+            buffer[0] = (byte)((value >> 56));
+            buffer[1] = (byte)((value >> 48));
+            buffer[2] = (byte)((value >> 40));
+            buffer[3] = (byte)((value >> 32));
+            buffer[4] = (byte)((value >> 24));
+            buffer[5] = (byte)((value >> 16));
+            buffer[6] = (byte)((value >> 8));
+            buffer[7] = (byte)(value);
+
+            destination.Write(buffer, 0, 8);
         }
 
         public static float ReadSingle(Stream source)
@@ -400,11 +458,11 @@ namespace SonicAudioLib.IO
         {
             var characters = new List<byte>();
 
-            byte character = (byte)source.ReadByte();
-            while (character != 0)
+            source.Read(buffer, 0, 1);
+            while (buffer[0] != 0)
             {
-                characters.Add(character);
-                character = (byte)source.ReadByte();
+                characters.Add(buffer[0]);
+                source.Read(buffer, 0, 1);
             }
 
             return encoding.GetString(characters.ToArray());
@@ -420,7 +478,9 @@ namespace SonicAudioLib.IO
             byte[] buffer = encoding.GetBytes(value);
 
             destination.Write(buffer, 0, buffer.Length);
-            destination.WriteByte(0);
+
+            buffer[0] = 0;
+            destination.Write(buffer, 0, 1);
         }
 
         public static string ReadCString(Stream source, int length)
@@ -457,10 +517,15 @@ namespace SonicAudioLib.IO
 
         public static void Pad(Stream destination, long alignment)
         {
-            while ((destination.Position % alignment) != 0)
+            long value = destination.Position;
+
+            while ((value % alignment) != 0)
             {
-                destination.WriteByte(0);
+                value++;
             }
+
+            byte[] buffer = new byte[value - destination.Position];
+            destination.Write(buffer, 0, buffer.Length);
         }
     }
 }

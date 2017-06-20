@@ -46,11 +46,11 @@
             this.buildCurrentProjectAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem49 = new System.Windows.Forms.ToolStripMenuItem();
-            this.aDXToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.convertADXsToWAVToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aAXToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.extractAAXToFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.packFolderToAAXToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.convertADXsToWAVToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.convertAndSplitLoopingToWAVToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator26 = new System.Windows.Forms.ToolStripSeparator();
             this.settingsButton = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -182,6 +182,7 @@
             this.toolStripMenuItem41 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem42 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem43 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator27 = new System.Windows.Forms.ToolStripSeparator();
             this.mainMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -375,33 +376,20 @@
             this.toolStripSeparator26,
             this.settingsButton});
             this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
-            this.toolsToolStripMenuItem.Size = new System.Drawing.Size(48, 20);
+            this.toolsToolStripMenuItem.Size = new System.Drawing.Size(47, 20);
             this.toolsToolStripMenuItem.Text = "Tools";
             // 
             // toolStripMenuItem49
             // 
             this.toolStripMenuItem49.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.aDXToolStripMenuItem,
+            this.convertADXsToWAVToolStripMenuItem,
+            this.convertAndSplitLoopingToWAVToolStripMenuItem,
+            this.toolStripSeparator27,
             this.aAXToolStripMenuItem});
             this.toolStripMenuItem49.Image = global::CsbBuilder.Properties.Resources.Sound;
             this.toolStripMenuItem49.Name = "toolStripMenuItem49";
-            this.toolStripMenuItem49.Size = new System.Drawing.Size(138, 22);
+            this.toolStripMenuItem49.Size = new System.Drawing.Size(152, 22);
             this.toolStripMenuItem49.Text = "Audio Tools";
-            // 
-            // aDXToolStripMenuItem
-            // 
-            this.aDXToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.convertADXsToWAVToolStripMenuItem});
-            this.aDXToolStripMenuItem.Name = "aDXToolStripMenuItem";
-            this.aDXToolStripMenuItem.Size = new System.Drawing.Size(97, 22);
-            this.aDXToolStripMenuItem.Text = "ADX";
-            // 
-            // convertADXsToWAVToolStripMenuItem
-            // 
-            this.convertADXsToWAVToolStripMenuItem.Name = "convertADXsToWAVToolStripMenuItem";
-            this.convertADXsToWAVToolStripMenuItem.Size = new System.Drawing.Size(198, 22);
-            this.convertADXsToWAVToolStripMenuItem.Text = "Convert ADX(s) to WAV";
-            this.convertADXsToWAVToolStripMenuItem.Click += new System.EventHandler(this.convertADXsToWAVToolStripMenuItem_Click);
             // 
             // aAXToolStripMenuItem
             // 
@@ -409,8 +397,8 @@
             this.extractAAXToFolderToolStripMenuItem,
             this.packFolderToAAXToolStripMenuItem});
             this.aAXToolStripMenuItem.Name = "aAXToolStripMenuItem";
-            this.aAXToolStripMenuItem.Size = new System.Drawing.Size(97, 22);
-            this.aAXToolStripMenuItem.Text = "AAX";
+            this.aAXToolStripMenuItem.Size = new System.Drawing.Size(240, 22);
+            this.aAXToolStripMenuItem.Text = "AAX Archive";
             // 
             // extractAAXToFolderToolStripMenuItem
             // 
@@ -423,19 +411,36 @@
             // 
             this.packFolderToAAXToolStripMenuItem.Name = "packFolderToAAXToolStripMenuItem";
             this.packFolderToAAXToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
-            this.packFolderToAAXToolStripMenuItem.Text = "Pack ADX(s) to AAX";
+            this.packFolderToAAXToolStripMenuItem.Text = "Pack file(s) to AAX";
             this.packFolderToAAXToolStripMenuItem.Click += new System.EventHandler(this.packFolderToAAXToolStripMenuItem_Click);
+            // 
+            // convertADXsToWAVToolStripMenuItem
+            // 
+            this.convertADXsToWAVToolStripMenuItem.Name = "convertADXsToWAVToolStripMenuItem";
+            this.convertADXsToWAVToolStripMenuItem.Size = new System.Drawing.Size(240, 22);
+            this.convertADXsToWAVToolStripMenuItem.Text = "Convert to WAV File(s)";
+            this.convertADXsToWAVToolStripMenuItem.ToolTipText = "Convert audio files to WAV files";
+            this.convertADXsToWAVToolStripMenuItem.Click += new System.EventHandler(this.convertADXsToWAVToolStripMenuItem_Click);
+            // 
+            // convertAndSplitLoopingToWAVToolStripMenuItem
+            // 
+            this.convertAndSplitLoopingToWAVToolStripMenuItem.Name = "convertAndSplitLoopingToWAVToolStripMenuItem";
+            this.convertAndSplitLoopingToWAVToolStripMenuItem.Size = new System.Drawing.Size(240, 22);
+            this.convertAndSplitLoopingToWAVToolStripMenuItem.Text = "Convert and split to WAV File(s)";
+            this.convertAndSplitLoopingToWAVToolStripMenuItem.ToolTipText = "Convert and split audio files to Intro and Loop parts using loop information in t" +
+    "he file";
+            this.convertAndSplitLoopingToWAVToolStripMenuItem.Click += new System.EventHandler(this.convertAndSplitLoopingToWAVToolStripMenuItem_Click);
             // 
             // toolStripSeparator26
             // 
             this.toolStripSeparator26.Name = "toolStripSeparator26";
-            this.toolStripSeparator26.Size = new System.Drawing.Size(135, 6);
+            this.toolStripSeparator26.Size = new System.Drawing.Size(149, 6);
             // 
             // settingsButton
             // 
             this.settingsButton.Image = global::CsbBuilder.Properties.Resources.Settings;
             this.settingsButton.Name = "settingsButton";
-            this.settingsButton.Size = new System.Drawing.Size(138, 22);
+            this.settingsButton.Size = new System.Drawing.Size(152, 22);
             this.settingsButton.Text = "Settings";
             this.settingsButton.Click += new System.EventHandler(this.OpenSettings);
             // 
@@ -453,6 +458,7 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.propertyGrid.Enabled = false;
+            this.propertyGrid.LineColor = System.Drawing.SystemColors.ControlDark;
             this.propertyGrid.Location = new System.Drawing.Point(252, 24);
             this.propertyGrid.Name = "propertyGrid";
             this.propertyGrid.Size = new System.Drawing.Size(374, 556);
@@ -498,7 +504,7 @@
             this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
             this.tabPage3.Size = new System.Drawing.Size(242, 221);
             this.tabPage3.TabIndex = 0;
-            this.tabPage3.Text = "Cue";
+            this.tabPage3.Text = "Cue Nodes";
             this.tabPage3.UseVisualStyleBackColor = true;
             // 
             // cueTree
@@ -580,7 +586,7 @@
             this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
             this.tabPage4.Size = new System.Drawing.Size(242, 279);
             this.tabPage4.TabIndex = 0;
-            this.tabPage4.Text = "Synth";
+            this.tabPage4.Text = "Synth Nodes";
             this.tabPage4.UseVisualStyleBackColor = true;
             // 
             // synthTree
@@ -739,7 +745,7 @@
             this.tabPage5.Padding = new System.Windows.Forms.Padding(3);
             this.tabPage5.Size = new System.Drawing.Size(242, 221);
             this.tabPage5.TabIndex = 0;
-            this.tabPage5.Text = "Sound Element";
+            this.tabPage5.Text = "Sound Element Nodes";
             this.tabPage5.UseVisualStyleBackColor = true;
             // 
             // soundElementTree
@@ -783,7 +789,7 @@
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
             this.tabPage1.Size = new System.Drawing.Size(242, 279);
             this.tabPage1.TabIndex = 0;
-            this.tabPage1.Text = "AISAC";
+            this.tabPage1.Text = "AISAC Nodes";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
             // aisacTree
@@ -819,13 +825,13 @@
             this.toolStripMenuItem47});
             this.aisacTreeMenu.Name = "contextMenuStrip1";
             this.aisacTreeMenu.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
-            this.aisacTreeMenu.Size = new System.Drawing.Size(190, 104);
+            this.aisacTreeMenu.Size = new System.Drawing.Size(189, 104);
             // 
             // toolStripMenuItem45
             // 
             this.toolStripMenuItem45.Image = global::CsbBuilder.Properties.Resources.Create;
             this.toolStripMenuItem45.Name = "toolStripMenuItem45";
-            this.toolStripMenuItem45.Size = new System.Drawing.Size(189, 22);
+            this.toolStripMenuItem45.Size = new System.Drawing.Size(188, 22);
             this.toolStripMenuItem45.Text = "Create";
             this.toolStripMenuItem45.ToolTipText = "Create a new node.";
             this.toolStripMenuItem45.Click += new System.EventHandler(this.CreateNode);
@@ -834,7 +840,7 @@
             // 
             this.toolStripMenuItem46.Image = global::CsbBuilder.Properties.Resources.Folder;
             this.toolStripMenuItem46.Name = "toolStripMenuItem46";
-            this.toolStripMenuItem46.Size = new System.Drawing.Size(189, 22);
+            this.toolStripMenuItem46.Size = new System.Drawing.Size(188, 22);
             this.toolStripMenuItem46.Text = "Create Folder";
             this.toolStripMenuItem46.ToolTipText = "Create a new folder.";
             this.toolStripMenuItem46.Click += new System.EventHandler(this.CreateFolder);
@@ -842,26 +848,26 @@
             // toolStripSeparator24
             // 
             this.toolStripSeparator24.Name = "toolStripSeparator24";
-            this.toolStripSeparator24.Size = new System.Drawing.Size(186, 6);
+            this.toolStripSeparator24.Size = new System.Drawing.Size(185, 6);
             // 
             // toolStripMenuItem48
             // 
             this.toolStripMenuItem48.Image = global::CsbBuilder.Properties.Resources.Template;
             this.toolStripMenuItem48.Name = "toolStripMenuItem48";
-            this.toolStripMenuItem48.Size = new System.Drawing.Size(189, 22);
+            this.toolStripMenuItem48.Size = new System.Drawing.Size(188, 22);
             this.toolStripMenuItem48.Text = "Load AISAC Template";
             this.toolStripMenuItem48.Click += new System.EventHandler(this.LoadTemplate);
             // 
             // toolStripSeparator25
             // 
             this.toolStripSeparator25.Name = "toolStripSeparator25";
-            this.toolStripSeparator25.Size = new System.Drawing.Size(186, 6);
+            this.toolStripSeparator25.Size = new System.Drawing.Size(185, 6);
             // 
             // toolStripMenuItem47
             // 
             this.toolStripMenuItem47.Image = global::CsbBuilder.Properties.Resources.Paste;
             this.toolStripMenuItem47.Name = "toolStripMenuItem47";
-            this.toolStripMenuItem47.Size = new System.Drawing.Size(189, 22);
+            this.toolStripMenuItem47.Size = new System.Drawing.Size(188, 22);
             this.toolStripMenuItem47.Text = "Paste";
             this.toolStripMenuItem47.ToolTipText = "Paste the copied node.";
             this.toolStripMenuItem47.Click += new System.EventHandler(this.PasteNodeOnTree);
@@ -874,7 +880,7 @@
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
             this.tabPage2.Size = new System.Drawing.Size(242, 279);
             this.tabPage2.TabIndex = 1;
-            this.tabPage2.Text = "Voice Limit Group";
+            this.tabPage2.Text = "Voice Limit Group Nodes";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
             // voiceLimitGroupTree
@@ -1032,13 +1038,13 @@
             this.setVoiceLimitGroupReferenceToolStripMenuItem});
             this.trackMenu.Name = "cueAndVoiceLimitGroupMenu";
             this.trackMenu.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
-            this.trackMenu.Size = new System.Drawing.Size(259, 220);
+            this.trackMenu.Size = new System.Drawing.Size(258, 220);
             // 
             // toolStripMenuItem16
             // 
             this.toolStripMenuItem16.Image = global::CsbBuilder.Properties.Resources.Create;
             this.toolStripMenuItem16.Name = "toolStripMenuItem16";
-            this.toolStripMenuItem16.Size = new System.Drawing.Size(258, 22);
+            this.toolStripMenuItem16.Size = new System.Drawing.Size(257, 22);
             this.toolStripMenuItem16.Text = "Create Block";
             this.toolStripMenuItem16.ToolTipText = "Create a new child block node.";
             this.toolStripMenuItem16.Click += new System.EventHandler(this.CreateChildTrackNode);
@@ -1047,7 +1053,7 @@
             // 
             this.createToolStripMenuItem3.Image = global::CsbBuilder.Properties.Resources.Sound;
             this.createToolStripMenuItem3.Name = "createToolStripMenuItem3";
-            this.createToolStripMenuItem3.Size = new System.Drawing.Size(258, 22);
+            this.createToolStripMenuItem3.Size = new System.Drawing.Size(257, 22);
             this.createToolStripMenuItem3.Text = "Create Sound";
             this.createToolStripMenuItem3.ToolTipText = "Create a new child sound node.";
             this.createToolStripMenuItem3.Click += new System.EventHandler(this.CreateChildNode);
@@ -1055,13 +1061,13 @@
             // toolStripSeparator10
             // 
             this.toolStripSeparator10.Name = "toolStripSeparator10";
-            this.toolStripSeparator10.Size = new System.Drawing.Size(255, 6);
+            this.toolStripSeparator10.Size = new System.Drawing.Size(254, 6);
             // 
             // toolStripMenuItem20
             // 
             this.toolStripMenuItem20.Image = global::CsbBuilder.Properties.Resources.Copy;
             this.toolStripMenuItem20.Name = "toolStripMenuItem20";
-            this.toolStripMenuItem20.Size = new System.Drawing.Size(258, 22);
+            this.toolStripMenuItem20.Size = new System.Drawing.Size(257, 22);
             this.toolStripMenuItem20.Text = "Copy";
             this.toolStripMenuItem20.ToolTipText = "Copy the selected node.";
             this.toolStripMenuItem20.Click += new System.EventHandler(this.CopyNode);
@@ -1070,7 +1076,7 @@
             // 
             this.toolStripMenuItem21.Image = global::CsbBuilder.Properties.Resources.Paste;
             this.toolStripMenuItem21.Name = "toolStripMenuItem21";
-            this.toolStripMenuItem21.Size = new System.Drawing.Size(258, 22);
+            this.toolStripMenuItem21.Size = new System.Drawing.Size(257, 22);
             this.toolStripMenuItem21.Text = "Paste";
             this.toolStripMenuItem21.ToolTipText = "Paste the copied node as child.";
             this.toolStripMenuItem21.Click += new System.EventHandler(this.PasteNode);
@@ -1079,7 +1085,7 @@
             // 
             this.toolStripMenuItem1.Image = global::CsbBuilder.Properties.Resources.Remove;
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(258, 22);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(257, 22);
             this.toolStripMenuItem1.Text = "Remove";
             this.toolStripMenuItem1.ToolTipText = "Remove the selected node.";
             this.toolStripMenuItem1.Click += new System.EventHandler(this.RemoveNode);
@@ -1087,13 +1093,13 @@
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(255, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(254, 6);
             // 
             // selectAisacReferenceToolStripMenuItem
             // 
             this.selectAisacReferenceToolStripMenuItem.Image = global::CsbBuilder.Properties.Resources.Select;
             this.selectAisacReferenceToolStripMenuItem.Name = "selectAisacReferenceToolStripMenuItem";
-            this.selectAisacReferenceToolStripMenuItem.Size = new System.Drawing.Size(258, 22);
+            this.selectAisacReferenceToolStripMenuItem.Size = new System.Drawing.Size(257, 22);
             this.selectAisacReferenceToolStripMenuItem.Text = "Select AISAC Reference";
             this.selectAisacReferenceToolStripMenuItem.ToolTipText = "Select the referenced AISAC node from the AISAC tree.";
             this.selectAisacReferenceToolStripMenuItem.Click += new System.EventHandler(this.SelectAisacReference);
@@ -1102,7 +1108,7 @@
             // 
             this.selectVoiceLimitGroupReferenceToolStripMenuItem.Image = global::CsbBuilder.Properties.Resources.Select;
             this.selectVoiceLimitGroupReferenceToolStripMenuItem.Name = "selectVoiceLimitGroupReferenceToolStripMenuItem";
-            this.selectVoiceLimitGroupReferenceToolStripMenuItem.Size = new System.Drawing.Size(258, 22);
+            this.selectVoiceLimitGroupReferenceToolStripMenuItem.Size = new System.Drawing.Size(257, 22);
             this.selectVoiceLimitGroupReferenceToolStripMenuItem.Text = "Select Voice Limit Group Reference";
             this.selectVoiceLimitGroupReferenceToolStripMenuItem.ToolTipText = "Select the referenced Voice Limit Group node from the Voice Limit Group tree.";
             this.selectVoiceLimitGroupReferenceToolStripMenuItem.Click += new System.EventHandler(this.SelectVoiceLimitGroupReference);
@@ -1110,13 +1116,13 @@
             // toolStripSeparator4
             // 
             this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(255, 6);
+            this.toolStripSeparator4.Size = new System.Drawing.Size(254, 6);
             // 
             // setAisacReferenceToolStripMenuItem
             // 
             this.setAisacReferenceToolStripMenuItem.Image = global::CsbBuilder.Properties.Resources.SetReference;
             this.setAisacReferenceToolStripMenuItem.Name = "setAisacReferenceToolStripMenuItem";
-            this.setAisacReferenceToolStripMenuItem.Size = new System.Drawing.Size(258, 22);
+            this.setAisacReferenceToolStripMenuItem.Size = new System.Drawing.Size(257, 22);
             this.setAisacReferenceToolStripMenuItem.Text = "Set AISAC Reference";
             this.setAisacReferenceToolStripMenuItem.ToolTipText = "Set the AISAC reference from the AISAC tree.";
             this.setAisacReferenceToolStripMenuItem.Click += new System.EventHandler(this.SetAisacReference);
@@ -1125,7 +1131,7 @@
             // 
             this.setVoiceLimitGroupReferenceToolStripMenuItem.Image = global::CsbBuilder.Properties.Resources.SetReference;
             this.setVoiceLimitGroupReferenceToolStripMenuItem.Name = "setVoiceLimitGroupReferenceToolStripMenuItem";
-            this.setVoiceLimitGroupReferenceToolStripMenuItem.Size = new System.Drawing.Size(258, 22);
+            this.setVoiceLimitGroupReferenceToolStripMenuItem.Size = new System.Drawing.Size(257, 22);
             this.setVoiceLimitGroupReferenceToolStripMenuItem.Text = "Set Voice Limit Group Reference";
             this.setVoiceLimitGroupReferenceToolStripMenuItem.ToolTipText = "Set the Voice Limit Group reference from the Voice Limit Group tree.";
             this.setVoiceLimitGroupReferenceToolStripMenuItem.Click += new System.EventHandler(this.SetVoiceLimitGroupReference);
@@ -1233,13 +1239,13 @@
             this.toolStripMenuItem8});
             this.trackItemMenu.Name = "cueAndVoiceLimitGroupMenu";
             this.trackItemMenu.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
-            this.trackItemMenu.Size = new System.Drawing.Size(259, 242);
+            this.trackItemMenu.Size = new System.Drawing.Size(258, 242);
             // 
             // toolStripMenuItem33
             // 
             this.toolStripMenuItem33.Image = global::CsbBuilder.Properties.Resources.Create;
             this.toolStripMenuItem33.Name = "toolStripMenuItem33";
-            this.toolStripMenuItem33.Size = new System.Drawing.Size(258, 22);
+            this.toolStripMenuItem33.Size = new System.Drawing.Size(257, 22);
             this.toolStripMenuItem33.Text = "Create";
             this.toolStripMenuItem33.ToolTipText = "Create a new node.";
             this.toolStripMenuItem33.Click += new System.EventHandler(this.CreateAndInsertSoundNode);
@@ -1247,13 +1253,13 @@
             // toolStripSeparator18
             // 
             this.toolStripSeparator18.Name = "toolStripSeparator18";
-            this.toolStripSeparator18.Size = new System.Drawing.Size(255, 6);
+            this.toolStripSeparator18.Size = new System.Drawing.Size(254, 6);
             // 
             // toolStripMenuItem23
             // 
             this.toolStripMenuItem23.Image = global::CsbBuilder.Properties.Resources.Copy;
             this.toolStripMenuItem23.Name = "toolStripMenuItem23";
-            this.toolStripMenuItem23.Size = new System.Drawing.Size(258, 22);
+            this.toolStripMenuItem23.Size = new System.Drawing.Size(257, 22);
             this.toolStripMenuItem23.Text = "Copy";
             this.toolStripMenuItem23.ToolTipText = "Copy the selected node.";
             this.toolStripMenuItem23.Click += new System.EventHandler(this.CopyNode);
@@ -1262,7 +1268,7 @@
             // 
             this.toolStripMenuItem30.Image = global::CsbBuilder.Properties.Resources.Paste;
             this.toolStripMenuItem30.Name = "toolStripMenuItem30";
-            this.toolStripMenuItem30.Size = new System.Drawing.Size(258, 22);
+            this.toolStripMenuItem30.Size = new System.Drawing.Size(257, 22);
             this.toolStripMenuItem30.Text = "Paste";
             this.toolStripMenuItem30.ToolTipText = "Paste the copied node after the selected node.";
             this.toolStripMenuItem30.Click += new System.EventHandler(this.PasteAndInsertNode);
@@ -1271,7 +1277,7 @@
             // 
             this.toolStripMenuItem4.Image = global::CsbBuilder.Properties.Resources.Remove;
             this.toolStripMenuItem4.Name = "toolStripMenuItem4";
-            this.toolStripMenuItem4.Size = new System.Drawing.Size(258, 22);
+            this.toolStripMenuItem4.Size = new System.Drawing.Size(257, 22);
             this.toolStripMenuItem4.Text = "Remove";
             this.toolStripMenuItem4.ToolTipText = "Remove the selected node.";
             this.toolStripMenuItem4.Click += new System.EventHandler(this.RemoveNode);
@@ -1279,13 +1285,13 @@
             // toolStripSeparator6
             // 
             this.toolStripSeparator6.Name = "toolStripSeparator6";
-            this.toolStripSeparator6.Size = new System.Drawing.Size(255, 6);
+            this.toolStripSeparator6.Size = new System.Drawing.Size(254, 6);
             // 
             // selectSoundElementReferenceToolStripMenuItem
             // 
             this.selectSoundElementReferenceToolStripMenuItem.Image = global::CsbBuilder.Properties.Resources.Select;
             this.selectSoundElementReferenceToolStripMenuItem.Name = "selectSoundElementReferenceToolStripMenuItem";
-            this.selectSoundElementReferenceToolStripMenuItem.Size = new System.Drawing.Size(258, 22);
+            this.selectSoundElementReferenceToolStripMenuItem.Size = new System.Drawing.Size(257, 22);
             this.selectSoundElementReferenceToolStripMenuItem.Text = "Select Sound Element Reference";
             this.selectSoundElementReferenceToolStripMenuItem.ToolTipText = "Select the referenced Sound Element node from the Sound Element tree.";
             this.selectSoundElementReferenceToolStripMenuItem.Click += new System.EventHandler(this.SelectSoundElementReference);
@@ -1294,7 +1300,7 @@
             // 
             this.toolStripMenuItem5.Image = global::CsbBuilder.Properties.Resources.Select;
             this.toolStripMenuItem5.Name = "toolStripMenuItem5";
-            this.toolStripMenuItem5.Size = new System.Drawing.Size(258, 22);
+            this.toolStripMenuItem5.Size = new System.Drawing.Size(257, 22);
             this.toolStripMenuItem5.Text = "Select AISAC Reference";
             this.toolStripMenuItem5.ToolTipText = "Select the referenced AISAC node from the AISAC tree.";
             this.toolStripMenuItem5.Click += new System.EventHandler(this.SelectAisacReference);
@@ -1303,7 +1309,7 @@
             // 
             this.toolStripMenuItem6.Image = global::CsbBuilder.Properties.Resources.Select;
             this.toolStripMenuItem6.Name = "toolStripMenuItem6";
-            this.toolStripMenuItem6.Size = new System.Drawing.Size(258, 22);
+            this.toolStripMenuItem6.Size = new System.Drawing.Size(257, 22);
             this.toolStripMenuItem6.Text = "Select Voice Limit Group Reference";
             this.toolStripMenuItem6.ToolTipText = "Select the referenced Voice Limit Group node from the Voice Limit Group tree.";
             this.toolStripMenuItem6.Click += new System.EventHandler(this.SelectVoiceLimitGroupReference);
@@ -1311,13 +1317,13 @@
             // toolStripSeparator7
             // 
             this.toolStripSeparator7.Name = "toolStripSeparator7";
-            this.toolStripSeparator7.Size = new System.Drawing.Size(255, 6);
+            this.toolStripSeparator7.Size = new System.Drawing.Size(254, 6);
             // 
             // setSoundElementReferenceToolStripMenuItem
             // 
             this.setSoundElementReferenceToolStripMenuItem.Image = global::CsbBuilder.Properties.Resources.SetReference;
             this.setSoundElementReferenceToolStripMenuItem.Name = "setSoundElementReferenceToolStripMenuItem";
-            this.setSoundElementReferenceToolStripMenuItem.Size = new System.Drawing.Size(258, 22);
+            this.setSoundElementReferenceToolStripMenuItem.Size = new System.Drawing.Size(257, 22);
             this.setSoundElementReferenceToolStripMenuItem.Text = "Set Sound Element Reference";
             this.setSoundElementReferenceToolStripMenuItem.ToolTipText = "Set the Sound Element reference from the Sound Element tree.";
             this.setSoundElementReferenceToolStripMenuItem.Click += new System.EventHandler(this.SetSoundElementReference);
@@ -1326,7 +1332,7 @@
             // 
             this.toolStripMenuItem7.Image = global::CsbBuilder.Properties.Resources.SetReference;
             this.toolStripMenuItem7.Name = "toolStripMenuItem7";
-            this.toolStripMenuItem7.Size = new System.Drawing.Size(258, 22);
+            this.toolStripMenuItem7.Size = new System.Drawing.Size(257, 22);
             this.toolStripMenuItem7.Text = "Set AISAC Reference";
             this.toolStripMenuItem7.ToolTipText = "Set the AISAC reference from the AISAC tree.";
             this.toolStripMenuItem7.Click += new System.EventHandler(this.SetAisacReference);
@@ -1335,7 +1341,7 @@
             // 
             this.toolStripMenuItem8.Image = global::CsbBuilder.Properties.Resources.SetReference;
             this.toolStripMenuItem8.Name = "toolStripMenuItem8";
-            this.toolStripMenuItem8.Size = new System.Drawing.Size(258, 22);
+            this.toolStripMenuItem8.Size = new System.Drawing.Size(257, 22);
             this.toolStripMenuItem8.Text = "Set Voice Limit Group Reference";
             this.toolStripMenuItem8.ToolTipText = "Set the Voice Limit Group reference from the Voice Limit Group tree.";
             this.toolStripMenuItem8.Click += new System.EventHandler(this.SetVoiceLimitGroupReference);
@@ -1533,13 +1539,13 @@
             this.toolStripMenuItem38});
             this.aisacNodeMenu.Name = "cueAndVoiceLimitGroupMenu";
             this.aisacNodeMenu.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
-            this.aisacNodeMenu.Size = new System.Drawing.Size(154, 148);
+            this.aisacNodeMenu.Size = new System.Drawing.Size(153, 148);
             // 
             // toolStripMenuItem35
             // 
             this.toolStripMenuItem35.Image = global::CsbBuilder.Properties.Resources.Create;
             this.toolStripMenuItem35.Name = "toolStripMenuItem35";
-            this.toolStripMenuItem35.Size = new System.Drawing.Size(153, 22);
+            this.toolStripMenuItem35.Size = new System.Drawing.Size(152, 22);
             this.toolStripMenuItem35.Text = "Create";
             this.toolStripMenuItem35.ToolTipText = "Create a new node after the selected node.";
             this.toolStripMenuItem35.Click += new System.EventHandler(this.CreateAndInsertNode);
@@ -1547,13 +1553,13 @@
             // toolStripSeparator20
             // 
             this.toolStripSeparator20.Name = "toolStripSeparator20";
-            this.toolStripSeparator20.Size = new System.Drawing.Size(150, 6);
+            this.toolStripSeparator20.Size = new System.Drawing.Size(149, 6);
             // 
             // loadTemplateToolStripMenuItem
             // 
             this.loadTemplateToolStripMenuItem.Image = global::CsbBuilder.Properties.Resources.Template;
             this.loadTemplateToolStripMenuItem.Name = "loadTemplateToolStripMenuItem";
-            this.loadTemplateToolStripMenuItem.Size = new System.Drawing.Size(153, 22);
+            this.loadTemplateToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.loadTemplateToolStripMenuItem.Text = "Load Template";
             this.loadTemplateToolStripMenuItem.Click += new System.EventHandler(this.LoadTemplate);
             // 
@@ -1561,20 +1567,20 @@
             // 
             this.saveTemplateToolStripMenuItem.Image = global::CsbBuilder.Properties.Resources.Template;
             this.saveTemplateToolStripMenuItem.Name = "saveTemplateToolStripMenuItem";
-            this.saveTemplateToolStripMenuItem.Size = new System.Drawing.Size(153, 22);
+            this.saveTemplateToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.saveTemplateToolStripMenuItem.Text = "Save Template";
             this.saveTemplateToolStripMenuItem.Click += new System.EventHandler(this.SaveTemplate);
             // 
             // toolStripSeparator21
             // 
             this.toolStripSeparator21.Name = "toolStripSeparator21";
-            this.toolStripSeparator21.Size = new System.Drawing.Size(150, 6);
+            this.toolStripSeparator21.Size = new System.Drawing.Size(149, 6);
             // 
             // toolStripMenuItem36
             // 
             this.toolStripMenuItem36.Image = global::CsbBuilder.Properties.Resources.Copy;
             this.toolStripMenuItem36.Name = "toolStripMenuItem36";
-            this.toolStripMenuItem36.Size = new System.Drawing.Size(153, 22);
+            this.toolStripMenuItem36.Size = new System.Drawing.Size(152, 22);
             this.toolStripMenuItem36.Text = "Copy";
             this.toolStripMenuItem36.ToolTipText = "Copy the selected node.";
             this.toolStripMenuItem36.Click += new System.EventHandler(this.CopyNode);
@@ -1583,7 +1589,7 @@
             // 
             this.toolStripMenuItem37.Image = global::CsbBuilder.Properties.Resources.Paste;
             this.toolStripMenuItem37.Name = "toolStripMenuItem37";
-            this.toolStripMenuItem37.Size = new System.Drawing.Size(153, 22);
+            this.toolStripMenuItem37.Size = new System.Drawing.Size(152, 22);
             this.toolStripMenuItem37.Text = "Paste";
             this.toolStripMenuItem37.ToolTipText = "Paste the copied node after the selected node.";
             this.toolStripMenuItem37.Click += new System.EventHandler(this.PasteAndInsertNode);
@@ -1592,7 +1598,7 @@
             // 
             this.toolStripMenuItem38.Image = global::CsbBuilder.Properties.Resources.Remove;
             this.toolStripMenuItem38.Name = "toolStripMenuItem38";
-            this.toolStripMenuItem38.Size = new System.Drawing.Size(153, 22);
+            this.toolStripMenuItem38.Size = new System.Drawing.Size(152, 22);
             this.toolStripMenuItem38.Text = "Remove";
             this.toolStripMenuItem38.ToolTipText = "Remove the selected node.";
             this.toolStripMenuItem38.Click += new System.EventHandler(this.RemoveNode);
@@ -1610,13 +1616,13 @@
             this.toolStripMenuItem43});
             this.aisacFolderMenu.Name = "synthSoundElementAndAisacMenu";
             this.aisacFolderMenu.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
-            this.aisacFolderMenu.Size = new System.Drawing.Size(190, 148);
+            this.aisacFolderMenu.Size = new System.Drawing.Size(189, 148);
             // 
             // toolStripMenuItem39
             // 
             this.toolStripMenuItem39.Image = global::CsbBuilder.Properties.Resources.Create;
             this.toolStripMenuItem39.Name = "toolStripMenuItem39";
-            this.toolStripMenuItem39.Size = new System.Drawing.Size(189, 22);
+            this.toolStripMenuItem39.Size = new System.Drawing.Size(188, 22);
             this.toolStripMenuItem39.Text = "Create";
             this.toolStripMenuItem39.ToolTipText = "Create a new child node.";
             this.toolStripMenuItem39.Click += new System.EventHandler(this.CreateChildNode);
@@ -1625,7 +1631,7 @@
             // 
             this.toolStripMenuItem40.Image = global::CsbBuilder.Properties.Resources.Folder;
             this.toolStripMenuItem40.Name = "toolStripMenuItem40";
-            this.toolStripMenuItem40.Size = new System.Drawing.Size(189, 22);
+            this.toolStripMenuItem40.Size = new System.Drawing.Size(188, 22);
             this.toolStripMenuItem40.Text = "Create Folder";
             this.toolStripMenuItem40.ToolTipText = "Create a new child folder.";
             this.toolStripMenuItem40.Click += new System.EventHandler(this.CreateChildFolder);
@@ -1633,26 +1639,26 @@
             // toolStripSeparator22
             // 
             this.toolStripSeparator22.Name = "toolStripSeparator22";
-            this.toolStripSeparator22.Size = new System.Drawing.Size(186, 6);
+            this.toolStripSeparator22.Size = new System.Drawing.Size(185, 6);
             // 
             // toolStripMenuItem44
             // 
             this.toolStripMenuItem44.Image = global::CsbBuilder.Properties.Resources.Template;
             this.toolStripMenuItem44.Name = "toolStripMenuItem44";
-            this.toolStripMenuItem44.Size = new System.Drawing.Size(189, 22);
+            this.toolStripMenuItem44.Size = new System.Drawing.Size(188, 22);
             this.toolStripMenuItem44.Text = "Load AISAC Template";
             this.toolStripMenuItem44.Click += new System.EventHandler(this.LoadTemplate);
             // 
             // toolStripSeparator23
             // 
             this.toolStripSeparator23.Name = "toolStripSeparator23";
-            this.toolStripSeparator23.Size = new System.Drawing.Size(186, 6);
+            this.toolStripSeparator23.Size = new System.Drawing.Size(185, 6);
             // 
             // toolStripMenuItem41
             // 
             this.toolStripMenuItem41.Image = global::CsbBuilder.Properties.Resources.Copy;
             this.toolStripMenuItem41.Name = "toolStripMenuItem41";
-            this.toolStripMenuItem41.Size = new System.Drawing.Size(189, 22);
+            this.toolStripMenuItem41.Size = new System.Drawing.Size(188, 22);
             this.toolStripMenuItem41.Text = "Copy";
             this.toolStripMenuItem41.ToolTipText = "Copy the selected node.";
             this.toolStripMenuItem41.Click += new System.EventHandler(this.CopyNode);
@@ -1661,7 +1667,7 @@
             // 
             this.toolStripMenuItem42.Image = global::CsbBuilder.Properties.Resources.Paste;
             this.toolStripMenuItem42.Name = "toolStripMenuItem42";
-            this.toolStripMenuItem42.Size = new System.Drawing.Size(189, 22);
+            this.toolStripMenuItem42.Size = new System.Drawing.Size(188, 22);
             this.toolStripMenuItem42.Text = "Paste";
             this.toolStripMenuItem42.ToolTipText = "Paste the copied node as child.";
             this.toolStripMenuItem42.Click += new System.EventHandler(this.PasteNode);
@@ -1670,10 +1676,15 @@
             // 
             this.toolStripMenuItem43.Image = global::CsbBuilder.Properties.Resources.Remove;
             this.toolStripMenuItem43.Name = "toolStripMenuItem43";
-            this.toolStripMenuItem43.Size = new System.Drawing.Size(189, 22);
+            this.toolStripMenuItem43.Size = new System.Drawing.Size(188, 22);
             this.toolStripMenuItem43.Text = "Remove";
             this.toolStripMenuItem43.ToolTipText = "Remove the selected node.";
             this.toolStripMenuItem43.Click += new System.EventHandler(this.RemoveNode);
+            // 
+            // toolStripSeparator27
+            // 
+            this.toolStripSeparator27.Name = "toolStripSeparator27";
+            this.toolStripSeparator27.Size = new System.Drawing.Size(203, 6);
             // 
             // MainForm
             // 
@@ -1879,11 +1890,12 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator26;
         private System.Windows.Forms.ToolStripMenuItem settingsButton;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem49;
-        private System.Windows.Forms.ToolStripMenuItem aDXToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem aAXToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem extractAAXToFolderToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem packFolderToAAXToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem convertADXsToWAVToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem convertAndSplitLoopingToWAVToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator27;
     }
 }
 

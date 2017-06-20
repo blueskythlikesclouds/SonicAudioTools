@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 
-using SonicAudioLib.Archive;
+using SonicAudioLib.Archives;
 
 namespace SonicAudioLib.IO
 {
@@ -23,7 +23,6 @@ namespace SonicAudioLib.IO
             public string DestinationFileName { get; set; }
             public long Position { get; set; }
             public long Length { get; set; }
-            public bool DecompressFromCriLayla { get; set; }
         }
 
         private List<Item> items = new List<Item>();
@@ -34,9 +33,9 @@ namespace SonicAudioLib.IO
 
         public event ProgressChanged ProgressChanged;
 
-        public void Add(object source, string destinationFileName, long position, long length, bool decompressFromCriLayla = false)
+        public void Add(object source, string destinationFileName, long position, long length)
         {
-            items.Add(new Item { Source = source, DestinationFileName = destinationFileName, Position = position, Length = length, DecompressFromCriLayla = decompressFromCriLayla });
+            items.Add(new Item { Source = source, DestinationFileName = destinationFileName, Position = position, Length = length, });
         }
 
         public void Run()
@@ -64,23 +63,15 @@ namespace SonicAudioLib.IO
                     destinationFileName.Directory.Create();
                 }
 
-                using (Stream source = 
+                using (Stream source =
                     item.Source is string fileName ? new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read, BufferSize) :
-                    item.Source is byte[] byteArray ? new MemoryStream(byteArray) : 
+                    item.Source is byte[] byteArray ? new MemoryStream(byteArray) :
                     item.Source is Stream stream ? stream :
                     throw new ArgumentException("Unknown source in item", nameof(item.Source))
                 )
                 using (Stream destination = destinationFileName.Create())
                 {
-                    if (item.DecompressFromCriLayla)
-                    {
-                        CriCpkArchive.Decompress(source, item.Position, destination);   
-                    }
-
-                    else
-                    {
-                        EndianStream.CopyPartTo(source, destination, item.Position, item.Length, BufferSize);
-                    }
+                    DataStream.CopyPartTo(source, destination, item.Position, item.Length, BufferSize);
                 }
             };
 

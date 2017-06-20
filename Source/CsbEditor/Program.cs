@@ -9,7 +9,7 @@ using CsbEditor.Properties;
 using SonicAudioLib;
 using SonicAudioLib.CriMw;
 using SonicAudioLib.IO;
-using SonicAudioLib.Archive;
+using SonicAudioLib.Archives;
 
 using System.Globalization;
 
@@ -19,6 +19,8 @@ namespace CsbEditor
     {
         static void Main(string[] args)
         {
+			Settings.Default.Save();
+			
             if (args.Length < 1)
             {
                 Console.WriteLine(Resources.Description);
@@ -53,7 +55,7 @@ namespace CsbEditor
                             if (reader.GetString("name") == "SOUND_ELEMENT")
                             {
                                 long tablePosition = reader.GetPosition("utf");
-                                using (CriTableReader sdlReader = CriTableReader.Create(reader.GetSubstream("utf")))
+                                using (CriTableReader sdlReader = CriTableReader.Create(reader.GetSubStream("utf")))
                                 {
                                     while (sdlReader.Read())
                                     {
@@ -105,7 +107,7 @@ namespace CsbEditor
                                         else
                                         {
                                             long aaxPosition = sdlReader.GetPosition("data");
-                                            using (Stream aaxSource = sdlReader.GetSubstream("data"))
+                                            using (Stream aaxSource = sdlReader.GetSubStream("data"))
                                             {
                                                 aaxArchive.Read(aaxSource);
 
@@ -243,8 +245,8 @@ namespace CsbEditor
             using (Stream source = fileInfo.OpenRead())
             {
                 source.Seek(7, SeekOrigin.Begin);
-                numberChannels = EndianStream.ReadByte(source);
-                sampleRate = EndianStream.ReadUInt32BE(source);
+                numberChannels = DataStream.ReadByte(source);
+                sampleRate = DataStream.ReadUInt32BE(source);
             }
         }
 

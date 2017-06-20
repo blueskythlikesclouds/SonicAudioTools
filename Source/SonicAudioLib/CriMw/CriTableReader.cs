@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Linq;
+using System.Collections;
 
 namespace SonicAudioLib.CriMw
 {
@@ -13,7 +15,7 @@ namespace SonicAudioLib.CriMw
         private CriTableHeader header;
         private Encoding encoding;
         private long rowIndex = -1;
-        private uint headerPosition;
+        private long headerPosition;
         private bool leaveOpen;
 
         public object this[int fieldIndex]
@@ -36,7 +38,7 @@ namespace SonicAudioLib.CriMw
         {
             get
             {
-                return header.NumberOfFields;
+                return header.FieldCount;
             }
         }
 
@@ -44,7 +46,7 @@ namespace SonicAudioLib.CriMw
         {
             get
             {
-                return header.NumberOfRows;
+                return header.RowCount;
             }
         }
 
@@ -82,14 +84,13 @@ namespace SonicAudioLib.CriMw
 
         private void ReadTable()
         {
-            headerPosition = (uint)source.Position;
+            headerPosition = source.Position;
 
-            if (EndianStream.ReadCString(source, 4) != CriTableHeader.Signature)
+            if (!(header.Signature = DataStream.ReadBytes(source, 4)).SequenceEqual(CriTableHeader.SignatureBytes))
             {
                 MemoryStream unmaskedSource = new MemoryStream();
 
-                source.Position = headerPosition;
-                CriTableMasker.FindKeys(EndianStream.ReadBytes(source, 4), out uint x, out uint m);
+                CriTableMasker.FindKeys(header.Signature, out uint x, out uint m);
 
                 source.Position = headerPosition;
                 CriTableMasker.Mask(source, unmaskedSource, source.Length, x, m);
@@ -104,9 +105,9 @@ namespace SonicAudioLib.CriMw
                 source.Position = 4;
             }
 
-            header.Length = ReadUInt32() + 0x8;
-            header.UnknownByte = ReadByte();
-            header.EncodingType = ReadByte();
+            header.Length = DataStream.ReadUInt32BE(source) + 0x8;
+            header.UnknownByte = DataStream.ReadByte(source);
+            header.EncodingType = DataStream.ReadByte(source);
 
             if (header.UnknownByte != 0)
             {
@@ -127,18 +128,19 @@ namespace SonicAudioLib.CriMw
                     throw new InvalidDataException($"Unknown encoding type ({header.EncodingType}). Please report this error with the file(s).");
             }
 
-            header.RowsPosition = (ushort)(ReadUInt16() + 0x8);
-            header.StringPoolPosition = ReadUInt32() + 0x8;
-            header.DataPoolPosition = ReadUInt32() + 0x8;
+            header.RowsPosition = (ushort)(DataStream.ReadUInt16BE(source) + 0x8);
+            header.StringPoolPosition = DataStream.ReadUInt32BE(source) + 0x8;
+            header.DataPoolPosition = DataStream.ReadUInt32BE(source) + 0x8;
             header.TableName = ReadString();
-            header.NumberOfFields = ReadUInt16();
-            header.RowLength = ReadUInt16();
-            header.NumberOfRows = ReadUInt32();
+            header.FieldCount = DataStream.ReadUInt16BE(source);
+            header.RowLength = DataStream.ReadUInt16BE(source);
+            header.RowCount = DataStream.ReadUInt32BE(source);
 
-            for (ushort i = 0; i < header.NumberOfFields; i++)
+            uint offset = 0;
+            for (ushort i = 0; i < header.FieldCount; i++)
             {
                 CriTableField field = new CriTableField();
-                field.Flag = (CriFieldFlag)ReadByte();
+                field.Flag = (CriFieldFlag)DataStream.ReadByte(source);
 
                 if (field.Flag.HasFlag(CriFieldFlag.Name))
                 {
@@ -149,7 +151,8 @@ namespace SonicAudioLib.CriMw
                 {
                     if (field.Flag.HasFlag(CriFieldFlag.Data))
                     {
-                        ReadData(out field.Position, out field.Length);
+                        field.Position = DataStream.ReadUInt32BE(source);
+                        field.Length = DataStream.ReadUInt32BE(source);
                     }
 
                     else
@@ -162,6 +165,36 @@ namespace SonicAudioLib.CriMw
                 else if (!field.Flag.HasFlag(CriFieldFlag.RowStorage) && !field.Flag.HasFlag(CriFieldFlag.DefaultValue))
                 {
                     field.Value = CriField.NullValues[(byte)field.Flag & 0x0F];
+                }
+
+                // Row storage, calculate the offset
+                else
+                {
+                    field.Offset = offset;
+
+                    switch (field.Flag & CriFieldFlag.TypeMask)
+                    {
+                        case CriFieldFlag.Byte:
+                        case CriFieldFlag.SByte:
+                            offset += 1;
+                            break;
+                        case CriFieldFlag.Int16:
+                        case CriFieldFlag.UInt16:
+                            offset += 2;
+                            break;
+                        case CriFieldFlag.Int32:
+                        case CriFieldFlag.UInt32:
+                        case CriFieldFlag.Single:
+                        case CriFieldFlag.String:
+                            offset += 4;
+                            break;
+                        case CriFieldFlag.Int64:
+                        case CriFieldFlag.UInt64:
+                        case CriFieldFlag.Double:
+                        case CriFieldFlag.Data:
+                            offset += 8;
+                            break;
+                    }
                 }
 
                 fields.Add(field);
@@ -225,46 +258,12 @@ namespace SonicAudioLib.CriMw
         
         private void GoToValue(int fieldIndex)
         {
-            long position = headerPosition + header.RowsPosition + (header.RowLength * rowIndex);
-
-            for (int i = 0; i < fieldIndex; i++)
-            {
-                if (!fields[i].Flag.HasFlag(CriFieldFlag.RowStorage))
-                {
-                    continue;
-                }
-
-                switch (fields[i].Flag & CriFieldFlag.TypeMask)
-                {
-                    case CriFieldFlag.Byte:
-                    case CriFieldFlag.SByte:
-                        position += 1;
-                        break;
-                    case CriFieldFlag.Int16:
-                    case CriFieldFlag.UInt16:
-                        position += 2;
-                        break;
-                    case CriFieldFlag.Int32:
-                    case CriFieldFlag.UInt32:
-                    case CriFieldFlag.Single:
-                    case CriFieldFlag.String:
-                        position += 4;
-                        break;
-                    case CriFieldFlag.Int64:
-                    case CriFieldFlag.UInt64:
-                    case CriFieldFlag.Double:
-                    case CriFieldFlag.Data:
-                        position += 8;
-                        break;
-                }
-            }
-
-            source.Position = position;
+            source.Position = headerPosition + header.RowsPosition + (header.RowLength * rowIndex) + fields[fieldIndex].Offset;
         }
 
         public bool Read()
         {
-            if (rowIndex + 1 >= header.NumberOfRows)
+            if (rowIndex + 1 >= header.RowCount)
             {
                 return false;
             }
@@ -275,7 +274,7 @@ namespace SonicAudioLib.CriMw
 
         public bool MoveToRow(long rowIndex)
         {
-            if (rowIndex >= header.NumberOfRows)
+            if (rowIndex >= header.RowCount)
             {
                 return false;
             }
@@ -286,9 +285,9 @@ namespace SonicAudioLib.CriMw
 
         public object[] GetValueArray()
         {
-            object[] values = new object[header.NumberOfFields];
+            object[] values = new object[header.FieldCount];
 
-            for (int i = 0; i < header.NumberOfFields; i++)
+            for (int i = 0; i < header.FieldCount; i++)
             {
                 if (fields[i].Flag.HasFlag(CriFieldFlag.Data))
                 {
@@ -304,6 +303,14 @@ namespace SonicAudioLib.CriMw
             return values;
         }
 
+        public IEnumerable GetValues()
+        {
+            for (int i = 0; i < header.FieldCount; i++)
+            {
+                yield return GetValue(i);
+            }
+        }
+
         public object GetValue(int fieldIndex)
         {
             if (fieldIndex < 0 || fieldIndex >= fields.Count)
@@ -315,7 +322,7 @@ namespace SonicAudioLib.CriMw
             {
                 if (fields[fieldIndex].Flag.HasFlag(CriFieldFlag.Data))
                 {
-                    return new Substream(source, 0, 0);
+                    return new SubStream(source, 0, 0);
                 }
 
                 return fields[fieldIndex].Value;
@@ -450,19 +457,19 @@ namespace SonicAudioLib.CriMw
             return (string)GetValue(fieldName);
         }
 
-        public Substream GetSubstream(int fieldIndex)
+        public SubStream GetSubStream(int fieldIndex)
         {
-            return (Substream)GetValue(fieldIndex);
+            return (SubStream)GetValue(fieldIndex);
         }
 
-        public Substream GetSubstream(string fieldName)
+        public SubStream GetSubStream(string fieldName)
         {
-            return (Substream)GetValue(fieldName);
+            return (SubStream)GetValue(fieldName);
         }
 
         public byte[] GetData(int fieldIndex)
         {
-            return GetSubstream(fieldIndex).ToArray();
+            return GetSubStream(fieldIndex).ToArray();
         }
 
         public byte[] GetData(string fieldName)
@@ -470,14 +477,14 @@ namespace SonicAudioLib.CriMw
             return GetData(GetFieldIndex(fieldName));
         }
 
-        public CriTableReader GetCriTableReader(string fieldName)
+        public CriTableReader GetTableReader(string fieldName)
         {
-            return new CriTableReader(GetSubstream(fieldName), false);
+            return new CriTableReader(GetSubStream(fieldName), false);
         }
 
-        public CriTableReader GetCriTableReader(int fieldIndex)
+        public CriTableReader GetTableReader(int fieldIndex)
         {
-            return new CriTableReader(GetSubstream(fieldIndex), false);
+            return new CriTableReader(GetSubStream(fieldIndex), false);
         }
 
         public uint GetLength(int fieldIndex)
@@ -493,8 +500,9 @@ namespace SonicAudioLib.CriMw
             }
 
             GoToValue(fieldIndex);
-            ReadData(out uint vldPosition, out uint vldLength);
-            return vldLength;
+
+            source.Position += 4;
+            return DataStream.ReadUInt32BE(source);
         }
 
         public uint GetLength(string fieldName)
@@ -515,8 +523,7 @@ namespace SonicAudioLib.CriMw
             }
 
             GoToValue(fieldIndex);
-            ReadData(out uint vldPosition, out uint vldLength);
-            return headerPosition + header.DataPoolPosition + vldPosition;
+            return (uint)(headerPosition + header.DataPoolPosition + DataStream.ReadUInt32BE(source));
         }
 
         public uint GetPosition(string fieldName)
@@ -544,73 +551,13 @@ namespace SonicAudioLib.CriMw
             return (Guid)GetValue(fieldName);
         }
 
-        private byte[] ReadBytes(int length)
-        {
-            return EndianStream.ReadBytes(source, length);
-        }
-
-        private byte ReadByte()
-        {
-            return EndianStream.ReadByte(source);
-        }
-
-        private bool ReadBoolean()
-        {
-            return EndianStream.ReadBoolean(source);
-        }
-
-        private sbyte ReadSByte()
-        {
-            return EndianStream.ReadSByte(source);
-        }
-
-        private ushort ReadUInt16()
-        {
-            return EndianStream.ReadUInt16BE(source);
-        }
-
-        private short ReadInt16()
-        {
-            return EndianStream.ReadInt16BE(source);
-        }
-
-        private uint ReadUInt32()
-        {
-            return EndianStream.ReadUInt32BE(source);
-        }
-
-        private int ReadInt32()
-        {
-            return EndianStream.ReadInt32BE(source);
-        }
-
-        private ulong ReadUInt64()
-        {
-            return EndianStream.ReadUInt64BE(source);
-        }
-
-        private long ReadInt64()
-        {
-            return EndianStream.ReadInt64BE(source);
-        }
-
-        private float ReadSingle()
-        {
-            return EndianStream.ReadSingleBE(source);
-        }
-
-        private double ReadDouble()
-        {
-            return EndianStream.ReadDoubleBE(source);
-        }
-
         private string ReadString()
         {
-            uint stringPosition = ReadUInt32();
+            uint stringPosition = DataStream.ReadUInt32BE(source);
             long previousPosition = source.Position;
 
             source.Position = headerPosition + header.StringPoolPosition + stringPosition;
-            string readString = EndianStream.ReadCString(source, encoding);
+            string readString = DataStream.ReadCString(source, encoding);
             
             source.Position = previousPosition;
 
@@ -622,64 +569,52 @@ namespace SonicAudioLib.CriMw
             return readString;
         }
 
-        private void ReadData(out uint vldPosition, out uint vldLength)
-        {
-            vldPosition = ReadUInt32();
-            vldLength = ReadUInt32();
-        }
-
-        private Guid ReadGuid()
-        {
-            byte[] buffer = new byte[16];
-            source.Read(buffer, 0, buffer.Length);
-            return new Guid(buffer);
-        }
-
         private object ReadValue(CriFieldFlag fieldFlag)
         {
             switch (fieldFlag & CriFieldFlag.TypeMask)
             {
                 case CriFieldFlag.Byte:
-                    return ReadByte();
+                    return DataStream.ReadByte(source);
                 case CriFieldFlag.SByte:
-                    return ReadSByte();
+                    return DataStream.ReadSByte(source);
                 case CriFieldFlag.UInt16:
-                    return ReadUInt16();
+                    return DataStream.ReadUInt16BE(source);
                 case CriFieldFlag.Int16:
-                    return ReadInt16();
+                    return DataStream.ReadInt16BE(source);
                 case CriFieldFlag.UInt32:
-                    return ReadUInt32();
+                    return DataStream.ReadUInt32BE(source);
                 case CriFieldFlag.Int32:
-                    return ReadInt32();
+                    return DataStream.ReadInt32BE(source);
                 case CriFieldFlag.UInt64:
-                    return ReadUInt64();
+                    return DataStream.ReadUInt64BE(source);
                 case CriFieldFlag.Int64:
-                    return ReadInt64();
+                    return DataStream.ReadInt64BE(source);
                 case CriFieldFlag.Single:
-                    return ReadSingle();
+                    return DataStream.ReadSingleBE(source);
                 case CriFieldFlag.Double:
-                    return ReadDouble();
+                    return DataStream.ReadDoubleBE(source);
                 case CriFieldFlag.String:
                     return ReadString();
                 case CriFieldFlag.Data:
                     {
-                        ReadData(out uint vldPosition, out uint vldLength);
+                        uint position = DataStream.ReadUInt32BE(source);
+                        uint length = DataStream.ReadUInt32BE(source);
 
                         // Some ACB files have the length info set to zero for UTF table fields, so find the correct length
-                        if (vldPosition > 0 && vldLength == 0)
+                        if (position > 0 && length == 0)
                         {
-                            source.Position = headerPosition + header.DataPoolPosition + vldPosition;
+                            source.Position = headerPosition + header.DataPoolPosition + position;
 
-                            if (EndianStream.ReadCString(source, 4) == CriTableHeader.Signature)
+                            if (DataStream.ReadBytes(source, 4).SequenceEqual(CriTableHeader.SignatureBytes))
                             {
-                                vldLength = ReadUInt32() + 8;
+                                length = DataStream.ReadUInt32BE(source) + 8;
                             }
                         }
 
-                        return new Substream(source, headerPosition + header.DataPoolPosition + vldPosition, vldLength);
+                        return new SubStream(source, headerPosition + header.DataPoolPosition + position, length);
                     }
                 case CriFieldFlag.Guid:
-                    return ReadGuid();
+                    return new Guid(DataStream.ReadBytes(source, 16));
             }
 
             return null;
@@ -693,8 +628,6 @@ namespace SonicAudioLib.CriMw
             {
                 source.Close();
             }
-
-            GC.SuppressFinalize(this);
         }
 
         public static CriTableReader Create(byte[] sourceByteArray)

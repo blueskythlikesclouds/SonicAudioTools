@@ -9,7 +9,7 @@ using AcbEditor.Properties;
 using SonicAudioLib;
 using SonicAudioLib.CriMw;
 using SonicAudioLib.IO;
-using SonicAudioLib.Archive;
+using SonicAudioLib.Archives;
 
 namespace AcbEditor
 {
@@ -17,9 +17,15 @@ namespace AcbEditor
     {
         static void Main(string[] args)
         {
+            if (!File.Exists(AppDomain.CurrentDomain.SetupInformation.ConfigurationFile))
+            {
+                Settings.Default.Reset();
+                Settings.Default.Save();
+            }
+			
             if (args.Length < 1)
             {
-                Console.WriteLine(Properties.Resources.Description);
+                Console.WriteLine(Resources.Description);
                 Console.ReadLine();
                 return;
             }
@@ -72,7 +78,7 @@ namespace AcbEditor
                         long awbPosition = acbReader.GetPosition("AwbFile");
                         if (acbReader.GetLength("AwbFile") > 0)
                         {
-                            using (Substream afs2Stream = acbReader.GetSubstream("AwbFile"))
+                            using (SubStream afs2Stream = acbReader.GetSubStream("AwbFile"))
                             {
                                 cpkMode = !CheckIfAfs2(afs2Stream);
 
@@ -92,7 +98,7 @@ namespace AcbEditor
                         {
                             cpkMode = false;
 
-                            using (Substream extAfs2Stream = acbReader.GetSubstream("StreamAwbAfs2Header"))
+                            using (SubStream extAfs2Stream = acbReader.GetSubStream("StreamAwbAfs2Header"))
                             {
                                 extAfs2Archive.Read(extAfs2Stream);
                             }
@@ -103,7 +109,7 @@ namespace AcbEditor
                             }
                         }
 
-                        using (Substream waveformTableStream = acbReader.GetSubstream("WaveformTable"))
+                        using (SubStream waveformTableStream = acbReader.GetSubStream("WaveformTable"))
                         using (CriTableReader waveformReader = CriTableReader.Create(waveformTableStream))
                         {
                             while (waveformReader.Read())
@@ -353,7 +359,7 @@ namespace AcbEditor
         static bool CheckIfAfs2(Stream source)
         {
             long oldPosition = source.Position;
-            bool result = EndianStream.ReadCString(source, 4) == "AFS2";
+            bool result = DataStream.ReadCString(source, 4) == "AFS2";
             source.Seek(oldPosition, SeekOrigin.Begin);
 
             return result;

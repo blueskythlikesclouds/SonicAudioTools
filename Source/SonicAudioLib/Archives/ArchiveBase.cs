@@ -6,10 +6,10 @@ using System.IO;
 using System.Reflection;
 
 using SonicAudioLib.IO;
-using SonicAudioLib.Module;
+using SonicAudioLib.FileBases;
 using System.Collections;
 
-namespace SonicAudioLib.Archive
+namespace SonicAudioLib.Archives
 {
     public abstract class EntryBase
     {
@@ -39,7 +39,7 @@ namespace SonicAudioLib.Archive
 
         public virtual Stream Open(Stream source)
         {
-            return new Substream(source, Position, length);
+            return new SubStream(source, Position, length);
         }
 
         public virtual Stream Open()
@@ -48,19 +48,9 @@ namespace SonicAudioLib.Archive
         }
     }
 
-    public abstract class ArchiveBase<T> : ModuleBase, IEnumerable<T>
+    public abstract class ArchiveBase<T> : FileBase, IList<T>
     {
         protected List<T> entries = new List<T>();
-
-        public virtual event ProgressChanged ProgressChanged;
-
-        public virtual T this[int index]
-        {
-            get
-            {
-                return entries[index];
-            }
-        }
 
         public virtual int Count
         {
@@ -70,14 +60,47 @@ namespace SonicAudioLib.Archive
             }
         }
 
+        public virtual bool IsReadOnly
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public virtual T this[int index]
+        {
+            get
+            {
+                return entries[index];
+            }
+
+            set
+            {
+                entries[index] = value;
+            }
+        }
+
+        public virtual event ProgressChanged ProgressChanged;
+
+        public virtual int IndexOf(T item)
+        {
+            return entries.IndexOf(item);
+        }
+
+        public virtual void Insert(int index, T item)
+        {
+            entries.Insert(index, item);
+        }
+
+        public virtual void RemoveAt(int index)
+        {
+            entries.RemoveAt(index);
+        }
+
         public virtual void Add(T item)
         {
             entries.Add(item);
-        }
-
-        public virtual T Get(int index)
-        {
-            return entries[index];
         }
 
         public virtual void Clear()
@@ -95,14 +118,14 @@ namespace SonicAudioLib.Archive
             entries.CopyTo(array, arrayIndex);
         }
 
-        public virtual IEnumerator<T> GetEnumerator()
-        {
-            return entries.GetEnumerator();
-        }
-
         public virtual bool Remove(T item)
         {
             return entries.Remove(item);
+        }
+
+        public virtual IEnumerator<T> GetEnumerator()
+        {
+            return entries.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -110,13 +133,13 @@ namespace SonicAudioLib.Archive
             return entries.GetEnumerator();
         }
 
-        protected void OnProgressChanged(object sender, ProgressChangedEventArgs e)
+        protected virtual void OnProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             ProgressChanged?.Invoke(this, e);
         }
 
 #if DEBUG
-        public void Print()
+        public virtual void Print()
         {
             Type archiveType = GetType();
             Console.WriteLine("{0}:", archiveType.Name);

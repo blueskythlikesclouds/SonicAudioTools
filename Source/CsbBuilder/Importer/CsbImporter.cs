@@ -7,12 +7,12 @@ using System.ComponentModel;
 
 using CsbBuilder.Audio;
 using CsbBuilder.Project;
-using CsbBuilder.BuilderNode;
+using CsbBuilder.BuilderNodes;
 using CsbBuilder.Serialization;
 
 using SonicAudioLib.IO;
 using SonicAudioLib.CriMw.Serialization;
-using SonicAudioLib.Archive;
+using SonicAudioLib.Archives;
 
 using System.Windows.Forms;
 
@@ -25,7 +25,7 @@ namespace CsbBuilder.Importer
             var extractor = new DataExtractor();
             extractor.BufferSize = MainForm.Settings.BufferSize;
             extractor.EnableThreading = MainForm.Settings.EnableThreading;
-            extractor.MaxThreads = MainForm.Settings.MaxCores;
+            extractor.MaxThreads = MainForm.Settings.MaxThreads;
 
             // Find the CPK first
             string cpkPath = Path.ChangeExtension(path, "cpk");
@@ -103,13 +103,13 @@ namespace CsbBuilder.Importer
                     string outputFileName = Path.Combine(project.AudioDirectory.FullName, soundElementTable.Name.Replace('/', '_'));
                     if (entry.Flag == CriAaxEntryFlag.Intro)
                     {
-                        outputFileName += "_Intro.adx";
+                        outputFileName += $"_Intro{aaxArchive.GetModeExtension()}";
                         soundElementNode.Intro = Path.GetFileName(outputFileName);
                     }
 
                     else if (entry.Flag == CriAaxEntryFlag.Loop)
                     {
-                        outputFileName += "_Loop.adx";
+                        outputFileName += $"_Loop{aaxArchive.GetModeExtension()}";
                         soundElementNode.Loop = Path.GetFileName(outputFileName);
                     }
 
