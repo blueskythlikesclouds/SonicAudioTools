@@ -5,7 +5,7 @@ using System.Text;
 using System.IO;
 using System.ComponentModel;
 
-namespace CsbBuilder.BuilderNode
+namespace CsbBuilder.BuilderNodes
 {
     public class BuilderSoundElementNode : BuilderBaseNode
     {

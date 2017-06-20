@@ -4,8 +4,9 @@ using System.Text;
 using System.ComponentModel;
 using System.Collections.Generic;
 
+using System.Linq;
 using SonicAudioLib.IO;
-using SonicAudioLib.Module;
+using SonicAudioLib.FileBases;
 
 namespace SonicAudioLib.CriMw
 {
@@ -25,7 +26,7 @@ namespace SonicAudioLib.CriMw
         private List<CriTableField> fields;
         private Stream destination;
         private CriTableHeader header;
-        private VldPool vldPool;
+        private DataPool vldPool;
         private StringPool stringPool;
         private uint headerPosition;
 
@@ -62,24 +63,16 @@ namespace SonicAudioLib.CriMw
             status = Status.Start;
 
             headerPosition = (uint)destination.Position;
-            header.TableName = tableName;
 
             if (settings.PutBlankString)
             {
                 stringPool.Put(StringPool.AdxBlankString);
             }
 
-            EndianStream.WriteCString(destination, CriTableHeader.Signature, 4);
-            WriteUInt32(uint.MinValue);
-            WriteByte(byte.MinValue);
-            WriteByte(byte.MinValue);
-            WriteUInt16(ushort.MinValue);
-            WriteUInt32(uint.MinValue);
-            WriteUInt32(uint.MinValue);
-            WriteString(tableName);
-            WriteUInt16(ushort.MinValue);
-            WriteUInt16(ushort.MinValue);
-            WriteUInt32(uint.MinValue);
+            header.TableNamePosition = (uint)stringPool.Put(tableName);
+
+            var buffer = new byte[32];
+            destination.Write(buffer, 0, 32);
         }
 
         public void WriteEndTable()
@@ -96,17 +89,17 @@ namespace SonicAudioLib.CriMw
 
             status = Status.End;
 
-            destination.Seek(headerPosition + header.RowsPosition + (header.RowLength * header.NumberOfRows), SeekOrigin.Begin);
+            destination.Seek(headerPosition + header.RowsPosition + (header.RowLength * header.RowCount), SeekOrigin.Begin);
 
             stringPool.Write(destination);
             header.StringPoolPosition = (uint)stringPool.Position - headerPosition;
 
-            EndianStream.Pad(destination, vldPool.Align);
+            DataStream.Pad(destination, vldPool.Align);
 
             vldPool.Write(destination);
             header.DataPoolPosition = (uint)vldPool.Position - headerPosition;
 
-            EndianStream.Pad(destination, vldPool.Align);
+            DataStream.Pad(destination, vldPool.Align);
 
             long previousPosition = destination.Position;
 
@@ -122,21 +115,23 @@ namespace SonicAudioLib.CriMw
                 header.EncodingType = CriTableHeader.EncodingTypeUtf8;
             }
 
-            destination.Position = headerPosition + 4;
-            WriteUInt32(header.Length - 8);
-            WriteByte(header.UnknownByte);
-            WriteByte(header.EncodingType);
-            WriteUInt16((ushort)(header.RowsPosition - 8));
-            WriteUInt32(header.StringPoolPosition - 8);
-            WriteUInt32(header.DataPoolPosition - 8);
-            destination.Seek(4, SeekOrigin.Current);
-            WriteUInt16(header.NumberOfFields);
-            WriteUInt16(header.RowLength);
-            WriteUInt32(header.NumberOfRows);
+            destination.Seek(headerPosition, SeekOrigin.Begin);
+
+            destination.Write(CriTableHeader.SignatureBytes, 0, 4);
+            DataStream.WriteUInt32BE(destination, header.Length - 8);
+            DataStream.WriteByte(destination, header.UnknownByte);
+            DataStream.WriteByte(destination, header.EncodingType);
+            DataStream.WriteUInt16BE(destination, (ushort)(header.RowsPosition - 8));
+            DataStream.WriteUInt32BE(destination, header.StringPoolPosition - 8);
+            DataStream.WriteUInt32BE(destination, header.DataPoolPosition - 8);
+            DataStream.WriteUInt32BE(destination, header.TableNamePosition);
+            DataStream.WriteUInt16BE(destination, header.FieldCount);
+            DataStream.WriteUInt16BE(destination, header.RowLength);
+            DataStream.WriteUInt32BE(destination, header.RowCount);
 
             if (settings.EnableMask)
             {
-                destination.Position = headerPosition;
+                destination.Seek(headerPosition, SeekOrigin.Begin);
                 CriTableMasker.Mask(destination, header.Length, settings.MaskXor, settings.MaskXorMultiplier);
             }
 
@@ -179,7 +174,7 @@ namespace SonicAudioLib.CriMw
                 Value = defaultValue
             };
 
-            WriteByte((byte)field.Flag);
+            DataStream.WriteByte(destination, (byte)field.Flag);
 
             if (!string.IsNullOrEmpty(fieldName))
             {
@@ -192,7 +187,7 @@ namespace SonicAudioLib.CriMw
             }
 
             fields.Add(field);
-            header.NumberOfFields++;
+            header.FieldCount++;
         }
 
         public void WriteField(string fieldName, Type fieldType)
@@ -215,15 +210,40 @@ namespace SonicAudioLib.CriMw
                 Name = fieldName
             };
 
-            WriteByte((byte)field.Flag);
+            DataStream.WriteByte(destination, (byte)field.Flag);
 
             if (!string.IsNullOrEmpty(fieldName))
             {
                 WriteString(field.Name);
             }
 
+            field.Offset = header.RowLength;
+            switch (field.Flag & CriFieldFlag.TypeMask)
+            {
+                case CriFieldFlag.Byte:
+                case CriFieldFlag.SByte:
+                    header.RowLength += 1;
+                    break;
+                case CriFieldFlag.Int16:
+                case CriFieldFlag.UInt16:
+                    header.RowLength += 2;
+                    break;
+                case CriFieldFlag.Int32:
+                case CriFieldFlag.UInt32:
+                case CriFieldFlag.Single:
+                case CriFieldFlag.String:
+                    header.RowLength += 4;
+                    break;
+                case CriFieldFlag.Int64:
+                case CriFieldFlag.UInt64:
+                case CriFieldFlag.Double:
+                case CriFieldFlag.Data:
+                    header.RowLength += 8;
+                    break;
+            }
+
             fields.Add(field);
-            header.NumberOfFields++;
+            header.FieldCount++;
         }
 
         public void WriteField(CriField criField)
@@ -241,7 +261,6 @@ namespace SonicAudioLib.CriMw
             status = Status.Idle;
 
             header.RowsPosition = (ushort)(destination.Position - headerPosition);
-            header.RowLength = CalculateRowLength();
         }
 
         public void WriteStartRow()
@@ -258,9 +277,9 @@ namespace SonicAudioLib.CriMw
 
             status = Status.Row;
 
-            header.NumberOfRows++;
+            header.RowCount++;
 
-            destination.Position = headerPosition + header.RowsPosition + (header.NumberOfRows * header.RowLength);
+            destination.Seek(headerPosition + header.RowsPosition + (header.RowCount * header.RowLength), SeekOrigin.Begin);
             byte[] buffer = new byte[header.RowLength];
             destination.Write(buffer, 0, buffer.Length);
         }
@@ -283,80 +302,7 @@ namespace SonicAudioLib.CriMw
 
         private void GoToValue(int fieldIndex)
         {
-            long position = headerPosition + header.RowsPosition + (header.RowLength * (header.NumberOfRows - 1));
-
-            for (int i = 0; i < fieldIndex; i++)
-            {
-                if (!fields[i].Flag.HasFlag(CriFieldFlag.RowStorage))
-                {
-                    continue;
-                }
-
-                switch (fields[i].Flag & CriFieldFlag.TypeMask)
-                {
-                    case CriFieldFlag.Byte:
-                    case CriFieldFlag.SByte:
-                        position += 1;
-                        break;
-                    case CriFieldFlag.Int16:
-                    case CriFieldFlag.UInt16:
-                        position += 2;
-                        break;
-                    case CriFieldFlag.Int32:
-                    case CriFieldFlag.UInt32:
-                    case CriFieldFlag.Single:
-                    case CriFieldFlag.String:
-                        position += 4;
-                        break;
-                    case CriFieldFlag.Int64:
-                    case CriFieldFlag.UInt64:
-                    case CriFieldFlag.Double:
-                    case CriFieldFlag.Data:
-                        position += 8;
-                        break;
-                }
-            }
-
-            destination.Position = position;
-        }
-
-        private ushort CalculateRowLength()
-        {
-            ushort length = 0;
-
-            for (int i = 0; i < fields.Count; i++)
-            {
-                if (!fields[i].Flag.HasFlag(CriFieldFlag.RowStorage))
-                {
-                    continue;
-                }
-
-                switch (fields[i].Flag & CriFieldFlag.TypeMask)
-                {
-                    case CriFieldFlag.Byte:
-                    case CriFieldFlag.SByte:
-                        length += 1;
-                        break;
-                    case CriFieldFlag.Int16:
-                    case CriFieldFlag.UInt16:
-                        length += 2;
-                        break;
-                    case CriFieldFlag.Int32:
-                    case CriFieldFlag.UInt32:
-                    case CriFieldFlag.Single:
-                    case CriFieldFlag.String:
-                        length += 4;
-                        break;
-                    case CriFieldFlag.Int64:
-                    case CriFieldFlag.UInt64:
-                    case CriFieldFlag.Double:
-                    case CriFieldFlag.Data:
-                        length += 8;
-                        break;
-                }
-            }
-
-            return length;
+            destination.Seek(headerPosition + header.RowsPosition + (header.RowLength * (header.RowCount - 1)) + fields[fieldIndex].Offset, SeekOrigin.Begin);
         }
 
         public void WriteEndRow()
@@ -384,102 +330,17 @@ namespace SonicAudioLib.CriMw
             }
         }
 
-        private void WriteByte(byte value)
-        {
-            EndianStream.WriteByte(destination, value);
-        }
-
-        private void WriteBoolean(bool value)
-        {
-            EndianStream.WriteBoolean(destination, value);
-        }
-
-        private void WriteSByte(sbyte value)
-        {
-            EndianStream.WriteSByte(destination, value);
-        }
-
-        private void WriteUInt16(ushort value)
-        {
-            EndianStream.WriteUInt16BE(destination, value);
-        }
-
-        private void WriteInt16(short value)
-        {
-            EndianStream.WriteInt16BE(destination, value);
-        }
-
-        private void WriteUInt32(uint value)
-        {
-            EndianStream.WriteUInt32BE(destination, value);
-        }
-
-        private void WriteInt32(int value)
-        {
-            EndianStream.WriteInt32BE(destination, value);
-        }
-
-        private void WriteUInt64(ulong value)
-        {
-            EndianStream.WriteUInt64BE(destination, value);
-        }
-
-        private void WriteInt64(long value)
-        {
-            EndianStream.WriteInt64BE(destination, value);
-        }
-
-        private void WriteSingle(float value)
-        {
-            EndianStream.WriteSingleBE(destination, value);
-        }
-
-        private void WriteDouble(double value)
-        {
-            EndianStream.WriteDoubleBE(destination, value);
-        }
-
         private void WriteString(string value)
         {
             if (settings.RemoveDuplicateStrings && stringPool.ContainsString(value))
             {
-                WriteUInt32((uint)stringPool.GetStringPosition(value));
+                DataStream.WriteUInt32BE(destination, (uint)stringPool.GetStringPosition(value));
             }
 
             else
             {
-                WriteUInt32((uint)stringPool.Put(value));
+                DataStream.WriteUInt32BE(destination, (uint)stringPool.Put(value));
             }
-        }
-
-        private void WriteData(byte[] data)
-        {
-            WriteUInt32((uint)vldPool.Put(data));
-            WriteUInt32((uint)data.Length);
-        }
-
-        private void WriteStream(Stream stream)
-        {
-            WriteUInt32((uint)vldPool.Put(stream));
-            WriteUInt32((uint)stream.Length);
-        }
-
-        private void WriteFile(FileInfo fileInfo)
-        {
-            WriteUInt32((uint)vldPool.Put(fileInfo));
-            WriteUInt32((uint)fileInfo.Length);
-        }
-
-        private void WriteModule(ModuleBase module)
-        {
-            WriteUInt32((uint)vldPool.Put(module));
-            WriteUInt32(0);
-        }
-
-        private void WriteGuid(Guid guid)
-        {
-            byte[] buffer = guid.ToByteArray();
-            destination.Write(buffer, 0, buffer.Length);
         }
 
         private void WriteValue(object val)
@@ -487,43 +348,43 @@ namespace SonicAudioLib.CriMw
             switch (val)
             {
                 case byte value:
-                    WriteByte(value);
+                    DataStream.WriteByte(destination, value);
                     break;
 
                 case sbyte value:
-                    WriteSByte(value);
+                    DataStream.WriteSByte(destination, value);
                     break;
 
                 case ushort value:
-                    WriteUInt16(value);
+                    DataStream.WriteUInt16BE(destination, value);
                     break;
 
                 case short value:
-                    WriteInt16(value);
+                    DataStream.WriteInt16BE(destination, value);
                     break;
 
                 case uint value:
-                    WriteUInt32(value);
+                    DataStream.WriteUInt32BE(destination, value);
                     break;
 
                 case int value:
-                    WriteInt32(value);
+                    DataStream.WriteInt32BE(destination, value);
                     break;
 
                 case ulong value:
-                    WriteUInt64(value);
+                    DataStream.WriteUInt64BE(destination, value);
                     break;
 
                 case long value:
-                    WriteInt64(value);
+                    DataStream.WriteInt64BE(destination, value);
                     break;
 
                 case float value:
-                    WriteSingle(value);
+                    DataStream.WriteSingleBE(destination, value);
                     break;
 
                 case double value:
-                    WriteDouble(value);
+                    DataStream.WriteDoubleBE(destination, value);
                     break;
 
                 case string value:
@@ -531,23 +392,22 @@ namespace SonicAudioLib.CriMw
                     break;
 
                 case byte[] value:
-                    WriteData(value);
+                    DataStream.WriteUInt32BE(destination, (uint)vldPool.Put(value));
+                    DataStream.WriteUInt32BE(destination, (uint)value.Length);
                     break;
 
                 case Guid value:
-                    WriteGuid(value);
+                    destination.Write(value.ToByteArray(), 0, 16);
                     break;
 
-                case Stream stream:
-                    WriteStream(stream);
+                case Stream value:
+                    DataStream.WriteUInt32BE(destination, (uint)vldPool.Put(value));
+                    DataStream.WriteUInt32BE(destination, (uint)value.Length);
                     break;
 
-                case ModuleBase module:
-                    WriteModule(module);
-                    break;
-
-                case FileInfo fileInfo:
-                    WriteFile(fileInfo);
+                case FileInfo value:
+                    DataStream.WriteUInt32BE(destination, (uint)vldPool.Put(value));
+                    DataStream.WriteUInt32BE(destination, (uint)value.Length);
                     break;
             }
         }
@@ -598,7 +458,7 @@ namespace SonicAudioLib.CriMw
             header = new CriTableHeader();
             fields = new List<CriTableField>();
             stringPool = new StringPool(settings.EncodingType);
-            vldPool = new VldPool(settings.Align);
+            vldPool = new DataPool(settings.Align);
         }
     }
 

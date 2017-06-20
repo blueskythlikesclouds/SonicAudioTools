@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Globalization;
 
-namespace CsbBuilder.BuilderNode
+namespace CsbBuilder.BuilderNodes
 {
     public abstract class BuilderBaseNode : ICloneable
     {
         [Category("General"), ReadOnly(true)]
-        [Description("The name of this node. Shift JIS encoding is used for this in the Cue Sheet Binary, so try to avoid using special characters that this codec does not support.")]
+        [Description("The name of this node.")]
         public string Name { get; set; }
 
         public object Clone()

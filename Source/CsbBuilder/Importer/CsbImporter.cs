@@ -7,12 +7,12 @@ using System.ComponentModel;
 
 using CsbBuilder.Audio;
 using CsbBuilder.Project;
-using CsbBuilder.BuilderNode;
+using CsbBuilder.BuilderNodes;
 using CsbBuilder.Serialization;
 
 using SonicAudioLib.IO;
 using SonicAudioLib.CriMw.Serialization;
-using SonicAudioLib.Archive;
+using SonicAudioLib.Archives;
 
 using System.Windows.Forms;
 
@@ -25,7 +25,7 @@ namespace CsbBuilder.Importer
             var extractor = new DataExtractor();
             extractor.BufferSize = MainForm.Settings.BufferSize;
             extractor.EnableThreading = MainForm.Settings.EnableThreading;
-            extractor.MaxThreads = MainForm.Settings.MaxCores;
+            extractor.MaxThreads = MainForm.Settings.MaxThreads;
 
             // Find the CPK first
             string cpkPath = Path.ChangeExtension(path, "cpk");
@@ -50,7 +50,7 @@ namespace CsbBuilder.Importer
             List<SerializationSynthTable> synthTables = CriTableSerializer.Deserialize<SerializationSynthTable>(cueSheets.FirstOrDefault(table => table.TableType == 2).TableData);
             List<SerializationSoundElementTable> soundElementTables = CriTableSerializer.Deserialize<SerializationSoundElementTable>(cueSheets.FirstOrDefault(table => table.TableType == 4).TableData);
             List<SerializationAisacTable> aisacTables = CriTableSerializer.Deserialize<SerializationAisacTable>(cueSheets.FirstOrDefault(table => table.TableType == 5).TableData);
-
+            
             // voice limit groups appeared in the later versions, so check if it exists.
             List<SerializationVoiceLimitGroupTable> voiceLimitGroupTables = new List<SerializationVoiceLimitGroupTable>();
 
@@ -83,14 +83,20 @@ namespace CsbBuilder.Importer
 
                 CriAaxArchive aaxArchive = new CriAaxArchive();
 
-                CriCpkEntry cpkEntry = null;
-                if (soundElementNode.Streaming)
+                CriCpkEntry cpkEntry = cpkArchive.GetByPath(soundElementTable.Name);
+                if (soundElementNode.Streaming && cpkEntry != null)
                 {
                     using (Stream source = File.OpenRead(cpkPath))
-                    using (Stream entrySource = (cpkEntry = cpkArchive.GetByPath(soundElementTable.Name)).Open(source))
+                    using (Stream entrySource = cpkEntry.Open(source))
                     {
                         aaxArchive.Read(entrySource);
                     }
+                }
+
+                else if (soundElementNode.Streaming && cpkEntry == null)
+                {
+                    soundElementNode.Intro = soundElementNode.Loop = string.Empty;
+                    soundElementNode.SampleRate = soundElementNode.SampleCount = soundElementNode.ChannelCount = 0;
                 }
 
                 else
@@ -103,13 +109,13 @@ namespace CsbBuilder.Importer
                     string outputFileName = Path.Combine(project.AudioDirectory.FullName, soundElementTable.Name.Replace('/', '_'));
                     if (entry.Flag == CriAaxEntryFlag.Intro)
                     {
-                        outputFileName += "_Intro.adx";
+                        outputFileName += $"_Intro{aaxArchive.GetModeExtension()}";
                         soundElementNode.Intro = Path.GetFileName(outputFileName);
                     }
 
                     else if (entry.Flag == CriAaxEntryFlag.Loop)
                     {
-                        outputFileName += "_Loop.adx";
+                        outputFileName += $"_Loop{aaxArchive.GetModeExtension()}";
                         soundElementNode.Loop = Path.GetFileName(outputFileName);
                     }
 

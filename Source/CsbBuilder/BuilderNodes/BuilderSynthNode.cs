@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Reflection;
 
-namespace CsbBuilder.BuilderNode
+namespace CsbBuilder.BuilderNodes
 {
     public enum BuilderSynthType
     {
@@ -28,7 +28,7 @@ namespace CsbBuilder.BuilderNode
     {
         private BuilderSynthPlaybackType playbackType = BuilderSynthPlaybackType.Polyphonic;
         private Random random = new Random();
-        private List<int> indices = new List<int>();
+        private int previousChild = -1;
         private int nextChild = -1;
         private byte playbackProbability = 100;
 
@@ -362,20 +362,15 @@ namespace CsbBuilder.BuilderNode
             {
                 if (playbackType == BuilderSynthPlaybackType.RandomNoRepeat)
                 {
-                    if (indices.Count == Children.Count)
+                    int randomChild = random.Next(Children.Count);
+
+                    while (randomChild == previousChild)
                     {
-                        indices.Clear();
+                        randomChild = random.Next(Children.Count);
                     }
 
-                    int nextChild = random.Next(Children.Count);
-
-                    while (indices.Contains(nextChild))
-                    {
-                        nextChild = random.Next(Children.Count);
-                    }
-
-                    indices.Add(nextChild);
-                    return nextChild;
+                    previousChild = randomChild;
+                    return randomChild;
                 }
 
                 return random.Next(Children.Count);

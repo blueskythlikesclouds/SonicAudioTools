@@ -3,11 +3,13 @@ using System.IO;
 using System.Linq;
 
 using SonicAudioLib.IO;
-using SonicAudioLib.Module;
+using SonicAudioLib.FileBases;
+using System.Xml;
+using System.Xml.Linq;
 
 namespace SonicAudioLib.CriMw
 {
-    public class CriTable : ModuleBase
+    public class CriTable : FileXmlBase
     {
         private CriFieldCollection fields;
         private CriRowCollection rows;
@@ -139,6 +141,86 @@ namespace SonicAudioLib.CriMw
 
                 writer.WriteEndTable();
             }
+        }
+
+        public override void ReadXml(XmlReader reader)
+        {
+            var document = XDocument.Load(reader);
+
+            foreach (XElement element in document.Root.Element(nameof(Fields)).Elements(nameof(CriField)))
+            {
+                fields.Add(
+                    element.Element(nameof(CriField.FieldName)).Value,
+                    Type.GetType(element.Element(nameof(CriField.FieldType)).Value)
+                    );
+            }
+
+            foreach (XElement element in document.Root.Element(nameof(Rows)).Elements(nameof(CriRow)))
+            {
+                CriRow row = NewRow();
+
+                foreach (CriRowRecord record in row.Records)
+                {
+                    if (record.Field.FieldType == typeof(byte[]))
+                    {
+                        record.Value = Convert.FromBase64String(element.Element(record.Field.FieldName).Value);
+                    }
+
+                    else
+                    {
+                        record.Value = Convert.ChangeType(element.Element(record.Field.FieldName).Value, record.Field.FieldType);
+                    }
+                }
+
+                rows.Add(row);
+            }
+        }
+
+        public override void WriteXml(XmlWriter writer)
+        {
+            var document = new XDocument(new XElement(nameof(CriTable)));
+            document.Root.Add(new XElement(nameof(TableName), TableName));
+
+            var fieldsElement = new XElement(nameof(Fields));
+
+            foreach (CriField field in fields)
+            {
+                var fieldElement = new XElement(nameof(CriField));
+
+                fieldElement.Add(
+                    new XElement(nameof(field.FieldName), field.FieldName),
+                    new XElement(nameof(field.FieldType), field.FieldType.Name)
+                    );
+
+                fieldsElement.Add(fieldElement);
+            }
+
+            document.Root.Add(fieldsElement);
+
+            var rowsElement = new XElement(nameof(Rows));
+
+            foreach (CriRow row in rows)
+            {
+                var rowElement = new XElement(nameof(CriRow));
+
+                foreach (CriRowRecord record in row.Records)
+                {
+                    if (record.Value is byte[] bytes)
+                    {
+                        rowElement.Add(new XElement(record.Field.FieldName, Convert.ToBase64String(bytes)));
+                    }
+
+                    else
+                    {
+                        rowElement.Add(new XElement(record.Field.FieldName, record.Value));
+                    }
+                }
+
+                rowsElement.Add(rowElement);
+            }
+
+            document.Root.Add(rowsElement);
+            document.Save(writer);
         }
 
         public CriTable()

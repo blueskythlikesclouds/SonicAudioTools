@@ -9,9 +9,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CsbBuilder</RootNamespace>
     <AssemblyName>CsbBuilder</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -22,6 +23,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -53,15 +55,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Audio\AdxFileReader.cs" />
-    <Compile Include="BuilderNode\BuilderAisacGraphNode.cs" />
-    <Compile Include="BuilderNode\BuilderAisacNode.cs" />
-    <Compile Include="BuilderNode\BuilderAisacPointNode.cs" />
-    <Compile Include="BuilderNode\BuilderCueNode.cs" />
-    <Compile Include="BuilderNode\BuilderBaseNode.cs" />
-    <Compile Include="BuilderNode\BuilderSoundElementNode.cs" />
-    <Compile Include="BuilderNode\BuilderSynthNode.cs" />
-    <Compile Include="BuilderNode\BuilderVoiceLimitGroupNode.cs" />
+    <Compile Include="Audio\ExtendedWaveStream.cs" />
+    <Compile Include="Audio\PostSampleEditor.cs" />
+    <Compile Include="Audio\VGMStreamNative.cs" />
+    <Compile Include="Audio\VGMStreamReader.cs" />
+    <Compile Include="BuilderNodes\BuilderAisacGraphNode.cs" />
+    <Compile Include="BuilderNodes\BuilderAisacNode.cs" />
+    <Compile Include="BuilderNodes\BuilderAisacPointNode.cs" />
+    <Compile Include="BuilderNodes\BuilderCueNode.cs" />
+    <Compile Include="BuilderNodes\BuilderBaseNode.cs" />
+    <Compile Include="BuilderNodes\BuilderSoundElementNode.cs" />
+    <Compile Include="BuilderNodes\BuilderSynthNode.cs" />
+    <Compile Include="BuilderNodes\BuilderVoiceLimitGroupNode.cs" />
     <Compile Include="Builder\CsbBuilder.cs" />
     <Compile Include="ExceptionForm.cs">
       <SubType>Form</SubType>
@@ -228,7 +233,11 @@
     <None Include="Resources\Undo_grey_16x.png" />
     <None Include="Resources\Settings_16x.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy "$(SolutionDir)Libraries\*.dll" "$(TargetDir)"</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

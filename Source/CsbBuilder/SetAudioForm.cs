@@ -50,9 +50,8 @@ namespace CsbBuilder
         {
             using (OpenFileDialog openAdx = new OpenFileDialog
             {
-                Title = "Please select your ADX file.",
-                Filter = "ADX Files|*.adx",
-                DefaultExt = "adx",
+                Title = "Select Your Audio File",
+                Filter = "All Files|*.adx;*.wav|ADX Files|*.adx|WAV Files|*.wav",
             })
             {
                 if (openAdx.ShowDialog() == DialogResult.OK)
@@ -66,9 +65,8 @@ namespace CsbBuilder
         {
             using (OpenFileDialog openAdx = new OpenFileDialog
             {
-                Title = "Please select your ADX file.",
-                Filter = "ADX Files|*.adx",
-                DefaultExt = "adx",
+                Title = "Select Your Audio File",
+                Filter = "All Files|*.adx;*.wav|ADX Files|*.adx|WAV Files|*.wav",
             })
             {
                 if (openAdx.ShowDialog() == DialogResult.OK)
@@ -88,9 +86,12 @@ namespace CsbBuilder
                     e.Cancel = true;
                 }
 
-                if ((!string.IsNullOrEmpty(Intro) && !Intro.EndsWith(".adx")) || (!string.IsNullOrEmpty(Loop) && !Loop.EndsWith(".adx")))
+                string introExtension = Path.GetExtension(Intro);
+                string loopExtension = Path.GetExtension(Loop);
+
+                if (!string.IsNullOrEmpty(Intro) && !string.IsNullOrEmpty(Loop) && !introExtension.Equals(loopExtension, StringComparison.OrdinalIgnoreCase))
                 {
-                    MessageBox.Show("Please use an .ADX file.", "CSB Builder", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("Please use the same types of audio files for Intro and Loop.", "CSB Builder", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     e.Cancel = true;
                 }
             }

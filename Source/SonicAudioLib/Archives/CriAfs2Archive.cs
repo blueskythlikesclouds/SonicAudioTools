@@ -6,9 +6,9 @@ using System.IO;
 using System.Diagnostics;
 
 using SonicAudioLib.IO;
-using SonicAudioLib.Module;
+using SonicAudioLib.FileBases;
 
-namespace SonicAudioLib.Archive
+namespace SonicAudioLib.Archives
 {
     public class CriAfs2Entry : EntryBase
     {
@@ -32,25 +32,25 @@ namespace SonicAudioLib.Archive
                 switch (length)
                 {
                     case 2:
-                        return EndianStream.ReadUInt16(source);
+                        return DataStream.ReadUInt16(source);
 
                     case 4:
-                        return EndianStream.ReadUInt32(source);
+                        return DataStream.ReadUInt32(source);
 
                     case 8:
-                        return EndianStream.ReadInt64(source);
+                        return DataStream.ReadInt64(source);
 
                     default:
                         throw new ArgumentException($"Unimplemented field length ({length})", nameof(length));
                 }
             }
 
-            if (EndianStream.ReadCString(source, 4) != "AFS2")
+            if (DataStream.ReadCString(source, 4) != "AFS2")
             {
                 throw new InvalidDataException("'AFS2' signature could not be found.");
             }
 
-            uint information = EndianStream.ReadUInt32(source);
+            uint information = DataStream.ReadUInt32(source);
 
             uint type = information & 0xFF;
             if (type != 1)
@@ -61,8 +61,8 @@ namespace SonicAudioLib.Archive
             uint idFieldLength = (information >> 16) & 0xFF;
             uint positionFieldLength = (information >> 8) & 0xFF;
 
-            uint entryCount = EndianStream.ReadUInt32(source);
-            Align = EndianStream.ReadUInt32(source);
+            uint entryCount = DataStream.ReadUInt32(source);
+            Align = DataStream.ReadUInt32(source);
 
             CriAfs2Entry previousEntry = null;
             for (uint i = 0; i < entryCount; i++)
@@ -138,15 +138,15 @@ namespace SonicAudioLib.Archive
                 switch (length)
                 {
                     case 2:
-                        EndianStream.WriteUInt16(mDestination, (ushort)value);
+                        DataStream.WriteUInt16(mDestination, (ushort)value);
                         break;
 
                     case 4:
-                        EndianStream.WriteUInt32(mDestination, (uint)value);
+                        DataStream.WriteUInt32(mDestination, (uint)value);
                         break;
 
                     case 8:
-                        EndianStream.WriteInt64(mDestination, value);
+                        DataStream.WriteInt64(mDestination, value);
                         break;
 
                     default:
@@ -156,12 +156,12 @@ namespace SonicAudioLib.Archive
 
             long headerLength = Calculate(out uint idFieldLength, out uint positionFieldLength);
 
-            EndianStream.WriteCString(mDestination, "AFS2", 4);
-            EndianStream.WriteUInt32(mDestination, 1 | (idFieldLength << 16) | (positionFieldLength << 8));
-            EndianStream.WriteUInt32(mDestination, (uint)entries.Count);
-            EndianStream.WriteUInt32(mDestination, Align);
+            DataStream.WriteCString(mDestination, "AFS2", 4);
+            DataStream.WriteUInt32(mDestination, 1 | (idFieldLength << 16) | (positionFieldLength << 8));
+            DataStream.WriteUInt32(mDestination, (uint)entries.Count);
+            DataStream.WriteUInt32(mDestination, Align);
             
-            VldPool vldPool = new VldPool(Align, headerLength);
+            DataPool vldPool = new DataPool(Align, headerLength);
             vldPool.ProgressChanged += OnProgressChanged;
 
             var orderedEntries = entries.OrderBy(entry => entry.Id);

@@ -13,7 +13,7 @@ namespace SonicAudioLib.IO
         private long length = 0;
         private Encoding encoding = Encoding.Default;
 
-        public static readonly string AdxBlankString = "<NULL>";
+        public const string AdxBlankString = "<NULL>";
 
         public long Position
         {
@@ -51,7 +51,7 @@ namespace SonicAudioLib.IO
 
             foreach (StringItem item in items)
             {
-                EndianStream.WriteCString(destination, item.Value, encoding);
+                DataStream.WriteCString(destination, item.Value, encoding);
             }
         }
 

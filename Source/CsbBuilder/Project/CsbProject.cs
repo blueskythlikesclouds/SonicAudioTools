@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 
-using CsbBuilder.BuilderNode;
+using CsbBuilder.BuilderNodes;
 
 using System.Xml.Serialization;
 using System.Windows.Forms;

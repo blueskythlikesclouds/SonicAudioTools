@@ -4,18 +4,12 @@ using System.Linq;
 
 namespace SonicAudioLib.IO
 {
-    /// <summary>
-    /// Represents a <see cref="Stream"/> based substream for viewing a portion of a Stream.
-    /// </summary>
-    public class Substream : Stream
+    public sealed class SubStream : Stream
     {
         private Stream baseStream;
-        private long streamPosition;
-        private long streamLength;
+        private long basePosition;
+        private long baseLength;
 
-        /// <summary>
-        /// Determines whether the base Stream supports reading.
-        /// </summary>
         public override bool CanRead
         {
             get
@@ -24,9 +18,6 @@ namespace SonicAudioLib.IO
             }
         }
 
-        /// <summary>
-        /// Determines whether the base Stream supports seeking.
-        /// </summary>
         public override bool CanSeek
         {
             get
@@ -35,84 +26,50 @@ namespace SonicAudioLib.IO
             }
         }
 
-        /// <summary>
-        /// Always returns false.
-        /// </summary>
         public override bool CanWrite
         {
             get
             {
-                return false;
+                return baseStream.CanWrite;
             }
         }
 
-        /// <summary>
-        /// Gets the length of the substream.
-        /// </summary>
         public override long Length
         {
             get
             {
-                return streamLength;
+                return baseLength;
             }
         }
 
-        /// <summary>
-        /// Gets or sets the position of the substream.
-        /// </summary>
         public override long Position
         {
             get
             {
-                return baseStream.Position - streamPosition;
+                return baseStream.Position - basePosition;
             }
 
             set
             {
-                baseStream.Position = value + streamPosition;
+                baseStream.Position = basePosition + value;
             }
         }
 
-        /// <summary>
-        /// Gets or sets the position of the base Stream.
-        /// </summary>
-        public long AbsolutePosition
-        {
-            get
-            {
-                return baseStream.Position;
-            }
-
-            set
-            {
-                baseStream.Position = value;
-            }
-        }
-
-        /// <summary>
-        /// Closes the substream.
-        /// </summary>
-        public override void Close()
-        {
-            base.Close();
-        }
-
-        /// <summary>
-        /// Does nothing.
-        /// </summary>
         public override void Flush()
         {
+            baseStream.Flush();
         }
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            if (baseStream.Position >= streamPosition + streamLength)
+            if (baseStream.Position >= basePosition + baseLength)
             {
                 count = 0;
             }
-            else if (baseStream.Position + count > streamPosition + streamLength)
+
+            else if (baseStream.Position + count > basePosition + baseLength)
             {
-                count = (int)(streamPosition + streamLength - baseStream.Position);
+                count = (int)(basePosition + baseLength - baseStream.Position);
             }
 
             return baseStream.Read(buffer, offset, count);
@@ -122,79 +79,69 @@ namespace SonicAudioLib.IO
         {
             if (origin == SeekOrigin.Begin)
             {
-                offset += streamPosition;
+                offset += basePosition;
             }
 
             else if (origin == SeekOrigin.End)
             {
-                offset = streamPosition + streamLength - offset;
+                offset = basePosition + baseLength - offset;
                 origin = SeekOrigin.Begin;
             }
 
             return baseStream.Seek(offset, origin);
         }
 
-        /// <summary>
-        /// Seeks to the start of the substream.
-        /// </summary>
-        public void SeekToStart()
-        {
-            baseStream.Position = streamPosition;
-        }
-
-        /// <summary>
-        /// Throws <see cref="NotSupportedException"/>.
-        /// </summary>
         public override void SetLength(long value)
         {
-            throw new NotSupportedException();
-        }
+            baseLength = value;
 
-        /// <summary>
-        /// Throws <see cref="NotSupportedException"/>.
-        /// </summary>
-        public override void Write(byte[] buffer, int offset, int count)
-        {
-            throw new NotSupportedException();
-        }
-
-        /// <summary>
-        /// Throws <see cref="NotSupportedException"/>.
-        /// </summary>
-        public override void WriteByte(byte value)
-        {
-            throw new NotSupportedException();
-        }
-
-        /// <summary>
-        /// Gets an array of the data that the substream covers.
-        /// </summary>
-        public byte[] ToArray()
-        {
-            using (MemoryStream destination = new MemoryStream())
+            if (basePosition + baseLength > baseStream.Length)
             {
-                CopyTo(destination);
-                return destination.ToArray();
+                baseStream.SetLength(basePosition + baseLength);
             }
         }
 
-        /// <summary>
-        /// Creates a substream by the specified base Stream at the specified offset.
-        /// </summary>
-        public Substream(Stream baseStream, long streamPosition) : this(baseStream, streamPosition, baseStream.Length - streamPosition)
+        public override void Write(byte[] buffer, int offset, int count)
+        {
+            if (baseStream.Position >= basePosition + baseLength)
+            {
+                count = 0;
+            }
+
+            else if (baseStream.Position + count > basePosition + baseLength)
+            {
+                count = (int)(basePosition + baseLength - baseStream.Position);
+            }
+
+            baseStream.Write(buffer, 0, count);
+        }
+
+        public byte[] ToArray()
+        {
+            long previousPosition = baseStream.Position;
+
+            baseStream.Seek(basePosition, SeekOrigin.Begin);
+
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                CopyTo(memoryStream);
+
+                baseStream.Seek(previousPosition, SeekOrigin.Begin);
+                return memoryStream.ToArray();
+            }
+        }
+
+        public SubStream(Stream baseStream, long basePosition) : this(baseStream, basePosition, baseStream.Length - basePosition)
         {
         }
 
-        /// <summary>
-        /// Creates a substream by the specified base Stream at the specified offset and with the specified length.
-        /// </summary>
-        public Substream(Stream baseStream, long streamPosition, long streamLength)
+        public SubStream(Stream baseStream, long basePosition, long baseLength)
         {
             this.baseStream = baseStream;
-            this.streamPosition = streamPosition;
-            this.streamLength = streamLength;
+            this.basePosition = basePosition;
+            this.baseLength = baseLength;
 
-            SeekToStart();
+            baseStream.Seek(this.basePosition, SeekOrigin.Begin);
         }
     }
 }

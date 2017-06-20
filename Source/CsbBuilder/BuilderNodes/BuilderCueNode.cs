@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel;
 
-namespace CsbBuilder.BuilderNode
+namespace CsbBuilder.BuilderNodes
 {
     public class BuilderCueNode : BuilderBaseNode
     {
@@ -19,7 +19,7 @@ namespace CsbBuilder.BuilderNode
         public string SynthReference { get; set; }
 
         [Category("General"), DisplayName("User Comment")]
-        [Description("User comment of this Cue. Shift JIS encoding is used for this in the Cue Sheet Binary, so try to avoid using special characters that this codec does not support.")]
+        [Description("User comment of this Cue.")]
         public string UserComment { get; set; }
 
         [Category("General")]
