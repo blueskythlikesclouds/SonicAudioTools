@@ -1461,7 +1461,7 @@ namespace CsbBuilder
             return new VGMStreamReader(project.GetFullAudioPath(path));
         }
 
-        private void AddSoundElementSound(BuilderSoundElementNode soundElementNode, double volume, double pitch, int sampleCount, int delayTime)
+        private void AddSoundElementSound(BuilderSoundElementNode soundElementNode, double volume, double pitch, int delayTime)
         {
             WaveStream waveStream = null;
 
@@ -1537,9 +1537,9 @@ namespace CsbBuilder
             }
         }
 
-        private void AddSoundElementSound(TreeNode soundElementTreeNode, double volume, double pitch, int sampleCount, int delayTime)
+        private void AddSoundElementSound(TreeNode soundElementTreeNode, double volume, double pitch, int delayTime)
         {
-            AddSoundElementSound((BuilderSoundElementNode)soundElementTreeNode.Tag, volume, pitch, sampleCount, delayTime);
+            AddSoundElementSound((BuilderSoundElementNode)soundElementTreeNode.Tag, volume, pitch, delayTime);
         }
 
         private double GetSecondsFromSampleCount(int sampleCount, int sampleRate)
@@ -1627,7 +1627,7 @@ namespace CsbBuilder
             return delayTime;
         }
 
-        private void AddSynthSound(TreeNode synthTreeNode, int sampleCount)
+        private void AddSynthSound(TreeNode synthTreeNode)
         {
             BuilderSynthNode synthNode = (BuilderSynthNode)synthTreeNode.Tag;
 
@@ -1640,12 +1640,12 @@ namespace CsbBuilder
 
                     if (childSynthNode.Type == BuilderSynthType.Single && !string.IsNullOrEmpty(childSynthNode.SoundElementReference) && childSynthNode.PlayThisTurn)
                     {
-                        AddSoundElementSound(soundElementTree.FindNodeByFullPath(childSynthNode.SoundElementReference), GetAbsoluteVolume(childNode), GetAbsolutePitch(childNode), sampleCount, GetAbsoluteDelayTime(childNode));
+                        AddSoundElementSound(soundElementTree.FindNodeByFullPath(childSynthNode.SoundElementReference), GetAbsoluteVolume(childNode), GetAbsolutePitch(childNode), GetAbsoluteDelayTime(childNode));
                     }
 
                     else if (childSynthNode.Type == BuilderSynthType.WithChildren)
                     {
-                        AddSynthSound(childNode, sampleCount);
+                        AddSynthSound(childNode);
                     }
                 }
 
@@ -1656,12 +1656,12 @@ namespace CsbBuilder
 
                     if (childSynthNode.Type == BuilderSynthType.Single && !string.IsNullOrEmpty(childSynthNode.SoundElementReference) && childSynthNode.PlayThisTurn)
                     {
-                        AddSoundElementSound(soundElementTree.FindNodeByFullPath(childSynthNode.SoundElementReference), GetAbsoluteVolume(childNode), GetAbsolutePitch(childNode), sampleCount, GetAbsoluteDelayTime(childNode));
+                        AddSoundElementSound(soundElementTree.FindNodeByFullPath(childSynthNode.SoundElementReference), GetAbsoluteVolume(childNode), GetAbsolutePitch(childNode), GetAbsoluteDelayTime(childNode));
                     }
 
                     else if (childSynthNode.Type == BuilderSynthType.WithChildren)
                     {
-                        AddSynthSound(childNode, sampleCount);
+                        AddSynthSound(childNode);
                     }
                 }
 
@@ -1673,12 +1673,12 @@ namespace CsbBuilder
 
                         if (childSynthNode.Type == BuilderSynthType.Single && !string.IsNullOrEmpty(childSynthNode.SoundElementReference) && childSynthNode.PlayThisTurn)
                         {
-                            AddSoundElementSound(soundElementTree.FindNodeByFullPath(childSynthNode.SoundElementReference), GetAbsoluteVolume(childNode), GetAbsolutePitch(childNode), sampleCount, GetAbsoluteDelayTime(childNode));
+                            AddSoundElementSound(soundElementTree.FindNodeByFullPath(childSynthNode.SoundElementReference), GetAbsoluteVolume(childNode), GetAbsolutePitch(childNode), GetAbsoluteDelayTime(childNode));
                         }
 
                         else if (childSynthNode.Type == BuilderSynthType.WithChildren)
                         {
-                            AddSynthSound(childNode, sampleCount);
+                            AddSynthSound(childNode);
                         }
                     }
                 }
@@ -1688,7 +1688,7 @@ namespace CsbBuilder
             {
                 if (!string.IsNullOrEmpty(synthNode.SoundElementReference) && synthNode.PlayThisTurn)
                 {
-                    AddSoundElementSound(soundElementTree.FindNodeByFullPath(synthNode.SoundElementReference), synthNode.Volume / 1000.0, synthNode.Pitch / 1000.0, GetTheBiggestSampleCount(synthTreeNode), (int)synthNode.DelayTime);
+                    AddSoundElementSound(soundElementTree.FindNodeByFullPath(synthNode.SoundElementReference), synthNode.Volume / 1000.0, synthNode.Pitch / 1000.0, (int)synthNode.DelayTime);
                 }
             }
         }
@@ -1710,18 +1710,18 @@ namespace CsbBuilder
                 if (!string.IsNullOrEmpty(cueNode.SynthReference))
                 {
                     TreeNode synthNode = synthTree.FindNodeByFullPath(cueNode.SynthReference);
-                    AddSynthSound(synthNode, GetTheBiggestSampleCount(synthNode));
+                    AddSynthSound(synthNode);
                 }
             }
 
             else if (soundElementTree.Focused && soundElementTree.SelectedNode != null && soundElementTree.SelectedNode.Tag is BuilderSoundElementNode)
             {
-                AddSoundElementSound(soundElementTree.SelectedNode, 1, 0, -1, 0);
+                AddSoundElementSound(soundElementTree.SelectedNode, 1, 0, 0);
             }
 
             else if (synthTree.Focused && synthTree.SelectedNode != null && synthTree.SelectedNode.Tag is BuilderSynthNode)
             {
-                AddSynthSound(synthTree.SelectedNode, GetTheBiggestSampleCount(synthTree.SelectedNode));
+                AddSynthSound(synthTree.SelectedNode);
             }
 
             sounds.ForEach(sound => sound.Play());
