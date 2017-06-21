@@ -38,7 +38,7 @@ namespace SonicAudioLib.IO
         {
             get
             {
-                return baseStream.Length;
+                return baseLength;
             }
         }
 
