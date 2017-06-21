@@ -92,7 +92,7 @@ namespace SonicAudioLib.CriMw
 
                 CriTableMasker.FindKeys(header.Signature, out uint x, out uint m);
 
-                source.Position = headerPosition;
+                source.Seek(headerPosition, SeekOrigin.Begin);
                 CriTableMasker.Mask(source, unmaskedSource, source.Length, x, m);
 
                 // Close the old stream
@@ -102,7 +102,7 @@ namespace SonicAudioLib.CriMw
                 }
 
                 source = unmaskedSource;
-                source.Position = 4;
+                source.Seek(4, SeekOrigin.Begin);
             }
 
             header.Length = DataStream.ReadUInt32BE(source) + 0x8;
@@ -258,7 +258,7 @@ namespace SonicAudioLib.CriMw
         
         private void GoToValue(int fieldIndex)
         {
-            source.Position = headerPosition + header.RowsPosition + (header.RowLength * rowIndex) + fields[fieldIndex].Offset;
+            source.Seek(headerPosition + header.RowsPosition + (header.RowLength * rowIndex) + fields[fieldIndex].Offset, SeekOrigin.Begin);
         }
 
         public bool Read()
@@ -501,7 +501,7 @@ namespace SonicAudioLib.CriMw
 
             GoToValue(fieldIndex);
 
-            source.Position += 4;
+            source.Seek(4, SeekOrigin.Current);
             return DataStream.ReadUInt32BE(source);
         }
 
@@ -556,10 +556,10 @@ namespace SonicAudioLib.CriMw
             uint stringPosition = DataStream.ReadUInt32BE(source);
             long previousPosition = source.Position;
 
-            source.Position = headerPosition + header.StringPoolPosition + stringPosition;
+            source.Seek(headerPosition + header.StringPoolPosition + stringPosition, SeekOrigin.Begin);
             string readString = DataStream.ReadCString(source, encoding);
-            
-            source.Position = previousPosition;
+
+            source.Seek(previousPosition, SeekOrigin.Begin);
 
             if (readString == StringPool.AdxBlankString || (readString == header.TableName && stringPosition == 0))
             {
@@ -603,7 +603,7 @@ namespace SonicAudioLib.CriMw
                         // Some ACB files have the length info set to zero for UTF table fields, so find the correct length
                         if (position > 0 && length == 0)
                         {
-                            source.Position = headerPosition + header.DataPoolPosition + position;
+                            source.Seek(headerPosition + header.DataPoolPosition + position, SeekOrigin.Begin);
 
                             if (DataStream.ReadBytes(source, 4).SequenceEqual(CriTableHeader.SignatureBytes))
                             {

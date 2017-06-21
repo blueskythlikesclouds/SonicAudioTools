@@ -115,7 +115,7 @@ namespace SonicAudioLib.CriMw
                 header.EncodingType = CriTableHeader.EncodingTypeUtf8;
             }
 
-            destination.Position = headerPosition;
+            destination.Seek(headerPosition, SeekOrigin.Begin);
 
             destination.Write(CriTableHeader.SignatureBytes, 0, 4);
             DataStream.WriteUInt32BE(destination, header.Length - 8);
@@ -131,7 +131,7 @@ namespace SonicAudioLib.CriMw
 
             if (settings.EnableMask)
             {
-                destination.Position = headerPosition;
+                destination.Seek(headerPosition, SeekOrigin.Begin);
                 CriTableMasker.Mask(destination, header.Length, settings.MaskXor, settings.MaskXorMultiplier);
             }
 
@@ -279,7 +279,7 @@ namespace SonicAudioLib.CriMw
 
             header.RowCount++;
 
-            destination.Position = headerPosition + header.RowsPosition + (header.RowCount * header.RowLength);
+            destination.Seek(headerPosition + header.RowsPosition + (header.RowCount * header.RowLength), SeekOrigin.Begin);
             byte[] buffer = new byte[header.RowLength];
             destination.Write(buffer, 0, buffer.Length);
         }
@@ -302,7 +302,7 @@ namespace SonicAudioLib.CriMw
 
         private void GoToValue(int fieldIndex)
         {
-            destination.Position = headerPosition + header.RowsPosition + (header.RowLength * (header.RowCount - 1)) + fields[fieldIndex].Offset;
+            destination.Seek(headerPosition + header.RowsPosition + (header.RowLength * (header.RowCount - 1)) + fields[fieldIndex].Offset, SeekOrigin.Begin);
         }
 
         public void WriteEndRow()

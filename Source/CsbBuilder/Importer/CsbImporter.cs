@@ -83,14 +83,20 @@ namespace CsbBuilder.Importer
 
                 CriAaxArchive aaxArchive = new CriAaxArchive();
 
-                CriCpkEntry cpkEntry = null;
-                if (soundElementNode.Streaming)
+                CriCpkEntry cpkEntry = cpkArchive.GetByPath(soundElementTable.Name);
+                if (soundElementNode.Streaming && cpkEntry != null)
                 {
                     using (Stream source = File.OpenRead(cpkPath))
-                    using (Stream entrySource = (cpkEntry = cpkArchive.GetByPath(soundElementTable.Name)).Open(source))
+                    using (Stream entrySource = cpkEntry.Open(source))
                     {
                         aaxArchive.Read(entrySource);
                     }
+                }
+
+                else if (cpkEntry == null)
+                {
+                    soundElementNode.Intro = soundElementNode.Loop = string.Empty;
+                    soundElementNode.SampleRate = soundElementNode.SampleCount = soundElementNode.ChannelCount = 0;
                 }
 
                 else

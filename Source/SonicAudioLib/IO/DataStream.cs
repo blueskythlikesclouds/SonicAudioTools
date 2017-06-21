@@ -82,9 +82,9 @@ namespace SonicAudioLib.IO
         public static byte[] ReadBytesAt(Stream source, int length, long position)
         {
             long oldPosition = source.Position;
-            source.Position = position;
+            source.Seek(position, SeekOrigin.Begin);
             var result = ReadBytes(source, length);
-            source.Position = oldPosition;
+            source.Seek(oldPosition, SeekOrigin.Begin);
 
             return result;
         }
@@ -109,10 +109,10 @@ namespace SonicAudioLib.IO
         public static byte ReadByteAt(Stream source, long position)
         {
             long oldPosition = source.Position;
-            source.Position = position;
+            source.Seek(position, SeekOrigin.Begin);
 
             byte value = ReadByte(source);
-            source.Position = oldPosition;
+            source.Seek(oldPosition, SeekOrigin.Begin);
 
             return value;
         }
@@ -127,10 +127,10 @@ namespace SonicAudioLib.IO
         public static void WriteByteAt(Stream destination, byte value, long position)
         {
             long oldPosition = destination.Position;
-            destination.Position = position;
+            destination.Seek(position, SeekOrigin.Begin);
 
             WriteByte(destination, value);
-            destination.Position = oldPosition;
+            destination.Seek(oldPosition, SeekOrigin.Begin);
         }
 
         public static bool ReadBoolean(Stream source)
