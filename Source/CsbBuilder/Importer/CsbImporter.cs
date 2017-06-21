@@ -50,7 +50,7 @@ namespace CsbBuilder.Importer
             List<SerializationSynthTable> synthTables = CriTableSerializer.Deserialize<SerializationSynthTable>(cueSheets.FirstOrDefault(table => table.TableType == 2).TableData);
             List<SerializationSoundElementTable> soundElementTables = CriTableSerializer.Deserialize<SerializationSoundElementTable>(cueSheets.FirstOrDefault(table => table.TableType == 4).TableData);
             List<SerializationAisacTable> aisacTables = CriTableSerializer.Deserialize<SerializationAisacTable>(cueSheets.FirstOrDefault(table => table.TableType == 5).TableData);
-
+            
             // voice limit groups appeared in the later versions, so check if it exists.
             List<SerializationVoiceLimitGroupTable> voiceLimitGroupTables = new List<SerializationVoiceLimitGroupTable>();
 
@@ -93,7 +93,7 @@ namespace CsbBuilder.Importer
                     }
                 }
 
-                else if (cpkEntry == null)
+                else if (soundElementNode.Streaming && cpkEntry == null)
                 {
                     soundElementNode.Intro = soundElementNode.Loop = string.Empty;
                     soundElementNode.SampleRate = soundElementNode.SampleCount = soundElementNode.ChannelCount = 0;

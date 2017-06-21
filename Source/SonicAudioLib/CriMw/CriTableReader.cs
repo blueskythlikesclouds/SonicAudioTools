@@ -168,7 +168,7 @@ namespace SonicAudioLib.CriMw
                 }
 
                 // Row storage, calculate the offset
-                else
+                if (field.Flag.HasFlag(CriFieldFlag.RowStorage))
                 {
                     field.Offset = offset;
 
