@@ -22,7 +22,9 @@ namespace CsbBuilder.Audio
         {
             get
             {
-                return streams[currentStreamIndex].WaveFormat;
+                WaveFormat waveFormat = streams[currentStreamIndex].WaveFormat;
+
+                return new WaveFormat(waveFormat.SampleRate + (int)(waveFormat.SampleRate * pitch), waveFormat.Channels);
             }
         }
 

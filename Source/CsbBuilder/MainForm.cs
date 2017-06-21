@@ -1590,7 +1590,7 @@ namespace CsbBuilder
                 synthTreeNode = synthTreeNode.Parent;
             }
 
-            return pitch / 100.0;
+            return pitch / 1500.0;
         }
 
         private double GetAbsoluteVolume(TreeNode synthTreeNode)
@@ -1601,7 +1601,7 @@ namespace CsbBuilder
             {
                 if (synthTreeNode.Tag is BuilderSynthNode synthNode)
                 {
-                    volume = (volume * synthNode.Volume) / 1000;
+                    volume = (volume * synthNode.Volume) / 1000.0;
                 }
 
                 synthTreeNode = synthTreeNode.Parent;
@@ -1688,7 +1688,7 @@ namespace CsbBuilder
             {
                 if (!string.IsNullOrEmpty(synthNode.SoundElementReference) && synthNode.PlayThisTurn)
                 {
-                    AddSoundElementSound(soundElementTree.FindNodeByFullPath(synthNode.SoundElementReference), synthNode.Volume / 1000.0, synthNode.Pitch / 1000.0, (int)synthNode.DelayTime);
+                    AddSoundElementSound(soundElementTree.FindNodeByFullPath(synthNode.SoundElementReference), synthNode.Volume / 1000.0, synthNode.Pitch / 1500.0, (int)synthNode.DelayTime);
                 }
             }
         }
