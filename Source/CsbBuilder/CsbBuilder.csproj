@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CsbBuilder</RootNamespace>
     <AssemblyName>CsbBuilder</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <TargetFrameworkProfile />
@@ -228,7 +228,6 @@
     <None Include="Resources\Template_16x.png" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="NAudio.LICENSE.txt" />
     <None Include="Resources\Redo_grey_16x.png" />
     <None Include="Resources\Undo_grey_16x.png" />
     <None Include="Resources\Settings_16x.png" />
@@ -236,7 +235,7 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy "$(SolutionDir)Libraries\*.dll" "$(TargetDir)"</PostBuildEvent>
+    <PostBuildEvent>copy "$(SolutionDir)Dependencies\*.dll" "$(TargetDir)"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
