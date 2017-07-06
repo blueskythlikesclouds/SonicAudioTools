@@ -15,15 +15,13 @@ namespace CsbBuilder.Audio
 
         private double volume = 1;
         private double pitch = 0;
-        private long delayTime = 0;
-        private DateTime startTime;
+        private long delayBytes = 0;
 
         public override WaveFormat WaveFormat
         {
             get
             {
                 WaveFormat waveFormat = streams[currentStreamIndex].WaveFormat;
-
                 return new WaveFormat(waveFormat.SampleRate + (int)(waveFormat.SampleRate * pitch), waveFormat.Channels);
             }
         }
@@ -77,12 +75,16 @@ namespace CsbBuilder.Audio
             }
         }
 
-        public int DelayTime
+        public long DelayTime
         {
             set
             {
-                startTime = DateTime.Now;
-                delayTime = value * 10000;
+                delayBytes = (long)((value / 1000.0) * WaveFormat.AverageBytesPerSecond);
+
+                if ((delayBytes % 2) != 0)
+                {
+                    delayBytes++;
+                }
             }
         }
 
@@ -90,14 +92,20 @@ namespace CsbBuilder.Audio
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            if (delayTime > 0)
+            if (delayBytes > 0)
             {
-                if ((DateTime.Now - startTime).Ticks < delayTime)
+                if (delayBytes - count < 0)
                 {
-                    return count;
+                    offset += (int)delayBytes;
+                    count -= (int)delayBytes;
+                    delayBytes = 0;
                 }
 
-                delayTime = 0;
+                else
+                {
+                    delayBytes -= count;
+                    return count;
+                }   
             }
 
             int num = streams[currentStreamIndex].Read(buffer, 0, count);
