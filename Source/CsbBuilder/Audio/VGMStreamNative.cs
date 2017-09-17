@@ -17,16 +17,6 @@ namespace CsbBuilder.Audio
         /// </summary>
         public const string DllName = "vgmstream.dll";
 
-        /// <summary>
-        /// Size of VGMSTREAM structure.
-        /// </summary>
-        public const int SizeOfVgmStream = 152;
-
-        /// <summary>
-        /// Size of VGMSTREAMCHANNEL structure.
-        /// </summary>
-        public const int SizeOfVgmStreamChannel = 552;
-
         #region VGMStream Exports
         /// <summary>
         /// Initializes a VGMSTREAM from source file name by doing format detection and returns a usable pointer
@@ -189,28 +179,22 @@ namespace CsbBuilder.Audio
         /// Gets the sample count of a VGMSTREAM.
         /// </summary>
         /// <param name="vgmstream">Pointer to VGMSTREAM.</param>
-        public static int GetSampleCount(IntPtr vgmstream)
-        {
-            return Marshal.ReadInt32(vgmstream);
-        }
+        [DllImport(DllName, EntryPoint = "get_vgmstream_sample_count", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int GetSampleCount(IntPtr vgmstream);
 
         /// <summary>
         /// Gets the sample rate of a VGMSTREAM.
         /// </summary>
         /// <param name="vgmstream">Pointer to VGMSTREAM.</param>
-        public static int GetSampleRate(IntPtr vgmstream)
-        {
-            return Marshal.ReadInt32(vgmstream, 4);
-        }
+        [DllImport(DllName, EntryPoint = "get_vgmstream_sample_rate", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int GetSampleRate(IntPtr vgmstream);
 
         /// <summary>
         /// Gets the channel count of a VGMSTREAM.
         /// </summary>
         /// <param name="vgmstream">Pointer to VGMSTREAM.</param>
-        public static int GetChannelCount(IntPtr vgmstream)
-        {
-            return Marshal.ReadInt32(vgmstream, 8);
-        }
+        [DllImport(DllName, EntryPoint = "get_vgmstream_channels", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int GetChannelCount(IntPtr vgmstream);
 
         /// <summary>
         /// Gets the absolute sample count of a VGMSTREAM. 
@@ -226,69 +210,50 @@ namespace CsbBuilder.Audio
         /// Gets the loop flag of a VGMSTREAM.
         /// </summary>
         /// <param name="vgmstream">Pointer to VGMSTREAM.</param>
-        public static bool GetLoopFlag(IntPtr vgmstream)
-        {
-            return Marshal.ReadInt32(vgmstream, 28) != 0;
-        }
+        [DllImport(DllName, EntryPoint = "get_vgmstream_loop_flag", CallingConvention = CallingConvention.Cdecl)]
+        public static extern bool GetLoopFlag(IntPtr vgmstream);
 
         /// <summary>
         /// Sets the loop flag of a VGMSTREAM.
         /// </summary>
         /// <param name="vgmstream">Pointer to VGMSTREAM.</param>
-        public static void SetLoopFlag(IntPtr vgmstream, bool value)
-        {
-            if (value && !GetLoopFlag(vgmstream))
-            {
-                Marshal.WriteIntPtr(vgmstream, 48, Marshal.AllocHGlobal(GetChannelCount(vgmstream) * SizeOfVgmStreamChannel));
-            }
-
-            Marshal.WriteInt32(vgmstream, 28, value ? 1 : 0);
-        }
+        [DllImport(DllName, EntryPoint = "set_vgmstream_loop_flag", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void SetLoopFlag(IntPtr vgmstream, bool value);
 
         /// <summary>
         /// Gets the loop start sample of a VGMSTREAM.
         /// </summary>
         /// <param name="vgmstream">Pointer to VGMSTREAM.</param>
-        public static int GetLoopStartSample(IntPtr vgmstream)
-        {
-            return Marshal.ReadInt32(vgmstream, 32);
-        }
+        [DllImport(DllName, EntryPoint = "get_vgmstream_loop_start_sample", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int GetLoopStartSample(IntPtr vgmstream);
 
         /// <summary>
         /// Sets the loop start sample of a VGMSTREAM.
         /// </summary>
         /// <param name="vgmstream">Pointer to VGMSTREAM.</param>
-        public static void SetLoopStartSample(IntPtr vgmstream, int value)
-        {
-            Marshal.WriteInt32(vgmstream, 32, value);
-        }
+        [DllImport(DllName, EntryPoint = "set_vgmstream_loop_start_sample", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void SetLoopStartSample(IntPtr vgmstream, int value);
 
         /// <summary>
         /// Gets the loop end sample of a VGMSTREAM.
         /// </summary>
         /// <param name="vgmstream">Pointer to VGMSTREAM.</param>
-        public static int GetLoopEndSample(IntPtr vgmstream)
-        {
-            return Marshal.ReadInt32(vgmstream, 36);
-        }
+        [DllImport(DllName, EntryPoint = "get_vgmstream_loop_end_sample", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int GetLoopEndSample(IntPtr vgmstream);
 
         /// <summary>
         /// Sets the loop end sample of a VGMSTREAM.
         /// </summary>
         /// <param name="vgmstream">Pointer to VGMSTREAM.</param>
-        public static void SetLoopEndSample(IntPtr vgmstream, int value)
-        {
-            Marshal.WriteInt32(vgmstream, 36, value);
-        }
+        [DllImport(DllName, EntryPoint = "set_vgmstream_loop_end_sample", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void SetLoopEndSample(IntPtr vgmstream, int value);
 
         /// <summary>
         /// Gets the current sample of a VGMSTREAM.
         /// </summary>
         /// <param name="vgmstream">Pointer to VGMSTREAM.</param>
-        public static int GetCurrentSample(IntPtr vgmstream)
-        {
-            return Marshal.ReadInt32(vgmstream, 52);
-        }
+        [DllImport(DllName, EntryPoint = "get_vgmstream_current_sample", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int GetCurrentSample(IntPtr vgmstream);
 
         /// <summary>
         /// Gets an array of supported formats.
