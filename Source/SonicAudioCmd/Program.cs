@@ -21,26 +21,6 @@ namespace SonicAudioCmd
     {
         static void Main(string[] args)
         {
-            using (Stream source = File.OpenRead(args[0]))
-            {
-                CriTableReader reader = CriTableReader.Create(source);
-                reader.MoveToRow(3);
-
-                long pos = reader.GetPosition("utf");
-                CriTableReader soundElementReader = reader.GetTableReader("utf");
-
-                while (soundElementReader.Read())
-                {
-                    CriTable table = new CriTable();
-                    table.Read(soundElementReader.GetSubStream("data"));
-
-                    using (Stream output = File.Create(Path.GetFileName(soundElementReader.GetString("name") + "_" + table.Rows[0].GetValue<byte>("lpflg") + "_" + ".dsp")))
-                    {
-                        DataStream.WriteBytes(output, table.Rows[0].GetValue<byte[]>("header"));
-                        DataStream.WriteBytes(output, table.Rows[0].GetValue<byte[]>("data"));
-                    }
-                }
-            }
         }
     }
 }

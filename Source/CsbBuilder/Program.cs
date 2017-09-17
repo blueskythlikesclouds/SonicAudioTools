@@ -47,7 +47,11 @@ namespace CsbBuilder
         private static void OnException(object sender, ThreadExceptionEventArgs e)
         {
             new ExceptionForm(e.Exception).ShowDialog();
-            Application.Exit();
+
+            if (MessageBox.Show("Do you want to continue?", "CSB Builder", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.OK)
+            {
+                Application.Exit();
+            }
         }
     }
 }

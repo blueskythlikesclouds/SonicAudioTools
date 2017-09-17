@@ -1,8 +1,10 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace SonicAudioLib.CriMw
 {
+    [StructLayout(LayoutKind.Sequential)]
     struct CriTableHeader
     {
         public static readonly byte[] SignatureBytes = { 0x40, 0x55, 0x54, 0x46 };
@@ -48,13 +50,14 @@ namespace SonicAudioLib.CriMw
         TypeMask = 15,
     };
 
+    [StructLayout(LayoutKind.Sequential)]
     struct CriTableField
     {
-        public uint Offset;
         public CriFieldFlag Flag;
         public string Name;
         public uint Position;
         public uint Length;
+        public uint Offset;
         public object Value;
     }
 

@@ -517,15 +517,10 @@ namespace SonicAudioLib.IO
 
         public static void Pad(Stream destination, long alignment)
         {
-            long value = destination.Position;
-
-            while ((value % alignment) != 0)
+            while (destination.Position % alignment != 0)
             {
-                value++;
+                WriteByte(destination, 0);
             }
-
-            byte[] buffer = new byte[value - destination.Position];
-            destination.Write(buffer, 0, buffer.Length);
         }
     }
 }
