@@ -155,15 +155,8 @@ namespace CsbBuilder.Audio
         /// Gets a pointer to the array of supported formats.
         /// </summary>
         [DllImport(DllName, EntryPoint = "vgmstream_get_formats", CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr GetFormatsPtr();
-
-        /// <summary>
-        /// Gets the length of the format array.
-        /// </summary>
-        /// <returns></returns>
-        [DllImport(DllName, EntryPoint = "vgmstream_get_formats_length", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int GetFormatsLength();
-
+        public static extern IntPtr GetFormatsPtr(out int count);
+        
         [DllImport(DllName, EntryPoint = "get_vgmstream_coding_description", CallingConvention = CallingConvention.Cdecl)]
         public static extern string GetCodingDescription(int codingEnumCode);
 
@@ -261,9 +254,9 @@ namespace CsbBuilder.Audio
         /// <param name="vgmstream">Pointer to VGMSTREAM.</param>
         public static string[] GetFormats()
         {
-            string[] formats = new string[GetFormatsLength()];
+            IntPtr ptr = GetFormatsPtr(out int count);
+            string[] formats = new string[count];
 
-            IntPtr ptr = GetFormatsPtr();
             for (int i = 0; i < formats.Length; i++)
             {
                 IntPtr stringPtr = Marshal.ReadIntPtr(ptr, i * IntPtr.Size);
