@@ -133,9 +133,13 @@ namespace AcbEditor
                     {
                         while (waveformReader.Read())
                         {
-                            ushort id = waveformReader.GetUInt16("Id");
                             byte encodeType = waveformReader.GetByte("EncodeType");
                             bool streaming = waveformReader.GetBoolean("Streaming");
+
+                            ushort id =
+                                waveformReader.ContainsField("MemoryAwbId") ?
+                                streaming ? waveformReader.GetUInt16("StreamAwbId") : waveformReader.GetUInt16("MemoryAwbId") :
+                                waveformReader.GetUInt16("Id");
 
                             string outputName = id.ToString("D5");
                             if (streaming)
@@ -247,9 +251,13 @@ namespace AcbEditor
                 {
                     while (reader.Read())
                     {
-                        ushort id = reader.GetUInt16("Id");
                         byte encodeType = reader.GetByte("EncodeType");
                         bool streaming = reader.GetBoolean("Streaming");
+
+                        ushort id = 
+                            reader.ContainsField("MemoryAwbId") ? 
+                            streaming ? reader.GetUInt16("StreamAwbId") : reader.GetUInt16("MemoryAwbId") : 
+                            reader.GetUInt16("Id");
 
                         string inputName = id.ToString("D5");
                         if (streaming)
