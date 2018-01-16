@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Runtime.InteropServices;
 
@@ -65,13 +65,13 @@ namespace SonicAudioLib.CriMw
     {
         public static void FindKeys(byte[] signature, out uint xor, out uint xorMultiplier)
         {
-            for (byte x = 0; x <= byte.MaxValue; x++)
+            for (int x = 0; x < 0x100; x++)
             {
                 // Find XOR using first byte
-                if ((signature[0] ^ x) == CriTableHeader.SignatureBytes[0])
+                if ((signature[0] ^ (byte)x) == CriTableHeader.SignatureBytes[0])
                 {
                     // Matched the first byte, try finding the multiplier with the second byte
-                    for (byte m = 0; m <= byte.MaxValue; m++)
+                    for (int m = 0; m < 0x100; m++)
                     {
                         // Matched the second byte, now make sure the other bytes match as well
                         if ((signature[1] ^ (byte)(x * m)) == CriTableHeader.SignatureBytes[1])
@@ -81,7 +81,7 @@ namespace SonicAudioLib.CriMw
                             bool allMatches = true;
                             for (int i = 2; i < 4; i++)
                             {
-                                _x *= m;
+                                _x = (byte)(_x * m);
 
                                 if ((signature[i] ^ _x) != CriTableHeader.SignatureBytes[i])
                                 {
@@ -93,8 +93,8 @@ namespace SonicAudioLib.CriMw
                             // All matches, return the xor and multiplier
                             if (allMatches)
                             {
-                                xor = x;
-                                xorMultiplier = m;
+                                xor = (uint)x;
+                                xorMultiplier = (uint)m;
                                 return;
                             }
                         }
@@ -102,7 +102,7 @@ namespace SonicAudioLib.CriMw
                 }
             }
 
-            throw new InvalidDataException("'@UTF' signature could not be found.");
+            throw new InvalidDataException("'@UTF' signature could not be found. Your file might be corrupted.");
         }
 
         public static void Mask(Stream source, Stream destination, long length, uint xor, uint xorMultiplier)
