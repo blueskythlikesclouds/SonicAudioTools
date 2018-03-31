@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26403.7
+VisualStudioVersion = 15.0.26430.16
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SonicAudioLib", "Source\SonicAudioLib\SonicAudioLib.csproj", "{63138773-1F47-474C-9345-15EB6183ECC6}"
 EndProject
@@ -12,6 +12,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CsbEditor", "Source\CsbEditor\CsbEditor.csproj", "{91F6B6A6-5D95-4C7A-B22E-A35BD32DB67A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CsbBuilder", "Source\CsbBuilder\CsbBuilder.csproj", "{70A6A571-23EC-4B2C-A579-1E6812DDC34E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AcbInjector", "Source\AcbInjector\AcbInjector.csproj", "{4F68FD56-37A6-40D5-8C57-19067F7C2141}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -38,6 +40,10 @@ Global
 		{70A6A571-23EC-4B2C-A579-1E6812DDC34E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{70A6A571-23EC-4B2C-A579-1E6812DDC34E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{70A6A571-23EC-4B2C-A579-1E6812DDC34E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F68FD56-37A6-40D5-8C57-19067F7C2141}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F68FD56-37A6-40D5-8C57-19067F7C2141}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F68FD56-37A6-40D5-8C57-19067F7C2141}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F68FD56-37A6-40D5-8C57-19067F7C2141}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
