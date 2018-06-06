@@ -22,6 +22,7 @@ namespace CsbBuilder.BuilderNodes
         RandomNoRepeat = 1,
         Sequential = 2,
         Random = 3,
+        SequentialNoLoop = 6,
     }
 
     public class BuilderSynthNode : BuilderBaseNode

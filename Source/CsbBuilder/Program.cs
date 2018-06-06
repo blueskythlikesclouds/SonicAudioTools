@@ -38,7 +38,9 @@ namespace CsbBuilder
         static void Main(string[] args)
         {
             Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo("en-US");
+#if !DEBUG
             Application.ThreadException += OnException;
+#endif
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new MainForm());
@@ -48,7 +50,7 @@ namespace CsbBuilder
         {
             new ExceptionForm(e.Exception).ShowDialog();
 
-            if (MessageBox.Show("Do you want to continue?", "CSB Builder", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.OK)
+            if (MessageBox.Show("Do you want to continue?", "CSB Builder", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
             {
                 Application.Exit();
             }
