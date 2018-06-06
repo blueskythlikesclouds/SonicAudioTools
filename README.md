@@ -22,6 +22,10 @@ This is the main library of the solution.  Contains classes for IO and file form
 This tool allows you to edit the audio content of an ACB file.  
 A more advanced version like CSB Builder is planned to be made soon.
 
+## [ACB Injector](https://github.com/blueskythlikesclouds/SonicAudioTools/tree/master/Source/AcbInjector)
+This tool allows you to inject audio file directly into ACB without repacking its AWB.  
+Useful for background music ACBs that use huge AWB files.
+
 ## [CSB Builder](https://github.com/blueskythlikesclouds/SonicAudioTools/tree/master/Source/CsbBuilder)
 This tool allows you to create or edit CSB files. You can do things like adding/removing cues, editing real-time sound parameters, and more.
 
