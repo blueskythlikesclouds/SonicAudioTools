@@ -53,7 +53,7 @@ namespace SonicAudioLib.Archives
             uint information = DataStream.ReadUInt32(source);
 
             uint type = information & 0xFF;
-            if (type != 1)
+            if (type != 1 && type != 2)
             {
                 throw new InvalidDataException($"Unknown AFS2 type ({type}). Please report this error with the file(s).");
             }
