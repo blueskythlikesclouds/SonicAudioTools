@@ -32,7 +32,7 @@ namespace CsbEditor
             try
             {
 #endif
-                if (args[0].EndsWith(".csb", StringComparer.OrdinalIgnoreCase))
+                if (args[0].EndsWith(".csb", StringComparison.OrdinalIgnoreCase))
                 {
                     var extractor = new DataExtractor();
                     extractor.ProgressChanged += OnProgressChanged;
