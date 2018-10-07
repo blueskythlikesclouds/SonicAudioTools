@@ -33,7 +33,7 @@ namespace AcbEditor
             try
             {
 #endif
-            if (args[0].EndsWith(".acb"))
+            if (args[0].EndsWith(".acb", StringComparison.OrdinalIgnoreCase))
             {
                 var extractor = new DataExtractor();
                 extractor.ProgressChanged += OnProgressChanged;
