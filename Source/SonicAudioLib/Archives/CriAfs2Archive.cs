@@ -62,7 +62,7 @@ namespace SonicAudioLib.Archives
             uint positionFieldLength = (information >> 8) & 0xFF;
 
             uint entryCount = DataStream.ReadUInt32(source);
-            Align = DataStream.ReadUInt32(source);
+            Align = DataStream.ReadUInt32(source) & 0xFFFF;
 
             CriAfs2Entry previousEntry = null;
             for (uint i = 0; i < entryCount; i++)
