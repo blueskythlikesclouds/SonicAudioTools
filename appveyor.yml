@@ -1,0 +1,18 @@
+image: Visual Studio 2017
+configuration: Release
+
+assembly_info:
+    patch: true
+
+before_build:
+    - cmd: nuget restore
+
+build:
+    project: SonicAudioTools.sln
+
+after_build:
+    - 7z a -t7z -m0=lzma2 -mx=9 -mfb=64 -md=1024m -ms=on SonicAudioTools.7z ./Release/*
+
+artifacts:
+    - path: SonicAudioTools.7z
+      name: SonicAudioTools

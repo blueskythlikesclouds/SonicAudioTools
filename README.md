@@ -34,4 +34,4 @@ This tool allows you to edit the audio content of a CSB file.
 It works like ACB Editor, and it is a lot simpler to use than CSB Builder.
 
 # License
-See [LICENSE](https://github.com/blueskythlikesclouds/SonicAudioTools/blob/master/LICENSE) for details.
+See [LICENSE.md](https://github.com/blueskythlikesclouds/SonicAudioTools/blob/master/LICENSE.md) for details.
