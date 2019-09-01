@@ -68,7 +68,7 @@
     <Compile Include="IO\DataExtractor.cs" />
     <Compile Include="IO\StringPool.cs" />
     <Compile Include="Helpers.cs" />
-    <Compile Include="IO\SubStream.cs" />
+    <Compile Include="IO\Substream.cs" />
     <Compile Include="IO\DataPool.cs" />
     <Compile Include="FileBases\FileBase.cs" />
     <Compile Include="ProgressChangedEvent.cs" />
