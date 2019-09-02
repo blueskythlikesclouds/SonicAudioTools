@@ -48,6 +48,17 @@ namespace CsbEditor
                     string cpkPath = outputDirectoryName + ".cpk";
                     bool found = File.Exists(cpkPath);
 
+                    //This should fix "File not found" error in case-sensitive file systems.
+                    //Add new extensions when necessary.
+                    foreach (string extension in new string[] {"cpk", "CPK"})
+                    {
+                        if (found)
+                            break;
+
+                        cpkPath = outputDirectoryName + "." + extension;
+                        found = File.Exists(cpkPath);
+                    }
+
                     using (CriTableReader reader = CriTableReader.Create(args[0]))
                     {
                         while (reader.Read())
@@ -136,6 +147,13 @@ namespace CsbEditor
                     string baseDirectory = Path.GetDirectoryName(args[0]);
                     string csbPath = args[0] + ".csb";
 
+                    foreach (string extension in new string[] {"csb", "CSB"})
+                    {
+                        if (File.Exists(csbPath))
+                            break;
+                        csbPath = args[0] + "." + extension;
+                    }
+
                     if (!File.Exists(csbPath))
                     {
                         throw new Exception("Cannot find the .CSB file for this directory. Please ensure that the .CSB file is stored in the directory where this directory is.");
@@ -218,11 +236,21 @@ namespace CsbEditor
                     soundElementRow["utf"] = soundElementTable.Save();
 
                     csbFile.WriterSettings = CriTableWriterSettings.AdxSettings;
-                    csbFile.Save(args[0] + ".csb", Settings.Default.BufferSize);
+                    csbFile.Save(csbPath, Settings.Default.BufferSize);
 
                     if (cpkArchive.Count > 0)
                     {
-                        cpkArchive.Save(args[0] + ".cpk", Settings.Default.BufferSize);
+                        string cpkPath = args[0] + ".cpk";
+                        foreach (string extension in new string[] {"cpk", "CPK"})
+                        {
+                            if (File.Exists(args[0] + "." + extension))
+                            {
+                                cpkPath = args[0] + "." + extension;
+                                break;
+                            }
+                        }
+
+                        cpkArchive.Save(cpkPath, Settings.Default.BufferSize);
                     }
 
                     foreach (FileInfo junk in junks)
