@@ -22,6 +22,10 @@ This is the main library of the solution.  Contains classes for IO and file form
 This tool allows you to edit the audio content of an ACB file.  
 A more advanced version like CSB Builder is planned to be made soon.
 
+## [ACB Finder](https://github.com/blueskythlikesclouds/SonicAudioTools/tree/master/Source/AcbFinder)
+This tool allows you to find AWB files and link them back to the ACB, required in extracting certain ACB files.
+Useful for games where the AWB files may be renamed or hidden (like Phantasy Star Online 2)
+
 ## [ACB Injector](https://github.com/blueskythlikesclouds/SonicAudioTools/tree/master/Source/AcbInjector)
 This tool allows you to inject audio file directly into ACB without repacking its AWB.  
 Useful for background music ACBs that use huge AWB files.
