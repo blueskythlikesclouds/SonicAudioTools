@@ -47,6 +47,7 @@ namespace AcbFinder
             int AWBsFound = 0;
             foreach (var filePath in di)
             {
+                if (filePath.Contains("ACBFinder.exe") || filePath.Contains("SonicAudioLib.dll") || filePath.Contains("ACB_FinderLog.txt")) continue;
                 using (var stream = File.OpenRead(filePath))
                 {
                     stream.Read(buffer, 0, 4);
