@@ -37,7 +37,7 @@ namespace CsbBuilder.BuilderNodes
         public BuilderSynthType Type { get; set; }
 
         [Category("General"), DisplayName("Playback Type")]
-        [Description("The playback type of this Synth.")]
+        [Description("Playback type of this synth.")]
         public BuilderSynthPlaybackType PlaybackType
         {
             get
@@ -63,7 +63,7 @@ namespace CsbBuilder.BuilderNodes
 
         [ReadOnly(true)]
         [Category("General"), DisplayName("Sound Element Reference Path")]
-        [Description("The Sound that this Synth is referenced to. This will be empty if this Synth represents a Track.")]
+        [Description("Full reference path of sound element node. This is going to be empty if the node is a track.")]
         public string SoundElementReference { get; set; }
 
         [Browsable(false)]
@@ -71,19 +71,19 @@ namespace CsbBuilder.BuilderNodes
 
         [ReadOnly(true)]
         [Category("General"), DisplayName("Aisac Reference Path")]
-        [Description("The Aisac that this Synth is referenced to.")]
+        [Description("Full reference path of aisac node.")]
         public string AisacReference { get; set; }
 
         [Category("General")]
-        [Description("The volume of this Synth.")]
+        [Description("Volume of this synth. 1000 equals to 100%.")]
         public short Volume { get; set; }
 
         [Category("General")]
-        [Description("The pitch of this Synth.")]
+        [Description("Pitch of this synth. Use positive/negative values to make it higher/lower pitched.")]
         public short Pitch { get; set; }
 
         [Category("General"), DisplayName("Delay Time")]
-        [Description("The delay of this Synth. The time is in miliseconds.")]
+        [Description("How much time it takes to play this synth. The time is in milliseconds.")]
         public uint DelayTime { get; set; }
 
         [Category("Unknown"), DisplayName("S Control")]
@@ -316,7 +316,7 @@ namespace CsbBuilder.BuilderNodes
         public ushort Filter2CutoffHigherGain { get; set; }
 
         [Category("General"), DisplayName("Playback Probability")]
-        [Description("The probability of this Synth being played. A random number (max 100) will be chosen and if this number is lower than this parameter (or equals), it will be played. This does not do anything if this Synth represents a Track.")]
+        [Description("Probability of this synth being played. Lower values make it less probable to play. Max is 100.")]
         public byte PlaybackProbability
         {
             get

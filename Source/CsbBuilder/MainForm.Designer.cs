@@ -46,11 +46,12 @@
             this.buildCurrentProjectAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem49 = new System.Windows.Forms.ToolStripMenuItem();
+            this.convertADXsToWAVToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.convertAndSplitLoopingToWAVToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator27 = new System.Windows.Forms.ToolStripSeparator();
             this.aAXToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.extractAAXToFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.packFolderToAAXToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.convertADXsToWAVToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.convertAndSplitLoopingToWAVToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator26 = new System.Windows.Forms.ToolStripSeparator();
             this.settingsButton = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -182,7 +183,8 @@
             this.toolStripMenuItem41 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem42 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem43 = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator27 = new System.Windows.Forms.ToolStripSeparator();
+            this.splitContainer3 = new System.Windows.Forms.SplitContainer();
+            this.splitContainer4 = new System.Windows.Forms.SplitContainer();
             this.mainMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -215,6 +217,14 @@
             this.statusStrip.SuspendLayout();
             this.aisacNodeMenu.SuspendLayout();
             this.aisacFolderMenu.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).BeginInit();
+            this.splitContainer3.Panel1.SuspendLayout();
+            this.splitContainer3.Panel2.SuspendLayout();
+            this.splitContainer3.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer4)).BeginInit();
+            this.splitContainer4.Panel1.SuspendLayout();
+            this.splitContainer4.Panel2.SuspendLayout();
+            this.splitContainer4.SuspendLayout();
             this.SuspendLayout();
             // 
             // mainMenu
@@ -227,7 +237,7 @@
             this.mainMenu.Location = new System.Drawing.Point(0, 0);
             this.mainMenu.Name = "mainMenu";
             this.mainMenu.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
-            this.mainMenu.Size = new System.Drawing.Size(878, 24);
+            this.mainMenu.Size = new System.Drawing.Size(884, 24);
             this.mainMenu.TabIndex = 0;
             this.mainMenu.Text = "menuStrip1";
             // 
@@ -376,7 +386,7 @@
             this.toolStripSeparator26,
             this.settingsButton});
             this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
-            this.toolsToolStripMenuItem.Size = new System.Drawing.Size(47, 20);
+            this.toolsToolStripMenuItem.Size = new System.Drawing.Size(46, 20);
             this.toolsToolStripMenuItem.Text = "Tools";
             // 
             // toolStripMenuItem49
@@ -388,31 +398,8 @@
             this.aAXToolStripMenuItem});
             this.toolStripMenuItem49.Image = global::CsbBuilder.Properties.Resources.Sound;
             this.toolStripMenuItem49.Name = "toolStripMenuItem49";
-            this.toolStripMenuItem49.Size = new System.Drawing.Size(152, 22);
+            this.toolStripMenuItem49.Size = new System.Drawing.Size(136, 22);
             this.toolStripMenuItem49.Text = "Audio Tools";
-            // 
-            // aAXToolStripMenuItem
-            // 
-            this.aAXToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.extractAAXToFolderToolStripMenuItem,
-            this.packFolderToAAXToolStripMenuItem});
-            this.aAXToolStripMenuItem.Name = "aAXToolStripMenuItem";
-            this.aAXToolStripMenuItem.Size = new System.Drawing.Size(240, 22);
-            this.aAXToolStripMenuItem.Text = "AAX Archive";
-            // 
-            // extractAAXToFolderToolStripMenuItem
-            // 
-            this.extractAAXToFolderToolStripMenuItem.Name = "extractAAXToFolderToolStripMenuItem";
-            this.extractAAXToFolderToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
-            this.extractAAXToFolderToolStripMenuItem.Text = "Extract AAX(s) to folder";
-            this.extractAAXToFolderToolStripMenuItem.Click += new System.EventHandler(this.extractAAXToFolderToolStripMenuItem_Click);
-            // 
-            // packFolderToAAXToolStripMenuItem
-            // 
-            this.packFolderToAAXToolStripMenuItem.Name = "packFolderToAAXToolStripMenuItem";
-            this.packFolderToAAXToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
-            this.packFolderToAAXToolStripMenuItem.Text = "Pack file(s) to AAX";
-            this.packFolderToAAXToolStripMenuItem.Click += new System.EventHandler(this.packFolderToAAXToolStripMenuItem_Click);
             // 
             // convertADXsToWAVToolStripMenuItem
             // 
@@ -431,16 +418,44 @@
     "he file";
             this.convertAndSplitLoopingToWAVToolStripMenuItem.Click += new System.EventHandler(this.convertAndSplitLoopingToWAVToolStripMenuItem_Click);
             // 
+            // toolStripSeparator27
+            // 
+            this.toolStripSeparator27.Name = "toolStripSeparator27";
+            this.toolStripSeparator27.Size = new System.Drawing.Size(237, 6);
+            // 
+            // aAXToolStripMenuItem
+            // 
+            this.aAXToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.extractAAXToFolderToolStripMenuItem,
+            this.packFolderToAAXToolStripMenuItem});
+            this.aAXToolStripMenuItem.Name = "aAXToolStripMenuItem";
+            this.aAXToolStripMenuItem.Size = new System.Drawing.Size(240, 22);
+            this.aAXToolStripMenuItem.Text = "AAX Archive";
+            // 
+            // extractAAXToFolderToolStripMenuItem
+            // 
+            this.extractAAXToFolderToolStripMenuItem.Name = "extractAAXToFolderToolStripMenuItem";
+            this.extractAAXToFolderToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
+            this.extractAAXToFolderToolStripMenuItem.Text = "Extract AAX(s) to folder";
+            this.extractAAXToFolderToolStripMenuItem.Click += new System.EventHandler(this.extractAAXToFolderToolStripMenuItem_Click);
+            // 
+            // packFolderToAAXToolStripMenuItem
+            // 
+            this.packFolderToAAXToolStripMenuItem.Name = "packFolderToAAXToolStripMenuItem";
+            this.packFolderToAAXToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
+            this.packFolderToAAXToolStripMenuItem.Text = "Pack file(s) to AAX";
+            this.packFolderToAAXToolStripMenuItem.Click += new System.EventHandler(this.packFolderToAAXToolStripMenuItem_Click);
+            // 
             // toolStripSeparator26
             // 
             this.toolStripSeparator26.Name = "toolStripSeparator26";
-            this.toolStripSeparator26.Size = new System.Drawing.Size(149, 6);
+            this.toolStripSeparator26.Size = new System.Drawing.Size(133, 6);
             // 
             // settingsButton
             // 
             this.settingsButton.Image = global::CsbBuilder.Properties.Resources.Settings;
             this.settingsButton.Name = "settingsButton";
-            this.settingsButton.Size = new System.Drawing.Size(152, 22);
+            this.settingsButton.Size = new System.Drawing.Size(136, 22);
             this.settingsButton.Text = "Settings";
             this.settingsButton.Click += new System.EventHandler(this.OpenSettings);
             // 
@@ -454,23 +469,20 @@
             // propertyGrid
             // 
             this.propertyGrid.AllowDrop = true;
-            this.propertyGrid.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.propertyGrid.Dock = System.Windows.Forms.DockStyle.Fill;
             this.propertyGrid.Enabled = false;
             this.propertyGrid.LineColor = System.Drawing.SystemColors.ControlDark;
-            this.propertyGrid.Location = new System.Drawing.Point(252, 24);
+            this.propertyGrid.Location = new System.Drawing.Point(0, 0);
             this.propertyGrid.Name = "propertyGrid";
-            this.propertyGrid.Size = new System.Drawing.Size(374, 556);
+            this.propertyGrid.Size = new System.Drawing.Size(348, 565);
             this.propertyGrid.TabIndex = 1;
             this.propertyGrid.PropertyValueChanged += new System.Windows.Forms.PropertyValueChangedEventHandler(this.OnPropertyChange);
             // 
             // splitContainer1
             // 
-            this.splitContainer1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
+            this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.splitContainer1.Enabled = false;
-            this.splitContainer1.Location = new System.Drawing.Point(0, 24);
+            this.splitContainer1.Location = new System.Drawing.Point(0, 0);
             this.splitContainer1.Name = "splitContainer1";
             this.splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
             // 
@@ -481,8 +493,8 @@
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.tabControl3);
-            this.splitContainer1.Size = new System.Drawing.Size(250, 556);
-            this.splitContainer1.SplitterDistance = 247;
+            this.splitContainer1.Size = new System.Drawing.Size(264, 565);
+            this.splitContainer1.SplitterDistance = 253;
             this.splitContainer1.TabIndex = 2;
             // 
             // tabControl2
@@ -493,7 +505,7 @@
             this.tabControl2.Location = new System.Drawing.Point(0, 0);
             this.tabControl2.Name = "tabControl2";
             this.tabControl2.SelectedIndex = 0;
-            this.tabControl2.Size = new System.Drawing.Size(250, 247);
+            this.tabControl2.Size = new System.Drawing.Size(264, 253);
             this.tabControl2.TabIndex = 0;
             // 
             // tabPage3
@@ -502,7 +514,7 @@
             this.tabPage3.Location = new System.Drawing.Point(4, 22);
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage3.Size = new System.Drawing.Size(242, 221);
+            this.tabPage3.Size = new System.Drawing.Size(256, 227);
             this.tabPage3.TabIndex = 0;
             this.tabPage3.Text = "Cue Nodes";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -521,7 +533,7 @@
             this.cueTree.Name = "cueTree";
             this.cueTree.PathSeparator = "/";
             this.cueTree.SelectedImageIndex = 0;
-            this.cueTree.Size = new System.Drawing.Size(236, 215);
+            this.cueTree.Size = new System.Drawing.Size(250, 221);
             this.cueTree.TabIndex = 0;
             this.cueTree.AfterLabelEdit += new System.Windows.Forms.NodeLabelEditEventHandler(this.OnRenameEnd);
             this.cueTree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.AfterNodeSelect);
@@ -575,7 +587,7 @@
             this.tabControl3.Location = new System.Drawing.Point(0, 0);
             this.tabControl3.Name = "tabControl3";
             this.tabControl3.SelectedIndex = 0;
-            this.tabControl3.Size = new System.Drawing.Size(250, 305);
+            this.tabControl3.Size = new System.Drawing.Size(264, 308);
             this.tabControl3.TabIndex = 0;
             // 
             // tabPage4
@@ -584,7 +596,7 @@
             this.tabPage4.Location = new System.Drawing.Point(4, 22);
             this.tabPage4.Name = "tabPage4";
             this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage4.Size = new System.Drawing.Size(242, 279);
+            this.tabPage4.Size = new System.Drawing.Size(256, 282);
             this.tabPage4.TabIndex = 0;
             this.tabPage4.Text = "Synth Nodes";
             this.tabPage4.UseVisualStyleBackColor = true;
@@ -603,7 +615,7 @@
             this.synthTree.Name = "synthTree";
             this.synthTree.PathSeparator = "/";
             this.synthTree.SelectedImageIndex = 0;
-            this.synthTree.Size = new System.Drawing.Size(236, 273);
+            this.synthTree.Size = new System.Drawing.Size(250, 276);
             this.synthTree.TabIndex = 0;
             this.synthTree.AfterLabelEdit += new System.Windows.Forms.NodeLabelEditEventHandler(this.OnRenameEnd);
             this.synthTree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.AfterNodeSelect);
@@ -709,10 +721,9 @@
             // 
             // splitContainer2
             // 
-            this.splitContainer2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.splitContainer2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.splitContainer2.Enabled = false;
-            this.splitContainer2.Location = new System.Drawing.Point(628, 24);
+            this.splitContainer2.Location = new System.Drawing.Point(0, 0);
             this.splitContainer2.Name = "splitContainer2";
             this.splitContainer2.Orientation = System.Windows.Forms.Orientation.Horizontal;
             // 
@@ -723,8 +734,8 @@
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.Controls.Add(this.tabControl1);
-            this.splitContainer2.Size = new System.Drawing.Size(250, 556);
-            this.splitContainer2.SplitterDistance = 247;
+            this.splitContainer2.Size = new System.Drawing.Size(264, 565);
+            this.splitContainer2.SplitterDistance = 250;
             this.splitContainer2.TabIndex = 3;
             // 
             // tabControl4
@@ -734,7 +745,7 @@
             this.tabControl4.Location = new System.Drawing.Point(0, 0);
             this.tabControl4.Name = "tabControl4";
             this.tabControl4.SelectedIndex = 0;
-            this.tabControl4.Size = new System.Drawing.Size(250, 247);
+            this.tabControl4.Size = new System.Drawing.Size(264, 250);
             this.tabControl4.TabIndex = 0;
             // 
             // tabPage5
@@ -743,7 +754,7 @@
             this.tabPage5.Location = new System.Drawing.Point(4, 22);
             this.tabPage5.Name = "tabPage5";
             this.tabPage5.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage5.Size = new System.Drawing.Size(242, 221);
+            this.tabPage5.Size = new System.Drawing.Size(256, 224);
             this.tabPage5.TabIndex = 0;
             this.tabPage5.Text = "Sound Element Nodes";
             this.tabPage5.UseVisualStyleBackColor = true;
@@ -762,7 +773,7 @@
             this.soundElementTree.Name = "soundElementTree";
             this.soundElementTree.PathSeparator = "/";
             this.soundElementTree.SelectedImageIndex = 0;
-            this.soundElementTree.Size = new System.Drawing.Size(236, 215);
+            this.soundElementTree.Size = new System.Drawing.Size(250, 218);
             this.soundElementTree.TabIndex = 0;
             this.soundElementTree.AfterLabelEdit += new System.Windows.Forms.NodeLabelEditEventHandler(this.OnRenameEnd);
             this.soundElementTree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.AfterNodeSelect);
@@ -778,7 +789,7 @@
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(250, 305);
+            this.tabControl1.Size = new System.Drawing.Size(264, 311);
             this.tabControl1.TabIndex = 0;
             // 
             // tabPage1
@@ -787,7 +798,7 @@
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(242, 279);
+            this.tabPage1.Size = new System.Drawing.Size(256, 285);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "AISAC Nodes";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -806,7 +817,7 @@
             this.aisacTree.Name = "aisacTree";
             this.aisacTree.PathSeparator = "/";
             this.aisacTree.SelectedImageIndex = 0;
-            this.aisacTree.Size = new System.Drawing.Size(236, 273);
+            this.aisacTree.Size = new System.Drawing.Size(250, 279);
             this.aisacTree.TabIndex = 0;
             this.aisacTree.AfterLabelEdit += new System.Windows.Forms.NodeLabelEditEventHandler(this.OnRenameEnd);
             this.aisacTree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.AfterNodeSelect);
@@ -825,13 +836,13 @@
             this.toolStripMenuItem47});
             this.aisacTreeMenu.Name = "contextMenuStrip1";
             this.aisacTreeMenu.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
-            this.aisacTreeMenu.Size = new System.Drawing.Size(189, 104);
+            this.aisacTreeMenu.Size = new System.Drawing.Size(188, 104);
             // 
             // toolStripMenuItem45
             // 
             this.toolStripMenuItem45.Image = global::CsbBuilder.Properties.Resources.Create;
             this.toolStripMenuItem45.Name = "toolStripMenuItem45";
-            this.toolStripMenuItem45.Size = new System.Drawing.Size(188, 22);
+            this.toolStripMenuItem45.Size = new System.Drawing.Size(187, 22);
             this.toolStripMenuItem45.Text = "Create";
             this.toolStripMenuItem45.ToolTipText = "Create a new node.";
             this.toolStripMenuItem45.Click += new System.EventHandler(this.CreateNode);
@@ -840,7 +851,7 @@
             // 
             this.toolStripMenuItem46.Image = global::CsbBuilder.Properties.Resources.Folder;
             this.toolStripMenuItem46.Name = "toolStripMenuItem46";
-            this.toolStripMenuItem46.Size = new System.Drawing.Size(188, 22);
+            this.toolStripMenuItem46.Size = new System.Drawing.Size(187, 22);
             this.toolStripMenuItem46.Text = "Create Folder";
             this.toolStripMenuItem46.ToolTipText = "Create a new folder.";
             this.toolStripMenuItem46.Click += new System.EventHandler(this.CreateFolder);
@@ -848,26 +859,26 @@
             // toolStripSeparator24
             // 
             this.toolStripSeparator24.Name = "toolStripSeparator24";
-            this.toolStripSeparator24.Size = new System.Drawing.Size(185, 6);
+            this.toolStripSeparator24.Size = new System.Drawing.Size(184, 6);
             // 
             // toolStripMenuItem48
             // 
             this.toolStripMenuItem48.Image = global::CsbBuilder.Properties.Resources.Template;
             this.toolStripMenuItem48.Name = "toolStripMenuItem48";
-            this.toolStripMenuItem48.Size = new System.Drawing.Size(188, 22);
+            this.toolStripMenuItem48.Size = new System.Drawing.Size(187, 22);
             this.toolStripMenuItem48.Text = "Load AISAC Template";
             this.toolStripMenuItem48.Click += new System.EventHandler(this.LoadTemplate);
             // 
             // toolStripSeparator25
             // 
             this.toolStripSeparator25.Name = "toolStripSeparator25";
-            this.toolStripSeparator25.Size = new System.Drawing.Size(185, 6);
+            this.toolStripSeparator25.Size = new System.Drawing.Size(184, 6);
             // 
             // toolStripMenuItem47
             // 
             this.toolStripMenuItem47.Image = global::CsbBuilder.Properties.Resources.Paste;
             this.toolStripMenuItem47.Name = "toolStripMenuItem47";
-            this.toolStripMenuItem47.Size = new System.Drawing.Size(188, 22);
+            this.toolStripMenuItem47.Size = new System.Drawing.Size(187, 22);
             this.toolStripMenuItem47.Text = "Paste";
             this.toolStripMenuItem47.ToolTipText = "Paste the copied node.";
             this.toolStripMenuItem47.Click += new System.EventHandler(this.PasteNodeOnTree);
@@ -878,7 +889,7 @@
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(242, 279);
+            this.tabPage2.Size = new System.Drawing.Size(376, 279);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Voice Limit Group Nodes";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -897,7 +908,7 @@
             this.voiceLimitGroupTree.Name = "voiceLimitGroupTree";
             this.voiceLimitGroupTree.PathSeparator = "/";
             this.voiceLimitGroupTree.SelectedImageIndex = 0;
-            this.voiceLimitGroupTree.Size = new System.Drawing.Size(236, 273);
+            this.voiceLimitGroupTree.Size = new System.Drawing.Size(370, 273);
             this.voiceLimitGroupTree.TabIndex = 0;
             this.voiceLimitGroupTree.AfterLabelEdit += new System.Windows.Forms.NodeLabelEditEventHandler(this.OnRenameEnd);
             this.voiceLimitGroupTree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.AfterNodeSelect);
@@ -1494,9 +1505,9 @@
             this.playButton,
             this.stopButton,
             this.statusLabel});
-            this.statusStrip.Location = new System.Drawing.Point(0, 580);
+            this.statusStrip.Location = new System.Drawing.Point(0, 589);
             this.statusStrip.Name = "statusStrip";
-            this.statusStrip.Size = new System.Drawing.Size(878, 22);
+            this.statusStrip.Size = new System.Drawing.Size(884, 22);
             this.statusStrip.TabIndex = 10;
             this.statusStrip.Text = "statusStrip1";
             // 
@@ -1539,13 +1550,13 @@
             this.toolStripMenuItem38});
             this.aisacNodeMenu.Name = "cueAndVoiceLimitGroupMenu";
             this.aisacNodeMenu.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
-            this.aisacNodeMenu.Size = new System.Drawing.Size(153, 148);
+            this.aisacNodeMenu.Size = new System.Drawing.Size(152, 148);
             // 
             // toolStripMenuItem35
             // 
             this.toolStripMenuItem35.Image = global::CsbBuilder.Properties.Resources.Create;
             this.toolStripMenuItem35.Name = "toolStripMenuItem35";
-            this.toolStripMenuItem35.Size = new System.Drawing.Size(152, 22);
+            this.toolStripMenuItem35.Size = new System.Drawing.Size(151, 22);
             this.toolStripMenuItem35.Text = "Create";
             this.toolStripMenuItem35.ToolTipText = "Create a new node after the selected node.";
             this.toolStripMenuItem35.Click += new System.EventHandler(this.CreateAndInsertNode);
@@ -1553,13 +1564,13 @@
             // toolStripSeparator20
             // 
             this.toolStripSeparator20.Name = "toolStripSeparator20";
-            this.toolStripSeparator20.Size = new System.Drawing.Size(149, 6);
+            this.toolStripSeparator20.Size = new System.Drawing.Size(148, 6);
             // 
             // loadTemplateToolStripMenuItem
             // 
             this.loadTemplateToolStripMenuItem.Image = global::CsbBuilder.Properties.Resources.Template;
             this.loadTemplateToolStripMenuItem.Name = "loadTemplateToolStripMenuItem";
-            this.loadTemplateToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.loadTemplateToolStripMenuItem.Size = new System.Drawing.Size(151, 22);
             this.loadTemplateToolStripMenuItem.Text = "Load Template";
             this.loadTemplateToolStripMenuItem.Click += new System.EventHandler(this.LoadTemplate);
             // 
@@ -1567,20 +1578,20 @@
             // 
             this.saveTemplateToolStripMenuItem.Image = global::CsbBuilder.Properties.Resources.Template;
             this.saveTemplateToolStripMenuItem.Name = "saveTemplateToolStripMenuItem";
-            this.saveTemplateToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.saveTemplateToolStripMenuItem.Size = new System.Drawing.Size(151, 22);
             this.saveTemplateToolStripMenuItem.Text = "Save Template";
             this.saveTemplateToolStripMenuItem.Click += new System.EventHandler(this.SaveTemplate);
             // 
             // toolStripSeparator21
             // 
             this.toolStripSeparator21.Name = "toolStripSeparator21";
-            this.toolStripSeparator21.Size = new System.Drawing.Size(149, 6);
+            this.toolStripSeparator21.Size = new System.Drawing.Size(148, 6);
             // 
             // toolStripMenuItem36
             // 
             this.toolStripMenuItem36.Image = global::CsbBuilder.Properties.Resources.Copy;
             this.toolStripMenuItem36.Name = "toolStripMenuItem36";
-            this.toolStripMenuItem36.Size = new System.Drawing.Size(152, 22);
+            this.toolStripMenuItem36.Size = new System.Drawing.Size(151, 22);
             this.toolStripMenuItem36.Text = "Copy";
             this.toolStripMenuItem36.ToolTipText = "Copy the selected node.";
             this.toolStripMenuItem36.Click += new System.EventHandler(this.CopyNode);
@@ -1589,7 +1600,7 @@
             // 
             this.toolStripMenuItem37.Image = global::CsbBuilder.Properties.Resources.Paste;
             this.toolStripMenuItem37.Name = "toolStripMenuItem37";
-            this.toolStripMenuItem37.Size = new System.Drawing.Size(152, 22);
+            this.toolStripMenuItem37.Size = new System.Drawing.Size(151, 22);
             this.toolStripMenuItem37.Text = "Paste";
             this.toolStripMenuItem37.ToolTipText = "Paste the copied node after the selected node.";
             this.toolStripMenuItem37.Click += new System.EventHandler(this.PasteAndInsertNode);
@@ -1598,7 +1609,7 @@
             // 
             this.toolStripMenuItem38.Image = global::CsbBuilder.Properties.Resources.Remove;
             this.toolStripMenuItem38.Name = "toolStripMenuItem38";
-            this.toolStripMenuItem38.Size = new System.Drawing.Size(152, 22);
+            this.toolStripMenuItem38.Size = new System.Drawing.Size(151, 22);
             this.toolStripMenuItem38.Text = "Remove";
             this.toolStripMenuItem38.ToolTipText = "Remove the selected node.";
             this.toolStripMenuItem38.Click += new System.EventHandler(this.RemoveNode);
@@ -1616,13 +1627,13 @@
             this.toolStripMenuItem43});
             this.aisacFolderMenu.Name = "synthSoundElementAndAisacMenu";
             this.aisacFolderMenu.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
-            this.aisacFolderMenu.Size = new System.Drawing.Size(189, 148);
+            this.aisacFolderMenu.Size = new System.Drawing.Size(188, 148);
             // 
             // toolStripMenuItem39
             // 
             this.toolStripMenuItem39.Image = global::CsbBuilder.Properties.Resources.Create;
             this.toolStripMenuItem39.Name = "toolStripMenuItem39";
-            this.toolStripMenuItem39.Size = new System.Drawing.Size(188, 22);
+            this.toolStripMenuItem39.Size = new System.Drawing.Size(187, 22);
             this.toolStripMenuItem39.Text = "Create";
             this.toolStripMenuItem39.ToolTipText = "Create a new child node.";
             this.toolStripMenuItem39.Click += new System.EventHandler(this.CreateChildNode);
@@ -1631,7 +1642,7 @@
             // 
             this.toolStripMenuItem40.Image = global::CsbBuilder.Properties.Resources.Folder;
             this.toolStripMenuItem40.Name = "toolStripMenuItem40";
-            this.toolStripMenuItem40.Size = new System.Drawing.Size(188, 22);
+            this.toolStripMenuItem40.Size = new System.Drawing.Size(187, 22);
             this.toolStripMenuItem40.Text = "Create Folder";
             this.toolStripMenuItem40.ToolTipText = "Create a new child folder.";
             this.toolStripMenuItem40.Click += new System.EventHandler(this.CreateChildFolder);
@@ -1639,26 +1650,26 @@
             // toolStripSeparator22
             // 
             this.toolStripSeparator22.Name = "toolStripSeparator22";
-            this.toolStripSeparator22.Size = new System.Drawing.Size(185, 6);
+            this.toolStripSeparator22.Size = new System.Drawing.Size(184, 6);
             // 
             // toolStripMenuItem44
             // 
             this.toolStripMenuItem44.Image = global::CsbBuilder.Properties.Resources.Template;
             this.toolStripMenuItem44.Name = "toolStripMenuItem44";
-            this.toolStripMenuItem44.Size = new System.Drawing.Size(188, 22);
+            this.toolStripMenuItem44.Size = new System.Drawing.Size(187, 22);
             this.toolStripMenuItem44.Text = "Load AISAC Template";
             this.toolStripMenuItem44.Click += new System.EventHandler(this.LoadTemplate);
             // 
             // toolStripSeparator23
             // 
             this.toolStripSeparator23.Name = "toolStripSeparator23";
-            this.toolStripSeparator23.Size = new System.Drawing.Size(185, 6);
+            this.toolStripSeparator23.Size = new System.Drawing.Size(184, 6);
             // 
             // toolStripMenuItem41
             // 
             this.toolStripMenuItem41.Image = global::CsbBuilder.Properties.Resources.Copy;
             this.toolStripMenuItem41.Name = "toolStripMenuItem41";
-            this.toolStripMenuItem41.Size = new System.Drawing.Size(188, 22);
+            this.toolStripMenuItem41.Size = new System.Drawing.Size(187, 22);
             this.toolStripMenuItem41.Text = "Copy";
             this.toolStripMenuItem41.ToolTipText = "Copy the selected node.";
             this.toolStripMenuItem41.Click += new System.EventHandler(this.CopyNode);
@@ -1667,7 +1678,7 @@
             // 
             this.toolStripMenuItem42.Image = global::CsbBuilder.Properties.Resources.Paste;
             this.toolStripMenuItem42.Name = "toolStripMenuItem42";
-            this.toolStripMenuItem42.Size = new System.Drawing.Size(188, 22);
+            this.toolStripMenuItem42.Size = new System.Drawing.Size(187, 22);
             this.toolStripMenuItem42.Text = "Paste";
             this.toolStripMenuItem42.ToolTipText = "Paste the copied node as child.";
             this.toolStripMenuItem42.Click += new System.EventHandler(this.PasteNode);
@@ -1676,25 +1687,52 @@
             // 
             this.toolStripMenuItem43.Image = global::CsbBuilder.Properties.Resources.Remove;
             this.toolStripMenuItem43.Name = "toolStripMenuItem43";
-            this.toolStripMenuItem43.Size = new System.Drawing.Size(188, 22);
+            this.toolStripMenuItem43.Size = new System.Drawing.Size(187, 22);
             this.toolStripMenuItem43.Text = "Remove";
             this.toolStripMenuItem43.ToolTipText = "Remove the selected node.";
             this.toolStripMenuItem43.Click += new System.EventHandler(this.RemoveNode);
             // 
-            // toolStripSeparator27
+            // splitContainer3
             // 
-            this.toolStripSeparator27.Name = "toolStripSeparator27";
-            this.toolStripSeparator27.Size = new System.Drawing.Size(203, 6);
+            this.splitContainer3.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer3.Location = new System.Drawing.Point(0, 24);
+            this.splitContainer3.Name = "splitContainer3";
+            // 
+            // splitContainer3.Panel1
+            // 
+            this.splitContainer3.Panel1.Controls.Add(this.splitContainer1);
+            // 
+            // splitContainer3.Panel2
+            // 
+            this.splitContainer3.Panel2.Controls.Add(this.splitContainer4);
+            this.splitContainer3.Size = new System.Drawing.Size(884, 565);
+            this.splitContainer3.SplitterDistance = 264;
+            this.splitContainer3.TabIndex = 13;
+            // 
+            // splitContainer4
+            // 
+            this.splitContainer4.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer4.Location = new System.Drawing.Point(0, 0);
+            this.splitContainer4.Name = "splitContainer4";
+            // 
+            // splitContainer4.Panel1
+            // 
+            this.splitContainer4.Panel1.Controls.Add(this.propertyGrid);
+            // 
+            // splitContainer4.Panel2
+            // 
+            this.splitContainer4.Panel2.Controls.Add(this.splitContainer2);
+            this.splitContainer4.Size = new System.Drawing.Size(616, 565);
+            this.splitContainer4.SplitterDistance = 348;
+            this.splitContainer4.TabIndex = 0;
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(878, 602);
+            this.ClientSize = new System.Drawing.Size(884, 611);
+            this.Controls.Add(this.splitContainer3);
             this.Controls.Add(this.statusStrip);
-            this.Controls.Add(this.splitContainer2);
-            this.Controls.Add(this.splitContainer1);
-            this.Controls.Add(this.propertyGrid);
             this.Controls.Add(this.mainMenu);
             this.MainMenuStrip = this.mainMenu;
             this.Name = "MainForm";
@@ -1735,6 +1773,14 @@
             this.statusStrip.PerformLayout();
             this.aisacNodeMenu.ResumeLayout(false);
             this.aisacFolderMenu.ResumeLayout(false);
+            this.splitContainer3.Panel1.ResumeLayout(false);
+            this.splitContainer3.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).EndInit();
+            this.splitContainer3.ResumeLayout(false);
+            this.splitContainer4.Panel1.ResumeLayout(false);
+            this.splitContainer4.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer4)).EndInit();
+            this.splitContainer4.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1896,6 +1942,8 @@
         private System.Windows.Forms.ToolStripMenuItem convertADXsToWAVToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem convertAndSplitLoopingToWAVToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator27;
+        private System.Windows.Forms.SplitContainer splitContainer3;
+        private System.Windows.Forms.SplitContainer splitContainer4;
     }
 }
 

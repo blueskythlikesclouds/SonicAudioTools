@@ -28,50 +28,50 @@ namespace CsbBuilder.Project
         }
 
         [DisplayName("Name node after its parent"), Category("General")]
-        [Description("Names a node after its parent if it exists, or the node tree name.")]
+        [Description("Determines whether a node is going to be named after its parent when created.")]
         public bool NameNodeAfterParent { get; set; }
 
         [DisplayName("Buffer size"), Category("Stream")]
-        [Description("Buffer size used to copy data from streams. Higher values may make streams faster or slower. (e.g. importing/building CSB files)")]
+        [Description("Buffer size to use for I/O operations.")]
         public int BufferSize { get; set; }
 
         [DisplayName("Default directory of new CSB projects"), Category("Project")]
-        [Description("Default output directory of new CSB projects (relative to where .EXE is) in New Project window.")]
+        [Description("Default output directory of new CSB projects.")]
         public string ProjectsDirectory { get; set; }
 
         [DisplayName("Default name of new CSB projects"), Category("Project")]
-        [Description("Default name of new CSB projects in New Project window.")]
+        [Description("Default name of new CSB projects.")]
         public string ProjectsName { get; set; }
 
         [DisplayName("Default project directory of imported CSB files"), Category("Project")]
-        [Description("Default project output directory of imported CSB files.")]
+        [Description("Default project directory of imported CSB files.")]
         public ProjectDirectory ImportedCsbProjectDirectory { get; set; }
 
         [DisplayName("Rename Sound node to referenced Sound Element node"), Category("Application")]
         public bool RenameToSoundElement { get; set; }
 
-        [DisplayName("Enable threading"), Category("Stream")]
-        [Description("Determines whether to use threads to extract data from CSB/CPK files during importing. It may make the importing faster or slower.")]
+        [DisplayName("Enable multi-threading"), Category("Stream")]
+        [Description("Determines whether I/O operations are going to be multi-threaded.")]
         public bool EnableThreading { get; set; }
 
-        [DisplayName("Maximum amount of cores"), Category("Stream")]
-        [Description("Maximum amount of threads used to extract data from CSB/CPK files during importing.")]
+        [DisplayName("Max thread count"), Category("Stream")]
+        [Description("Max amount of threads to use for multi-threaded I/O operations.")]
         public int MaxThreads { get; set; }
 
-        [DisplayName("Wave Player"), Category("Sound")]
-        [Description("Sound device for audio playback. If not supported, application is going to crash.")]
+        [DisplayName("Sound device"), Category("Sound")]
+        [Description("Sound device to use for audio playback. Application is going to crash if sound device is not supported.")]
         public NAudioWavePlayer WavePlayer { get; set; }
 
-        [DisplayName("Loop Count"), Category("Audio Converter")]
-        [Description("Count of loop times for audio converter if input audio has loop information.")]
+        [DisplayName("Loop count"), Category("Audio converter")]
+        [Description("How many times the audio is going to be looped when converting to .wav.")]
         public int LoopCount { get; set; }
 
         [DisplayName("Fade Out Time"), Category("Audio Converter")]
-        [Description("Fade out time in seconds after total 'Loop Count' loops for audio with loop information.")]
+        [Description("How much time it takes to fade out when converting to .wav.")]
         public double FadeTime { get; set; }
 
         [DisplayName("Fade Out Delay Time"), Category("Audio Converter")]
-        [Description("Delay time in seconds before audio starts to fade out.")]
+        [Description("How much time it takes before starting to fade out when converting to .wav.")]
         public double FadeDelay { get; set; }
 
         public static Settings Load()

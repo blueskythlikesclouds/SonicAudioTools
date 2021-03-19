@@ -81,7 +81,7 @@ namespace CsbBuilder
             {
                 if (SelectedNode != null && SelectedNode.ImageIndex == 3)
                 {
-                    MessageBox.Show("You can't set a folder as a reference!", "CSB Builder", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("You can't set folder nodes as references.", "CSB Builder", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     e.Cancel = true;
                 }
             }

@@ -11,7 +11,7 @@ namespace CsbBuilder.BuilderNodes
     public abstract class BuilderBaseNode : ICloneable
     {
         [Category("General"), ReadOnly(true)]
-        [Description("The name of this node.")]
+        [Description("Name of this node.")]
         public string Name { get; set; }
 
         public object Clone()

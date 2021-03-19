@@ -10,18 +10,17 @@ namespace CsbBuilder.BuilderNodes
     public class BuilderAisacNode : BuilderBaseNode
     {
         [Category("General"), DisplayName("Aisac Name")]
-        [Description("The name of this Aisac. (Shouldn't be seen as the node name.)")]
+        [Description("Representative name of this aisac.")]
         public string AisacName { get; set; }
 
         [Category("General")]
-        [Description("The type of this Aisac. Currently, none of the types are known.")]
+        [Description("Type of this aisac. Values are unknown.")]
         public byte Type { get; set; }
 
         [Category("Graph")]
-        [Description("The Graph's of this Aisac.")]
         public List<BuilderAisacGraphNode> Graphs { get; set; }
 
-        [Category("Graph"), DisplayName("Random Range (Unknown)")]
+        [Category("Graph"), DisplayName("Random Range")]
         public byte RandomRange { get; set; }
 
         public BuilderAisacNode()

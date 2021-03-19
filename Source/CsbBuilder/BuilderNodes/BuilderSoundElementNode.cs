@@ -11,31 +11,31 @@ namespace CsbBuilder.BuilderNodes
     {
         [ReadOnly(true)]
         [Category("General")]
-        [Description("The name of the audio in Project/Audio directory, which is going to play before the loop audio starts to play. Can be left empty, so that there will be no audio to play.")]
+        [Description("File path of audio to play before loop. This can be left empty if loop is set.")]
         public string Intro { get; set; }
 
         [ReadOnly(true)]
         [Category("General")]
-        [Description("The name of the audio in Project/Audio directory, which is going to be looped. Can be left empty, so that there will be no audio to loop in-game.")]
+        [Description("File path of audio to play after intro. This can be left empty if intro is set.")]
         public string Loop { get; set; }
 
         [ReadOnly(true)]
         [Category("General"), DisplayName("Channel Count")]
-        [Description("The channel count of BOTH Intro and Loop audio files. If they do not match, this will most likely result issues in-game, because the game ignores the channel count information in the audio file itself, but uses this info.")]
+        [Description("Channel count of audio files. This information is used instead of the metadata in audio files.")]
         public byte ChannelCount { get; set; }
 
         [Category("General"), DisplayName("Streamed")]
-        [Description("Determines whether the audio files specified here are going to be streamed from a .CPK file, which is outside the .CSB file. Otherwise, it will be played from the memory. That's the best to be 'true', if the specified audio files are large.")]
+        [Description("Determines whether audio files are going to be streamed from a .cpk file.")]
         public bool Streaming { get; set; }
 
         [ReadOnly(true)]
         [Category("General"), DisplayName("Sample Rate")]
-        [Description("The sample rate of BOTH Intro and Loop audio files. If they do not match, this will most likely result issues in-game, because the game ignores the sample rate information in the audio file itself, but uses this info.")]
+        [Description("Sample rate of audio files. This information is used instead of the metadata in audio files.")]
         public uint SampleRate { get; set; }
 
         [ReadOnly(true)]
         [Category("General"), DisplayName("Sample Count")]
-        [Description("The sample count of Intro and Loop files, added together.")]
+        [Description("Sample count of audio files added together.")]
         public uint SampleCount { get; set; }
     }
 }

@@ -280,7 +280,7 @@ namespace CsbBuilder.Importer
             {
                 BuilderCueNode cueNode = new BuilderCueNode();
                 cueNode.Name = cueTable.Name;
-                cueNode.Identifier = cueTable.Id;
+                cueNode.Id = cueTable.Id;
                 cueNode.UserComment = cueTable.UserData;
                 cueNode.Flags = cueTable.Flags;
                 cueNode.SynthReference = cueTable.SynthPath;

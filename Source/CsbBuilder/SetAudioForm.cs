@@ -50,7 +50,7 @@ namespace CsbBuilder
         {
             using (OpenFileDialog openAdx = new OpenFileDialog
             {
-                Title = "Select Your Audio File",
+                Title = "Select audio file",
                 Filter = "All Files|*.adx;*.wav|ADX Files|*.adx|WAV Files|*.wav",
             })
             {
@@ -65,7 +65,7 @@ namespace CsbBuilder
         {
             using (OpenFileDialog openAdx = new OpenFileDialog
             {
-                Title = "Select Your Audio File",
+                Title = "Select audio file",
                 Filter = "All Files|*.adx;*.wav|ADX Files|*.adx|WAV Files|*.wav",
             })
             {
@@ -91,7 +91,7 @@ namespace CsbBuilder
 
                 if (!string.IsNullOrEmpty(Intro) && !string.IsNullOrEmpty(Loop) && !introExtension.Equals(loopExtension, StringComparison.OrdinalIgnoreCase))
                 {
-                    MessageBox.Show("Please use the same types of audio files for Intro and Loop.", "CSB Builder", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("Audio files must be of the same type.", "CSB Builder", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     e.Cancel = true;
                 }
             }

@@ -256,7 +256,7 @@ namespace CsbBuilder
 
             using (OpenFileDialog openCsbFile = new OpenFileDialog
             {
-                Title = "Import CSB File",
+                Title = "Import CSB file",
                 DefaultExt = "csb",
                 Filter = "CSB Files|*.csb",
             })
@@ -302,7 +302,7 @@ namespace CsbBuilder
 
             if (project.CueNodes.Count > 0)
             {
-                cueNode.Identifier = project.CueNodes.Max(cue => cue.Identifier) + 1;
+                cueNode.Id = project.CueNodes.Max(cue => cue.Id) + 1;
             }
 
             treeNode.Tag = cueNode;
@@ -882,7 +882,7 @@ namespace CsbBuilder
 
             using (OpenFileDialog openProject = new OpenFileDialog
             {
-                Title = "Open CSB Project File",
+                Title = "Open CSB project file",
                 Filter = "CSB Project files|*.csbproject",
                 DefaultExt = "csbproject",
             })
@@ -893,7 +893,7 @@ namespace CsbBuilder
 
                     if (!csbProject.AudioDirectory.Exists)
                     {
-                        MessageBox.Show("Audio directory does not seem to be present for this project. All the audio references will be removed.");
+                        MessageBox.Show("Audio directory does not seem to be present for this project. All audio references are going to be removed.");
                         csbProject.SoundElementNodes.ForEach(soundElementNode => soundElementNode.Intro = string.Empty);
                         csbProject.SoundElementNodes.ForEach(soundElementNode => soundElementNode.Loop = string.Empty);
                     }
@@ -914,7 +914,7 @@ namespace CsbBuilder
         {
             using (SaveFileDialog saveProject = new SaveFileDialog
             {
-                Title = "Save CSB Project File As",
+                Title = "Save CSB project file as",
                 Filter = "CSB Project files|*.csbproject",
                 DefaultExt = "csbproject",
             })
@@ -948,7 +948,7 @@ namespace CsbBuilder
         {
             using (SaveFileDialog buildCsb = new SaveFileDialog()
             {
-                Title = "Build Current Project As",
+                Title = "Build current project as",
                 DefaultExt = "csb",
                 Filter = "CSB Files|*.csb",
                 FileName = project.Name,
@@ -971,7 +971,7 @@ namespace CsbBuilder
         {
             using (OpenFileDialog openProject = new OpenFileDialog
             {
-                Title = "Merge Project With",
+                Title = "Merge project with",
                 Filter = "CSB Project files|*.csbproject",
                 DefaultExt = "csbproject",
             })
@@ -982,7 +982,7 @@ namespace CsbBuilder
 
                     if (!csbProject.AudioDirectory.Exists)
                     {
-                        MessageBox.Show("Audio directory does not seem to be present for this project. All the audio references will be removed.");
+                        MessageBox.Show("Audio directory does not seem to be present for this project. All audio references are going to be removed.");
                         csbProject.SoundElementNodes.ForEach(soundElementNode => soundElementNode.Intro = string.Empty);
                         csbProject.SoundElementNodes.ForEach(soundElementNode => soundElementNode.Loop = string.Empty);
                     }
@@ -1012,7 +1012,7 @@ namespace CsbBuilder
         {
             using (OpenFileDialog openCsbFile = new OpenFileDialog
             {
-                Title = "Import And Merge CSB File With",
+                Title = "Import and merge CSB file with",
                 DefaultExt = "csb",
                 Filter = "CSB Files|*.csb",
             })
@@ -1108,7 +1108,7 @@ namespace CsbBuilder
         {
             if (!CheckIfAny(aisacTree))
             {
-                MessageBox.Show("This project does not contain any Aisac nodes.", "CSB Builder", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Failed to find any aisac node.", "CSB Builder", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -1146,7 +1146,7 @@ namespace CsbBuilder
         {
             if (voiceLimitGroupTree.Nodes.Count == 0)
             {
-                MessageBox.Show("This project does not contain any Voice Limit Group nodes.", "CSB Builder", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Failed to find any voice limit group node.", "CSB Builder", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -1184,7 +1184,7 @@ namespace CsbBuilder
         {
             if (!CheckIfAny(synthTree))
             {
-                MessageBox.Show("This project does not contain any Synth nodes.", "CSB Builder", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Failed to find any synth node.", "CSB Builder", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -1314,7 +1314,7 @@ namespace CsbBuilder
         {
             if (!CheckIfAny(soundElementTree))
             {
-                MessageBox.Show("This project does not contain any Sound nodes.", "CSB Builder", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Failed to find any sound node.", "CSB Builder", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -1911,9 +1911,9 @@ namespace CsbBuilder
             // check if it's cue and fix duplicate identifier if needed
             if (nodeToPaste.Tag is BuilderCueNode cueNode)
             {
-                while (project.CueNodes.Exists(cue => cue.Identifier == cueNode.Identifier))
+                while (project.CueNodes.Exists(cue => cue.Id == cueNode.Id))
                 {
-                    cueNode.Identifier++;
+                    cueNode.Id++;
                 }
             }
 
@@ -2100,7 +2100,7 @@ namespace CsbBuilder
                 {
                     using (OpenFileDialog openAisacTemplate = new OpenFileDialog()
                     {
-                        Title = "Load AISAC Template",
+                        Title = "Load AISAC template",
                         Filter = "XML Files|*.xml",
                         DefaultExt = "xml",
                         FileName = selectedNode != null ? selectedNode.Name : string.Empty,
@@ -2171,7 +2171,7 @@ namespace CsbBuilder
 
                             catch
                             {
-                                MessageBox.Show("The template file is invalid.", "CSB Builder", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                MessageBox.Show("Failed to load template file.", "CSB Builder", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             }
                         }
                     }
@@ -2191,7 +2191,7 @@ namespace CsbBuilder
                 {
                     using (SaveFileDialog saveAisacTemplate = new SaveFileDialog()
                     {
-                        Title = "Save AISAC Template",
+                        Title = "Save AISAC template",
                         Filter = "XML Files|*.xml",
                         DefaultExt = "xml",
                         FileName = selectedNode.Name,
@@ -2226,7 +2226,7 @@ namespace CsbBuilder
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog
             {
-                Title = "Convert Audio Files",
+                Title = "Convert audio files",
                 FileName = "Select audio files you want to convert and press Open",
                 Filter = Filters,
                 Multiselect = true,
@@ -2236,7 +2236,7 @@ namespace CsbBuilder
                 {
                     using (SaveFileDialog saveFileDialog = new SaveFileDialog
                     {
-                        Title = "Output Directory",
+                        Title = "Select output directory",
                         FileName = "Enter into a directory and press Save",
                     })
                     {
@@ -2323,7 +2323,7 @@ namespace CsbBuilder
 
                             if (failedFiles.Count != 0)
                             {
-                                MessageBox.Show($"Following files could not be converted:\n{string.Join("\n", failedFiles)}", "CSB Builder", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                MessageBox.Show($"Files that failed to convert:\n{string.Join("\n", failedFiles)}", "CSB Builder", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             }
                         }
                     }
@@ -2335,7 +2335,7 @@ namespace CsbBuilder
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog
             {
-                Title = "Extract AAX Files",
+                Title = "Extract AAX files",
                 FileName = "Select AAX files you want to extract and press Open",
                 Filter = "AAX Files|*.aax",
                 DefaultExt = "aax",
@@ -2346,7 +2346,7 @@ namespace CsbBuilder
                 {
                     using (SaveFileDialog saveFileDialog = new SaveFileDialog
                     {
-                        Title = "Output Directory",
+                        Title = "Select output directory",
                         FileName = "Enter into a directory and press Save",
                     })
                     {
@@ -2386,7 +2386,7 @@ namespace CsbBuilder
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog
             {
-                Title = "Pack ADX Files",
+                Title = "Pack ADX files",
                 FileName = "Select ADX files you want to pack and press Open",
                 Filter = "All Files|*.adx;*.wav|ADX Files|*.adx|WAV Files|*.wav",
                 Multiselect = true,
@@ -2399,14 +2399,14 @@ namespace CsbBuilder
                 {
                     if (openFileDialog.FileNames.Length > 2)
                     {
-                        MessageBox.Show("You can select maximum 2 ADX files.", "CSB Builder", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("You can't select more than 2 ADX files.", "CSB Builder", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
 
                     else if (openFileDialog.FileNames.Length == 2 && 
                         !Path.GetExtension(openFileDialog.FileNames[0]).Equals(
                             Path.GetExtension(openFileDialog.FileNames[1]), StringComparison.OrdinalIgnoreCase))
                     {
-                        MessageBox.Show("You can select only the same type of files.", "CSB Builder", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("You can select files only of the same type.", "CSB Builder", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
 
                     else
@@ -2420,7 +2420,7 @@ namespace CsbBuilder
                 {
                     using (SaveFileDialog saveFileDialog = new SaveFileDialog
                     {
-                        Title = "Output File",
+                        Title = "Select output file",
                         FileName = $"{Path.GetFileNameWithoutExtension(files[0])}.aax",
                         Filter = "AAX Files|*.aax",
                         DefaultExt = "aax",
@@ -2447,7 +2447,7 @@ namespace CsbBuilder
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog
             {
-                Title = "Convert And Split Audio Files",
+                Title = "Convert and split audio files",
                 FileName = "Select audio files you want to convert and press Open",
                 Filter = Filters,
                 Multiselect = true,
@@ -2457,7 +2457,7 @@ namespace CsbBuilder
                 {
                     using (SaveFileDialog saveFileDialog = new SaveFileDialog
                     {
-                        Title = "Output Directory",
+                        Title = "Select output directory",
                         FileName = "Enter into a directory and press Save",
                     })
                     {
@@ -2526,7 +2526,7 @@ namespace CsbBuilder
 
                             if (failedFiles.Count != 0)
                             {
-                                MessageBox.Show($"Following files could not be converted:\n{string.Join("\n", failedFiles)}", "CSB Builder", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                MessageBox.Show($"Files that failed to convert:\n{string.Join("\n", failedFiles)}", "CSB Builder", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             }
                         }
                     }

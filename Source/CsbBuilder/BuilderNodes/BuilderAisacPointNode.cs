@@ -10,11 +10,11 @@ namespace CsbBuilder.BuilderNodes
     public class BuilderAisacPointNode : BuilderBaseNode
     {
         [Category("Vector"), DisplayName("X")]
-        [Description("The X dimension of this Point, relative to the Graph it's in.")]
+        [Description("Normalized X coordinate of this point.")]
         public ushort X { get; set; }
 
         [Category("Vector"), DisplayName("Y")]
-        [Description("The Y dimension of this Point, relative to the Graph it's in.")]
+        [Description("Normalized Y coordinate of this point.")]
         public ushort Y { get; set; }
     }
 }

@@ -39,7 +39,7 @@ namespace CsbBuilder.Builder
                 cueTables.Add(new SerializationCueTable
                 {
                     Name = cueNode.Name,
-                    Id = cueNode.Identifier,
+                    Id = cueNode.Id,
                     UserData = cueNode.UserComment,
                     Flags = cueNode.Flags,
                     SynthPath = cueNode.SynthReference,
