@@ -98,6 +98,19 @@ namespace AcbFinder
                                     //    reader2.Read();
 
                                     var header = reader.GetData("StreamAwbAfs2Header");
+                                    
+                                    //Sometimes this has 0x44 bytes of extra data. When it happens, we can remove that to fix it.
+                                    byte[] headerSignature = new byte[4];
+                                    Array.Copy(header, 0, headerSignature, 0, 4);
+
+                                    //Copy subset of array to new header if it's long enough and it's not fine already
+                                    if (header.Length > 0x44 && Encoding.ASCII.GetString(headerSignature) != "AFS2")
+                                    {
+                                        byte[] newHeader = new byte[header.Length - 0x44];
+                                        Array.Copy(header, 0x44, newHeader, 0, header.Length - 0x44);
+                                        header = newHeader;
+                                    }
+                                    
                                     var hash = Convert.ToBase64String(md5.ComputeHash(header));
 
                                     acbsByAwbHeaderHash[hash] = name;
