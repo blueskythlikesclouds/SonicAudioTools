@@ -130,7 +130,7 @@ namespace AcbEditor
 
                         if (!found)
                         {
-                            throw new FileNotFoundException("Cannot find the external .AWB file for this .ACB file. Please ensure that the external .AWB file is stored in the directory where the .ACB file is.");
+                            throw new FileNotFoundException("Unable to locate the corresponding streaming AWB file. Please ensure that it's in the same directory.");
                         }
 
                         if (extAfs2Archive.SubKey != 0)
@@ -166,7 +166,7 @@ namespace AcbEditor
                             {
                                 if (!found)
                                 {
-                                    throw new Exception("Cannot find the external .AWB file for this .ACB file. Please ensure that the external .AWB file is stored in the directory where the .ACB file is.");
+                                    throw new Exception("Unable to locate the corresponding streaming AWB file. Please ensure that it's in the same directory.");
                                 }
 
                                 else if (extCpkArchive == null && cpkMode)
@@ -234,7 +234,7 @@ namespace AcbEditor
 
                 if (!File.Exists(acbPath))
                 {
-                    throw new FileNotFoundException("Cannot find the .ACB file for this directory. Please ensure that the .ACB file is stored in the directory where this directory is.");
+                    throw new FileNotFoundException("Unable to locate the corresponding ACB file. Please ensure that it's in the same directory.");
                 }
 
                 CriTable acbFile = new CriTable();
@@ -282,7 +282,7 @@ namespace AcbEditor
 
                         if (!File.Exists(inputName))
                         {
-                            throw new FileNotFoundException($"Cannot find audio file with id {id} for replacement.\nPath attempt: {inputName}");
+                            throw new FileNotFoundException($"Unable to locate {inputName}");
                         }
 
                         if (cpkMode)
@@ -340,14 +340,14 @@ namespace AcbEditor
 
                 if (afs2Archive.Count > 0 || cpkArchive.Count > 0)
                 {
-                    Console.WriteLine("Saving internal AWB...");
+                    Console.WriteLine("Saving AWB file...");
                     acbFile.Rows[0]["AwbFile"] = cpkMode ? cpkArchive.Save() : afs2Archive.Save();
                     Console.WriteLine();
                 }
 
                 if (extAfs2Archive.Count > 0 || extCpkArchive.Count > 0)
                 {
-                    Console.WriteLine("Saving external AWB...");
+                    Console.WriteLine("Saving streaming AWB file...");
                     if (cpkMode)
                     {
                         extCpkArchive.Save(awbPath, Settings.Default.BufferSize);
