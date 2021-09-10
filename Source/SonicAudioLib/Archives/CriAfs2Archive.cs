@@ -17,7 +17,8 @@ namespace SonicAudioLib.Archives
 
     public class CriAfs2Archive : ArchiveBase<CriAfs2Entry>
     {
-        public uint Align { get; set; }
+        public ushort SubKey { get; set; }
+        public ushort Align { get; set; }
 
         /// <summary>
         /// Gets header of the written AFS2 archive.
@@ -62,7 +63,8 @@ namespace SonicAudioLib.Archives
             uint positionFieldLength = (information >> 8) & 0xFF;
 
             uint entryCount = DataStream.ReadUInt32(source);
-            Align = DataStream.ReadUInt32(source) & 0xFFFF;
+            Align = DataStream.ReadUInt16(source);
+            SubKey = DataStream.ReadUInt16(source);
 
             CriAfs2Entry previousEntry = null;
             for (uint i = 0; i < entryCount; i++)
@@ -157,9 +159,10 @@ namespace SonicAudioLib.Archives
             long headerLength = Calculate(out uint idFieldLength, out uint positionFieldLength);
 
             DataStream.WriteCString(mDestination, "AFS2", 4);
-            DataStream.WriteUInt32(mDestination, 1 | (idFieldLength << 16) | (positionFieldLength << 8));
+            DataStream.WriteUInt32(mDestination, (SubKey != 0 ? 2 : 1u) | (idFieldLength << 16) | (positionFieldLength << 8));
             DataStream.WriteUInt32(mDestination, (uint)entries.Count);
-            DataStream.WriteUInt32(mDestination, Align);
+            DataStream.WriteUInt16(mDestination, Align);
+            DataStream.WriteUInt16(mDestination, SubKey);
             
             DataPool vldPool = new DataPool(Align, headerLength);
             vldPool.ProgressChanged += OnProgressChanged;

@@ -92,6 +92,12 @@ namespace AcbEditor
                                 afs2Archive.Read(afs2Stream);
                             }
                         }
+
+                        if (afs2Archive.SubKey != 0)
+                        {
+                            using (var stream = File.Create(Path.Combine(outputDirectoryPath, ".subkey")))
+                                DataStream.WriteUInt16(stream, afs2Archive.SubKey);
+                        }
                     }
 
                     if (acbReader.GetLength("StreamAwbAfs2Header") > 0)
@@ -125,6 +131,12 @@ namespace AcbEditor
                         if (!found)
                         {
                             throw new FileNotFoundException("Cannot find the external .AWB file for this .ACB file. Please ensure that the external .AWB file is stored in the directory where the .ACB file is.");
+                        }
+
+                        if (extAfs2Archive.SubKey != 0)
+                        {
+                            using (var stream = File.Create(Path.Combine(outputDirectoryPath, ".subkey_streaming")))
+                                DataStream.WriteUInt16(stream, extAfs2Archive.SubKey);
                         }
                     }
 
@@ -311,6 +323,20 @@ namespace AcbEditor
 
                 acbFile.Rows[0]["AwbFile"] = null;
                 acbFile.Rows[0]["StreamAwbAfs2Header"] = null;
+
+                string subKeyFilePath = Path.Combine(args[0], ".subkey");
+                if (File.Exists(subKeyFilePath))
+                {
+                    using (var stream = File.OpenRead(subKeyFilePath))
+                        afs2Archive.SubKey = DataStream.ReadUInt16(stream);
+                }
+
+                string subKeyStreamingFilePath = Path.Combine(args[0], ".subkey_streaming");
+                if (File.Exists(subKeyStreamingFilePath))
+                {
+                    using (var stream = File.OpenRead(subKeyStreamingFilePath))
+                        extAfs2Archive.SubKey = DataStream.ReadUInt16(stream);
+                }
 
                 if (afs2Archive.Count > 0 || cpkArchive.Count > 0)
                 {
