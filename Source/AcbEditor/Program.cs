@@ -404,20 +404,22 @@ namespace AcbEditor
                     return ".dsadpcm";
                 case 6:
                     return ".hcamx";
-                case 10:
                 case 7:
+                case 10:
                     return ".vag";
                 case 8:
                     return ".at3";
                 case 9:
                     return ".bcwav";
-                case 18:
                 case 11:
+                case 18:
                     return ".at9";
                 case 12:
                     return ".xma";
                 case 13:
                     return ".dsp";
+                case 19:
+                    return ".m4a";
                 case 24:
                     return ".lopus";
                 default:
