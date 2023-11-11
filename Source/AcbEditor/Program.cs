@@ -418,6 +418,8 @@ namespace AcbEditor
                     return ".xma";
                 case 13:
                     return ".dsp";
+                case 24:
+                    return ".lopus";
                 default:
                     return ".bin";
             }
